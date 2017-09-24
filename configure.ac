@@ -26,20 +26,23 @@ AC_CHECK_HEADERS([cstdlib])
 AM_CONDITIONAL([ENV_TEST], [test "x$ENV" = xTEST])
 AM_CONDITIONAL([ENV_PRD], [test "x$ENV" != xDEV && test "x$ENV" != xTEST])
 
-AC_SUBST(AM_CPPFLAGS, "-std=c11 -fno-exceptions -fno-rtti -Wall -Wextra")
+AC_SUBST(AM_CPPFLAGS, "-std=c++11 -fno-exceptions -fno-rtti -Wall -Wextra")
 
 AC_CONFIG_FILES([Makefile])
 
 # Production Makefile
 AM_COND_IF([ENV_TEST], [],
 	  [AC_CONFIG_FILES([
+	   stdexd/Makefile
 	   decoder/Makefile
+	   ffmpegpp/Makefile
 	   ])])
 
 # Testing Makefile
 AM_COND_IF([ENV_PRD], [],
 	  [AC_CONFIG_FILES([
-	   decoder_test/Makefile
+	   mock_ffmpeg/Makefile
+	   ffmpegpp_test/Makefile
 	   ])])
 
 AC_OUTPUT
