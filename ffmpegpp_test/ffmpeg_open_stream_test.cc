@@ -90,8 +90,13 @@ SUITE_CASE("should output avformat_find_stream_info error message and exit") {
 	CUE_ASSERT_STDERR_EQ("Error[libwrpffp]: -2\n");
 }
 
+static int ffmpeg_open_action_assert(ffmpeg_stream *stream) {
+	CUE_ASSERT_PTR_EQ(stream->format_context, &ret_format_context);
+	return 100;
+}
+
 SUITE_CASE("call block and return the return of block") {
-	init_mock_function_with_return(ffmpeg_open_action, 100)
+	init_mock_function_with_function(ffmpeg_open_action, ffmpeg_open_action_assert)
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(100);
 }

@@ -9,6 +9,8 @@ extern "C" {
 }
 
 class ffmpeg_stream {
+	public:
+		AVFormatContext *format_context;
 };
 
 class ffmpeg {

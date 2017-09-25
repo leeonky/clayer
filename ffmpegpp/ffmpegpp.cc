@@ -38,10 +38,11 @@ int ffmpeg::open_stream(const char *file, enum AVMediaType type, int index, std:
 	if(action) {
 		av_register_all();
 		res = avformat_open_input(file,
-				[action](AVFormatContext *format_context)-> int {
+				[action](AVFormatContext *format_context) -> int {
 				return avformat_find_stream_info(format_context,
-					[action](AVFormatContext *format_context)-> int {
+					[action](AVFormatContext *format_context) -> int {
 					ffmpeg_stream stream;
+					stream.format_context = format_context;
 					return action(stream);
 					});
 				});
