@@ -43,6 +43,7 @@ AM_COND_IF([ENV_PRD], [],
 	  [AC_CONFIG_FILES([
 	   mock_ffmpeg/Makefile
 	   ffmpegpp_test/Makefile
+	   lffmpeg_test/Makefile
 	   ])])
 
 AC_OUTPUT
