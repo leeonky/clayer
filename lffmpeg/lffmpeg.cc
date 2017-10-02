@@ -24,15 +24,18 @@ int avformat_open_input(const char *file, std::function<int(AVFormatContext &)> 
 }
 
 int avformat_find_stream(AVFormatContext &av_format_context, enum AVMediaType type, int track, std::function<int(AVStream &)> action) {
-	int res = 0, matched = 0, ret;
-	size_t i;
+	int res, ret;
 	if(-1 == track)
 		track = 0;
 	if((ret = avformat_find_stream_info(&av_format_context, NULL)) >= 0) {
-		for (i=0; i<av_format_context.nb_streams; ++i)
+		int matched = 0;
+		for (size_t i=0; i<av_format_context.nb_streams; ++i)
 			if(av_format_context.streams[i]->codecpar->codec_type == type && matched++ == track)
 				return action(*av_format_context.streams[i]);
+		fprintf(app_stderr, "Error[liblffmpeg]: %s stream %d doesn't exist\n", av_get_media_type_string(type), track);
+		res = -1;
 	} else
 		res = print_error(ret, app_stderr);
 	return res;
 }
+
