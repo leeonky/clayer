@@ -17,8 +17,8 @@ static const char *arg_input_file;
 
 mock_function_1(int, avformat_open_action, AVFormatContext *);
 
-static int avformat_open_action_ref(AVFormatContext &f) {
-	return avformat_open_action(&f);
+static int avformat_open_action_ref(AVFormatContext &av_format_context) {
+	return avformat_open_action(&av_format_context);
 }
 
 BEFORE_EACH() {
@@ -31,7 +31,6 @@ BEFORE_EACH() {
 
 	init_mock_function(av_register_all);
 	init_mock_function_with_function(avformat_open_input, stub_avformat_open_input);
-	init_mock_function(avformat_find_stream_info);
 	init_mock_function(avformat_close_input);
 
 	init_mock_function(avformat_open_action);
@@ -56,9 +55,6 @@ SUITE_CASE("should make sure open and close stream file") {
 	CUE_EXPECT_CALLED_ONCE(avformat_open_input);
 	CUE_EXPECT_CALLED_WITH_STRING(avformat_open_input, 2, arg_input_file);
 
-	CUE_EXPECT_CALLED_ONCE(avformat_find_stream_info);
-	CUE_EXPECT_CALLED_WITH_PTR(avformat_find_stream_info, 1, &ret_format_context);
-
 	CUE_EXPECT_CALLED_ONCE(avformat_open_action);
 	CUE_EXPECT_CALLED_WITH_PTR(avformat_open_action, 1, &ret_format_context);
 
@@ -70,23 +66,9 @@ SUITE_CASE("should output avformat_open_input error message and exit") {
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
-	CUE_EXPECT_NEVER_CALLED(avformat_find_stream_info);
-
 	CUE_EXPECT_NEVER_CALLED(avformat_open_action);
 
 	CUE_EXPECT_NEVER_CALLED(avformat_close_input);
-
-	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: -2\n");
-}
-
-SUITE_CASE("should output avformat_find_stream_info error message and exit") {
-	init_mock_function_with_return(avformat_find_stream_info, -2);
-
-	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
-
-	CUE_EXPECT_NEVER_CALLED(avformat_open_action);
-
-	CUE_EXPECT_CALLED_ONCE(avformat_close_input);
 
 	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: -2\n");
 }
