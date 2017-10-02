@@ -12,5 +12,7 @@ extern int avformat_open_input(const char *, std::function<int(AVFormatContext &
 
 extern int avformat_find_stream(AVFormatContext &, enum AVMediaType, int, std::function<int(AVStream &)>);
 
+extern char *avstream_info(const AVStream &);
+
 #endif
 

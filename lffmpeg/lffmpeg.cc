@@ -9,7 +9,14 @@ namespace {
 		print_stack(stderr);
 		return -1;
 	}
+
+	static inline void unsupported_operation(const char *fun, enum AVMediaType t) {
+		fprintf(stderr, "%s not support [%s] yet\n", fun, av_get_media_type_string(t));
+		abort();
+	}
 }
+
+#define not_support_media_type(t) unsupported_operation(__FUNCTION__, t)
 
 int avformat_open_input(const char *file, std::function<int(AVFormatContext &)> action) {
 	int res = 0, ret;
@@ -37,5 +44,31 @@ int avformat_find_stream(AVFormatContext &av_format_context, enum AVMediaType ty
 	} else
 		res = print_error(ret, app_stderr);
 	return res;
+}
+
+char *avstream_info(const AVStream &stream) {
+	static __thread char buffer[1024];
+	char layout_string_buffer[1024];
+	AVCodecParameters *parameters = stream.codecpar;
+	switch(parameters->codec_type) {
+		case AVMEDIA_TYPE_VIDEO:
+			sprintf(buffer, "VIDEO width:%d height:%d format:%s",
+					parameters->width,
+					parameters->height,
+					av_get_pix_fmt_name((enum AVPixelFormat)parameters->format));
+			break;
+		case AVMEDIA_TYPE_AUDIO:
+			av_get_channel_layout_string(layout_string_buffer, sizeof(layout_string_buffer), parameters->channels, parameters->channel_layout);
+			sprintf(buffer, "AUDIO sample_rate:%d channels:%d layout:%s format:%s",
+					parameters->sample_rate,
+					parameters->channels,
+					layout_string_buffer,
+					av_get_sample_fmt_name((enum AVSampleFormat)parameters->format));
+			break;
+		default:
+			not_support_media_type(parameters->codec_type);
+			break;
+	}
+	return buffer;
 }
 
