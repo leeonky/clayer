@@ -2,11 +2,11 @@
 #include "stdexd/stdexd.h"
 
 namespace {
-	int print_error(int no, FILE *stderr) {
+	int print_error(int no) {
 		char buffer[1024];
 		av_strerror(no, buffer, sizeof(buffer));
-		fprintf(stderr, "Error[liblffmpeg]: %s\n", buffer);
-		print_stack(stderr);
+		fprintf(app_stderr, "Error[liblffmpeg]: %s\n", buffer);
+		print_stack(app_stderr);
 		return -1;
 	}
 
@@ -26,7 +26,7 @@ int avformat_open_input(const char *file, std::function<int(AVFormatContext &)> 
 		res = action(*format_context);
 		avformat_close_input(&format_context);
 	} else
-		res = print_error(ret, app_stderr);
+		res = print_error(ret);
 	return res;
 }
 
@@ -42,7 +42,7 @@ int avformat_find_stream(AVFormatContext &av_format_context, enum AVMediaType ty
 		fprintf(app_stderr, "Error[liblffmpeg]: %s stream %d doesn't exist\n", av_get_media_type_string(type), track);
 		res = -1;
 	} else
-		res = print_error(ret, app_stderr);
+		res = print_error(ret);
 	return res;
 }
 
@@ -70,5 +70,30 @@ char *avstream_info(const AVStream &stream) {
 			break;
 	}
 	return buffer;
+}
+
+int avcodec_open(AVStream &stream, std::function<int(AVCodecContext &)> action) {
+	int res = 0, ret;
+	AVCodec *av_codec;
+	AVCodecContext *av_codec_context;
+	if((av_codec = avcodec_find_decoder(stream.codecpar->codec_id))) {
+		if ((av_codec_context = avcodec_alloc_context3(av_codec))) {
+			if ((ret=avcodec_parameters_to_context(av_codec_context, stream.codecpar)) >= 0
+					&& (!(ret=avcodec_open2(av_codec_context, av_codec, NULL)))) {
+				res = action(*av_codec_context);
+				avcodec_close(av_codec_context);
+			} else {
+				res = print_error(ret);
+			}
+			avcodec_free_context(&av_codec_context);
+		} else {
+			res = -1;
+			fprintf(app_stderr, "Error[liblffmpeg]: failed to alloc AVCodecContext\n");
+		}
+	} else {
+		res = -1;
+		fprintf(app_stderr, "Error[liblffmpeg]: failed to find decoder\n");
+	}
+	return res;
 }
 

@@ -14,5 +14,7 @@ extern int avformat_find_stream(AVFormatContext &, enum AVMediaType, int, std::f
 
 extern char *avstream_info(const AVStream &);
 
+extern int avcodec_open(AVStream &, std::function<int(AVCodecContext &)>);
+
 #endif
 
