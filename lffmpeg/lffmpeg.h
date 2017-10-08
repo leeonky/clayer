@@ -16,5 +16,7 @@ extern char *avstream_info(const AVStream &);
 
 extern int avcodec_open(AVStream &, std::function<int(AVCodecContext &)>);
 
+extern int av_new_packet(std::function<int(AVPacket &)>);
+
 #endif
 

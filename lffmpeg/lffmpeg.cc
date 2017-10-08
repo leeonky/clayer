@@ -1,13 +1,23 @@
+#include <cstdarg>
 #include "lffmpeg.h"
 #include "stdexd/stdexd.h"
 
 namespace {
-	int print_error(int no) {
-		char buffer[1024];
-		av_strerror(no, buffer, sizeof(buffer));
-		fprintf(app_stderr, "Error[liblffmpeg]: %s\n", buffer);
+	int log_error(const char *format, ...) {
+		va_list list;
+		fprintf(app_stderr, "Error[liblffmpeg]: ");
+		va_start(list, format);
+		vfprintf(app_stderr, format, list);
+		va_end(list);
+		fprintf(app_stderr, "\n");
 		print_stack(app_stderr);
 		return -1;
+	}
+
+	int log_error(int no) {
+		char buffer[1024];
+		av_strerror(no, buffer, sizeof(buffer));
+		return log_error("%s", buffer);
 	}
 
 	static inline void unsupported_operation(const char *fun, enum AVMediaType t) {
@@ -26,7 +36,7 @@ int avformat_open_input(const char *file, std::function<int(AVFormatContext &)> 
 		res = action(*format_context);
 		avformat_close_input(&format_context);
 	} else
-		res = print_error(ret);
+		res = log_error(ret);
 	return res;
 }
 
@@ -39,10 +49,9 @@ int avformat_find_stream(AVFormatContext &av_format_context, enum AVMediaType ty
 		for (size_t i=0; i<av_format_context.nb_streams; ++i)
 			if(av_format_context.streams[i]->codecpar->codec_type == type && matched++ == track)
 				return action(*av_format_context.streams[i]);
-		fprintf(app_stderr, "Error[liblffmpeg]: %s stream %d doesn't exist\n", av_get_media_type_string(type), track);
-		res = -1;
+		res = log_error("%s stream %d doesn't exist", av_get_media_type_string(type), track);
 	} else
-		res = print_error(ret);
+		res = log_error(ret);
 	return res;
 }
 
@@ -82,18 +91,22 @@ int avcodec_open(AVStream &stream, std::function<int(AVCodecContext &)> action) 
 					&& (!(ret=avcodec_open2(av_codec_context, av_codec, NULL)))) {
 				res = action(*av_codec_context);
 				avcodec_close(av_codec_context);
-			} else {
-				res = print_error(ret);
-			}
+			} else
+				res = log_error(ret);
 			avcodec_free_context(&av_codec_context);
-		} else {
-			res = -1;
-			fprintf(app_stderr, "Error[liblffmpeg]: failed to alloc AVCodecContext\n");
-		}
-	} else {
-		res = -1;
-		fprintf(app_stderr, "Error[liblffmpeg]: failed to find decoder\n");
-	}
+		} else
+			res = log_error("failed to alloc AVCodecContext");
+	} else
+		res = log_error("failed to find decoder");
+	return res;
+}
+
+int av_new_packet(std::function<int(AVPacket &)> action) {
+	int res;
+	AVPacket av_packet;
+	av_init_packet(&av_packet);
+	res = action(av_packet);
+	av_packet_unref(&av_packet);
 	return res;
 }
 
