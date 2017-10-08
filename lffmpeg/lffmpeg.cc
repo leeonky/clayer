@@ -81,6 +81,26 @@ char *avstream_info(const AVStream &stream) {
 	return buffer;
 }
 
+int av_new_packet(std::function<int(AVPacket &)> action) {
+	int res;
+	AVPacket av_packet;
+	av_init_packet(&av_packet);
+	res = action(av_packet);
+	av_packet_unref(&av_packet);
+	return res;
+}
+
+int av_new_frame(std::function<int(AVFrame &)> action) {
+	int res;
+	AVFrame *av_frame = av_frame_alloc();
+	if(av_frame) {
+		res = action(*av_frame);
+		av_frame_free(&av_frame);
+	} else
+		res = log_error("failed to alloc AVFrame");
+	return res;
+}
+
 int avcodec_open(AVStream &stream, std::function<int(AVCodecContext &)> action) {
 	int res = 0, ret;
 	AVCodec *av_codec;
@@ -98,15 +118,6 @@ int avcodec_open(AVStream &stream, std::function<int(AVCodecContext &)> action) 
 			res = log_error("failed to alloc AVCodecContext");
 	} else
 		res = log_error("failed to find decoder");
-	return res;
-}
-
-int av_new_packet(std::function<int(AVPacket &)> action) {
-	int res;
-	AVPacket av_packet;
-	av_init_packet(&av_packet);
-	res = action(av_packet);
-	av_packet_unref(&av_packet);
 	return res;
 }
 

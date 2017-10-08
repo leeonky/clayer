@@ -18,6 +18,7 @@ static int av_new_packet_action_ref(AVPacket &av_packet) {
 BEFORE_EACH() {
 	init_mock_function(av_init_packet);
 	init_mock_function(av_packet_unref);
+	init_mock_function(av_new_packet_action);
 	return 0;
 }
 

@@ -8,6 +8,7 @@ int main() {
 	ADD_SUITE(avstream_info_test);
 	ADD_SUITE(avcodec_open_test);
 	ADD_SUITE(av_new_packet_test);
+	ADD_SUITE(av_new_frame_test);
 	return run_test();
 }
 
