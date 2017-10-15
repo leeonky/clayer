@@ -35,7 +35,6 @@ AM_COND_IF([ENV_TEST], [],
 	  [AC_CONFIG_FILES([
 	   stdexd/Makefile
 	   decoder/Makefile
-	   ffmpegpp/Makefile
 	   lffmpeg/Makefile
 	   ])])
 
@@ -43,7 +42,6 @@ AM_COND_IF([ENV_TEST], [],
 AM_COND_IF([ENV_PRD], [],
 	  [AC_CONFIG_FILES([
 	   mock_ffmpeg/Makefile
-	   ffmpegpp_test/Makefile
 	   lffmpeg_test/Makefile
 	   ])])
 
