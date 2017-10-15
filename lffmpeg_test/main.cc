@@ -9,6 +9,7 @@ int main() {
 	ADD_SUITE(avcodec_open_test);
 	ADD_SUITE(av_new_packet_test);
 	ADD_SUITE(av_new_frame_test);
+	ADD_SUITE(av_read_and_send_to_avcodec_test);
 	return run_test();
 }
 

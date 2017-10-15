@@ -36,6 +36,7 @@ AM_COND_IF([ENV_TEST], [],
 	   stdexd/Makefile
 	   decoder/Makefile
 	   ffmpegpp/Makefile
+	   lffmpeg/Makefile
 	   ])])
 
 # Testing Makefile

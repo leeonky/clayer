@@ -14,17 +14,23 @@ static AVCodec ret_codec;
 static AVCodecContext ret_codec_context;
 static AVCodecParameters arg_codec_parameters;
 
+static AVPacket *ret_av_packet;
+static AVFrame ret_working_av_frame, ret_decoded_av_frame;
+
 mock_function_1(int, avcodec_open_action, AVCodecContext *);
 
 static int avcodec_open_action_ref(AVCodecContext &av_codec_context) {
 	return avcodec_open_action(&av_codec_context);
 }
+static int av_frame_alloc_called_times;
 
 BEFORE_EACH() {
 	init_subject("");
 	app_stdin = actxt.input_stream;
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;
+
+	av_frame_alloc_called_times = 0;
 
 	init_mock_function_with_return(avcodec_find_decoder, &ret_codec);
 	init_mock_function_with_return(avcodec_alloc_context3, &ret_codec_context);
@@ -33,6 +39,10 @@ BEFORE_EACH() {
 	init_mock_function(avcodec_close);
 	init_mock_function(avcodec_free_context);
 	init_mock_function(avcodec_open_action);
+	init_mock_function(av_init_packet);
+	init_mock_function(av_packet_unref);
+	init_mock_function(av_frame_alloc);
+	init_mock_function(av_frame_free);
 
 	arg_av_stream.codecpar = &arg_codec_parameters;
 	return 0;
@@ -46,8 +56,32 @@ SUBJECT(int) {
 	return avcodec_open(arg_av_stream, avcodec_open_action_ref);
 }
 
+struct decoding_context {
+	AVPacket *av_packet;
+	AVFrame *working_av_frame, *decoded_av_frame;
+};
+
+static int avcodec_open_action_assert(AVCodecContext *av_codec_context) {
+	decoding_context *context = static_cast<decoding_context *>(av_codec_context->opaque);
+	ret_av_packet = context->av_packet;
+	CUE_ASSERT_PTR_EQ(context->working_av_frame, &ret_working_av_frame);
+	CUE_ASSERT_PTR_EQ(context->decoded_av_frame, &ret_decoded_av_frame);
+	return 0;
+}
+
+static AVFrame *stub_av_frame_alloc() {
+	av_frame_alloc_called_times ++;
+	if(1 == av_frame_alloc_called_times)
+		return &ret_working_av_frame;
+	else
+		return &ret_decoded_av_frame;
+}
+
 SUITE_CASE("should open and close stream's decoder") {
 	arg_codec_parameters.codec_id = arg_codec_id = (AVCodecID)100;
+	init_mock_function_with_function(avcodec_open_action, avcodec_open_action_assert);
+	av_frame_alloc_called_times = 0;
+	init_mock_function_with_function(av_frame_alloc, stub_av_frame_alloc);
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
@@ -64,6 +98,11 @@ SUITE_CASE("should open and close stream's decoder") {
 	CUE_EXPECT_CALLED_ONCE(avcodec_open2);
 	CUE_EXPECT_CALLED_WITH_PTR(avcodec_open2, 1, &ret_codec_context);
 	CUE_EXPECT_CALLED_WITH_PTR(avcodec_open2, 2, &ret_codec);
+
+	CUE_EXPECT_CALLED_ONCE(av_init_packet);
+	CUE_EXPECT_CALLED_WITH_PTR(av_init_packet, 1, ret_av_packet);
+
+	CUE_EXPECT_CALLED_TIMES(av_frame_alloc, 2);
 
 	CUE_EXPECT_CALLED_ONCE(avcodec_open_action);
 	CUE_EXPECT_CALLED_WITH_PTR(avcodec_open_action, 1, &ret_codec_context);
@@ -82,6 +121,8 @@ SUITE_CASE("failed to find decoder") {
 	CUE_EXPECT_NEVER_CALLED(avcodec_alloc_context3);
 	CUE_EXPECT_NEVER_CALLED(avcodec_parameters_to_context);
 	CUE_EXPECT_NEVER_CALLED(avcodec_open2);
+	CUE_EXPECT_NEVER_CALLED(av_init_packet);
+	CUE_EXPECT_NEVER_CALLED(av_frame_alloc);
 	CUE_EXPECT_NEVER_CALLED(avcodec_open_action);
 	CUE_EXPECT_NEVER_CALLED(avcodec_close);
 	CUE_EXPECT_NEVER_CALLED(avcodec_free_context);
@@ -109,6 +150,8 @@ SUITE_CASE("failed to avcodec_parameters_to_context") {
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
 	CUE_EXPECT_NEVER_CALLED(avcodec_open2);
+	CUE_EXPECT_NEVER_CALLED(av_init_packet);
+	CUE_EXPECT_NEVER_CALLED(av_frame_alloc);
 	CUE_EXPECT_NEVER_CALLED(avcodec_open_action);
 	CUE_EXPECT_NEVER_CALLED(avcodec_close);
 	CUE_EXPECT_CALLED_ONCE(avcodec_free_context);
@@ -121,6 +164,8 @@ SUITE_CASE("open decoder failed") {
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
+	CUE_EXPECT_NEVER_CALLED(av_init_packet);
+	CUE_EXPECT_NEVER_CALLED(av_frame_alloc);
 	CUE_EXPECT_NEVER_CALLED(avcodec_open_action);
 	CUE_EXPECT_NEVER_CALLED(avcodec_close);
 	CUE_EXPECT_CALLED_ONCE(avcodec_free_context);

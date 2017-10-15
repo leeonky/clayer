@@ -101,6 +101,29 @@ int av_new_frame(std::function<int(AVFrame &)> action) {
 	return res;
 }
 
+namespace {
+	struct decoding_context {
+		AVPacket *av_packet;
+		AVFrame *working_av_frame, *decoded_av_frame;
+		AVStream *av_stream;
+	};
+
+	int init_decoding_context(AVStream &stream, std::function<int(decoding_context &)> action) {
+		decoding_context context;
+		context.av_stream = &stream;
+		return av_new_packet([&](AVPacket &av_packet) -> int {
+				context.av_packet = &av_packet;
+				return av_new_frame([&](AVFrame &working_av_frame) -> int {
+					context.working_av_frame = &working_av_frame;
+					return av_new_frame([&](AVFrame &decoded_av_frame) -> int {
+						context.decoded_av_frame = &decoded_av_frame;
+						return action(context);
+						});
+					});
+				});
+	}
+}
+
 int avcodec_open(AVStream &stream, std::function<int(AVCodecContext &)> action) {
 	int res = 0, ret;
 	AVCodec *av_codec;
@@ -109,7 +132,10 @@ int avcodec_open(AVStream &stream, std::function<int(AVCodecContext &)> action) 
 		if ((av_codec_context = avcodec_alloc_context3(av_codec))) {
 			if ((ret=avcodec_parameters_to_context(av_codec_context, stream.codecpar)) >= 0
 					&& (!(ret=avcodec_open2(av_codec_context, av_codec, NULL)))) {
-				res = action(*av_codec_context);
+				res = init_decoding_context(stream, [action, av_codec_context](decoding_context &context) -> int {
+						av_codec_context->opaque = &context;
+						return action(*av_codec_context);
+						});
 				avcodec_close(av_codec_context);
 			} else
 				res = log_error(ret);
@@ -118,6 +144,19 @@ int avcodec_open(AVStream &stream, std::function<int(AVCodecContext &)> action) 
 			res = log_error("failed to alloc AVCodecContext");
 	} else
 		res = log_error("failed to find decoder");
+	return res;
+}
+
+int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext &codec_context) {
+	int res;
+	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
+	while((!(res = av_read_frame(&format_context, context->av_packet)))
+			&& context->av_stream->index != context->av_packet->stream_index)
+		;
+	if(res >= 0)
+		res = avcodec_send_packet(&codec_context, context->av_packet);
+	else
+		avcodec_send_packet(&codec_context, NULL);
 	return res;
 }
 
