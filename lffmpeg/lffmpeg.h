@@ -22,5 +22,7 @@ extern int avcodec_open(AVStream &, std::function<int(AVCodecContext &)>);
 
 extern int av_read_and_send_to_avcodec(AVFormatContext &, AVCodecContext &);
 
+extern int avcodec_receive_frame(AVCodecContext &, std::function<int(const AVFrame &)>);
+
 #endif
 

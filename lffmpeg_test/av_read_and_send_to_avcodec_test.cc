@@ -5,6 +5,14 @@
 #include "mock_ffmpeg/mock_ffmpeg.h"
 #include "lffmpeg/lffmpeg.h"
 
+namespace {
+	struct decoding_context {
+		AVPacket *av_packet;
+		AVFrame *working_av_frame, *decoded_av_frame;
+		AVStream *av_stream;
+	} arg_decoding_context;
+}
+
 SUITE_START("av_read_and_send_to_avcodec_test");
 
 static AVFormatContext arg_av_format_context;
@@ -12,12 +20,6 @@ static AVCodecContext arg_av_codec_context;
 static AVPacket arg_av_packet;
 static AVStream arg_av_stream;
 static int arg_stream_index;
-
-struct decoding_context {
-	AVPacket *av_packet;
-	AVFrame *working_av_frame, *decoded_av_frame;
-	AVStream *av_stream;
-} arg_decoding_context;
 
 static int stub_av_read_frame_always_got_matched_stream_packet(AVFormatContext *, AVPacket *av_packet) {
 	av_packet->stream_index = arg_stream_index;

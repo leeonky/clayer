@@ -160,3 +160,12 @@ int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext 
 	return res;
 }
 
+int avcodec_receive_frame(AVCodecContext &codec_context, std::function<int(const AVFrame &)> action) {
+	int res;
+	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
+	if(!(res = avcodec_receive_frame(&codec_context, context->working_av_frame))) {
+		res = action(*context->working_av_frame);
+	}
+	return res;
+}
+
