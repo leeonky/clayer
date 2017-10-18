@@ -61,6 +61,7 @@ struct stub_decoding_context {
 	AVFrame *working_av_frame, *decoded_av_frame;
 	AVStream *av_stream;
 	int align;
+	int samples_size;
 };
 
 #ifdef __cplusplus
