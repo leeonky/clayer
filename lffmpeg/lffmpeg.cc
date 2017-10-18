@@ -106,10 +106,22 @@ namespace {
 		AVPacket *av_packet;
 		AVFrame *working_av_frame, *decoded_av_frame;
 		AVStream *av_stream;
+		int align;
 	};
 
 	int init_decoding_context(AVStream &stream, std::function<int(decoding_context &)> action) {
 		decoding_context context;
+		switch(stream.codecpar->codec_type) {
+			case AVMEDIA_TYPE_VIDEO:
+				context.align = 64;
+				break;
+			case AVMEDIA_TYPE_AUDIO:
+				context.align = 1;
+				break;
+			default:
+				context.align = 0;
+				break;
+		}
 		context.av_stream = &stream;
 		return av_new_packet([&](AVPacket &av_packet) -> int {
 				context.av_packet = &av_packet;

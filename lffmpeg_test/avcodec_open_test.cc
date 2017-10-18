@@ -5,6 +5,15 @@
 #include "mock_ffmpeg/mock_ffmpeg.h"
 #include "lffmpeg/lffmpeg.h"
 
+namespace {
+	struct decoding_context {
+		AVPacket *av_packet;
+		AVFrame *working_av_frame, *decoded_av_frame;
+		AVStream *av_stream;
+		int align;
+	};
+}
+
 SUITE_START("avcodec_open_test");
 
 static AVStream arg_av_stream;
@@ -55,11 +64,6 @@ AFTER_EACH() {
 SUBJECT(int) {
 	return avcodec_open(arg_av_stream, avcodec_open_action_ref);
 }
-
-struct decoding_context {
-	AVPacket *av_packet;
-	AVFrame *working_av_frame, *decoded_av_frame;
-};
 
 static int avcodec_open_action_assert(AVCodecContext *av_codec_context) {
 	decoding_context *context = static_cast<decoding_context *>(av_codec_context->opaque);
@@ -171,6 +175,40 @@ SUITE_CASE("open decoder failed") {
 	CUE_EXPECT_CALLED_ONCE(avcodec_free_context);
 
 	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: -200\n");
+}
+
+static int avcodec_open_action_assert_video(AVCodecContext *av_codec_context) {
+	decoding_context *context = static_cast<decoding_context *>(av_codec_context->opaque);
+	CUE_ASSERT_EQ(context->align, 64);
+	return 0;
+}
+
+SUITE_CASE("decoding_context args for video decoder") {
+	arg_codec_parameters.codec_type = AVMEDIA_TYPE_VIDEO;
+	init_mock_function_with_function(avcodec_open_action, avcodec_open_action_assert_video);
+	av_frame_alloc_called_times = 0;
+	init_mock_function_with_function(av_frame_alloc, stub_av_frame_alloc);
+
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
+
+	CUE_EXPECT_CALLED_ONCE(avcodec_open_action);
+}
+
+static int avcodec_open_action_assert_audio(AVCodecContext *av_codec_context) {
+	decoding_context *context = static_cast<decoding_context *>(av_codec_context->opaque);
+	CUE_ASSERT_EQ(context->align, 1);
+	return 0;
+}
+
+SUITE_CASE("decoding_context args for audio decoder") {
+	arg_codec_parameters.codec_type = AVMEDIA_TYPE_AUDIO;
+	init_mock_function_with_function(avcodec_open_action, avcodec_open_action_assert_audio);
+	av_frame_alloc_called_times = 0;
+	init_mock_function_with_function(av_frame_alloc, stub_av_frame_alloc);
+
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
+
+	CUE_EXPECT_CALLED_ONCE(avcodec_open_action);
 }
 
 SUITE_END(avcodec_open_test);
