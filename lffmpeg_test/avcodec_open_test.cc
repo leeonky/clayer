@@ -5,15 +5,6 @@
 #include "mock_ffmpeg/mock_ffmpeg.h"
 #include "lffmpeg/lffmpeg.h"
 
-namespace {
-	struct decoding_context {
-		AVPacket *av_packet;
-		AVFrame *working_av_frame, *decoded_av_frame;
-		AVStream *av_stream;
-		int align;
-	};
-}
-
 SUITE_START("avcodec_open_test");
 
 static AVStream arg_av_stream;
@@ -66,7 +57,7 @@ SUBJECT(int) {
 }
 
 static int avcodec_open_action_assert(AVCodecContext *av_codec_context) {
-	decoding_context *context = static_cast<decoding_context *>(av_codec_context->opaque);
+	stub_decoding_context *context = static_cast<stub_decoding_context *>(av_codec_context->opaque);
 	ret_av_packet = context->av_packet;
 	CUE_ASSERT_PTR_EQ(context->working_av_frame, &ret_working_av_frame);
 	CUE_ASSERT_PTR_EQ(context->decoded_av_frame, &ret_decoded_av_frame);
@@ -178,12 +169,12 @@ SUITE_CASE("open decoder failed") {
 }
 
 static int avcodec_open_action_assert_video(AVCodecContext *av_codec_context) {
-	decoding_context *context = static_cast<decoding_context *>(av_codec_context->opaque);
+	stub_decoding_context *context = static_cast<stub_decoding_context *>(av_codec_context->opaque);
 	CUE_ASSERT_EQ(context->align, 64);
 	return 0;
 }
 
-SUITE_CASE("decoding_context args for video decoder") {
+SUITE_CASE("stub_decoding_context args for video decoder") {
 	arg_codec_parameters.codec_type = AVMEDIA_TYPE_VIDEO;
 	init_mock_function_with_function(avcodec_open_action, avcodec_open_action_assert_video);
 	av_frame_alloc_called_times = 0;
@@ -195,7 +186,7 @@ SUITE_CASE("decoding_context args for video decoder") {
 }
 
 static int avcodec_open_action_assert_audio(AVCodecContext *av_codec_context) {
-	decoding_context *context = static_cast<decoding_context *>(av_codec_context->opaque);
+	stub_decoding_context *context = static_cast<stub_decoding_context *>(av_codec_context->opaque);
 	CUE_ASSERT_EQ(context->align, 1);
 	return 0;
 }

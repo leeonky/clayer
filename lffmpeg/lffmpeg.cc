@@ -181,3 +181,17 @@ int avcodec_receive_frame(AVCodecContext &codec_context, std::function<int(const
 	return res;
 }
 
+int av_get_buffer_size(const AVCodecContext &codec_context) {
+	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
+	switch(codec_context.codec_type) {
+		case AVMEDIA_TYPE_VIDEO:
+			return av_image_get_buffer_size(codec_context.pix_fmt, codec_context.width, codec_context.height, context->align);
+		//case AVMEDIA_TYPE_AUDIO:
+			//return av_samples_get_buffer_size(NULL, codec_context->channels,
+					//decoder->samples_size, codec_context->sample_fmt, decoder->align);
+		default:
+			not_support_media_type(codec_context.codec_type);
+			return -1;
+	}
+}
+

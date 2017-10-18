@@ -56,6 +56,13 @@ extern_mock_function_1(const char *, av_get_pix_fmt_name, enum AVPixelFormat);
 extern_mock_void_function_4(av_get_channel_layout_string, char *, int, int, uint64_t);
 extern_mock_function_1(const char *, av_get_sample_fmt_name, enum AVSampleFormat);
 
+struct stub_decoding_context {
+	AVPacket *av_packet;
+	AVFrame *working_av_frame, *decoded_av_frame;
+	AVStream *av_stream;
+	int align;
+};
+
 #ifdef __cplusplus
 }
 #endif

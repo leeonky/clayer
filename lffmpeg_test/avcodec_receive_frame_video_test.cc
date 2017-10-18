@@ -5,22 +5,9 @@
 #include "mock_ffmpeg/mock_ffmpeg.h"
 #include "lffmpeg/lffmpeg.h"
 
-namespace {
-	struct decoding_context {
-		AVPacket *av_packet;
-		AVFrame *working_av_frame, *decoded_av_frame;
-		AVStream *av_stream;
-	} arg_decoding_context;
-}
-
 SUITE_START("avcodec_receive_frame_video_test");
 
-struct decoding_context {
-	AVPacket *av_packet;
-	AVFrame *working_av_frame, *decoded_av_frame;
-	AVStream *av_stream;
-};
-
+static stub_decoding_context arg_decoding_context;
 static AVCodecContext arg_av_codec_context;
 static AVFrame arg_av_frame;
 

@@ -24,5 +24,7 @@ extern int av_read_and_send_to_avcodec(AVFormatContext &, AVCodecContext &);
 
 extern int avcodec_receive_frame(AVCodecContext &, std::function<int(const AVFrame &)>);
 
+extern int av_get_buffer_size(const AVCodecContext &);
+
 #endif
 
