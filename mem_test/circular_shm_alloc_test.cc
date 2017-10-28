@@ -32,6 +32,9 @@ BEFORE_EACH() {
 	init_mock_function(circular_shm_alloc_action);
 	init_mock_function_with_return(shmget, ret_shmid);
 	init_mock_function_with_return(shmat, ret_buffer);
+	init_mock_function_with_return(sem_new_with_ppid, &ret_sem);
+	init_mock_function(sem_close);
+	init_mock_function(sem_unlink_with_ppid);
 	return 0;
 }
 
