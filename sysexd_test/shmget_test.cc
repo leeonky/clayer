@@ -12,12 +12,6 @@ mock_function_1(int, shmget_action, int);
 static size_t arg_size;
 static int ret_shmid;
 
-static char *stub_strerror(int e) {
-	static char buffer[256];
-	sprintf(buffer, "%d", e);
-	return buffer;
-}
-
 SUITE_START("shmget_test");
 
 BEFORE_EACH() {
@@ -32,7 +26,6 @@ BEFORE_EACH() {
 	init_mock_function(shmget_action);
 	init_mock_function_with_return(shmget, ret_shmid);
 	init_mock_function(shmctl);
-	init_mock_function_with_function(strerror, stub_strerror);
 	return 0;
 }
 
@@ -80,7 +73,7 @@ SUITE_CASE("shmget failed") {
 
 	CUE_EXPECT_NEVER_CALLED(shmctl);
 
-	CUE_ASSERT_STDERR_EQ("Error[shm_cbuf]: 100\n");
+	CUE_ASSERT_STDERR_EQ("Error[libsysexd]: 100\n");
 }
 
 SUITE_END(shmget_test);

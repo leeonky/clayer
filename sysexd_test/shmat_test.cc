@@ -12,12 +12,6 @@ mock_function_1(int, shmat_action, void *);
 static int arg_shmid;
 static char ret_buffer[4096*10];
 
-static char *stub_strerror(int e) {
-	static char buffer[256];
-	sprintf(buffer, "%d", e);
-	return buffer;
-}
-
 SUITE_START("shmat_test");
 
 BEFORE_EACH() {
@@ -31,7 +25,6 @@ BEFORE_EACH() {
 	init_mock_function_with_return(shmat, ret_buffer);
 	init_mock_function(shmdt);
 	init_mock_function(shmat_action);
-	init_mock_function_with_function(strerror, stub_strerror);
 	return 0;
 }
 
@@ -74,7 +67,7 @@ SUITE_CASE("shmat failed") {
 
 	CUE_EXPECT_NEVER_CALLED(shmdt);
 
-	CUE_ASSERT_STDERR_EQ("Error[shm_cbuf]: 10\n");
+	CUE_ASSERT_STDERR_EQ("Error[libsysexd]: 10\n");
 }
 
 SUITE_END(shmat_test);

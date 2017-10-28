@@ -12,12 +12,6 @@ mock_function_1(int, sem_new_action, sem_t *);
 static int arg_id, arg_count;
 static sem_t ret_sem;
 
-static char *stub_strerror(int e) {
-	static char buffer[256];
-	sprintf(buffer, "%d", e);
-	return buffer;
-}
-
 SUITE_START("sem_new_with_id_test");
 
 BEFORE_EACH() {
@@ -33,7 +27,6 @@ BEFORE_EACH() {
 	init_mock_function(sem_close);
 	init_mock_function(sem_unlink_with_id);
 	init_mock_function(sem_new_action);
-	init_mock_function_with_function(strerror, stub_strerror);
 	return 0;
 }
 
@@ -84,7 +77,7 @@ SUITE_CASE("failed to init semaphore") {
 
 	CUE_EXPECT_NEVER_CALLED(sem_unlink_with_id);
 
-	CUE_ASSERT_STDERR_EQ("Error[shm_cbuf]: 100\n");
+	CUE_ASSERT_STDERR_EQ("Error[libsysexd]: 100\n");
 }
 
 SUITE_END(sem_new_with_id_test);

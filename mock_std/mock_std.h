@@ -7,7 +7,6 @@ extern "C" {
 
 #include <cunitexd.h>
 
-extern_mock_function_1(char *, strerror, int);
 
 #ifdef __cplusplus
 }
