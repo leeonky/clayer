@@ -4,6 +4,7 @@
 #include <sys/shm.h>
 #include "stdexd/stdexd.h"
 #include "mock_sys/mock_sys.h"
+#include "mock_std/mock_std.h"
 #include "mem/circular_shm.h"
 
 mock_function_1(int, circular_shm_alloc_action, circular_shm *);
@@ -16,6 +17,12 @@ static size_t arg_size;
 static int arg_count, ret_shmid;
 static char ret_buffer[4096*10];
 static sem_t ret_sem;
+
+static char *stub_strerror(int e) {
+	static char buffer[256];
+	sprintf(buffer, "%d", e);
+	return buffer;
+}
 
 SUITE_START("circular_shm_alloc_test");
 
@@ -32,9 +39,12 @@ BEFORE_EACH() {
 	init_mock_function(circular_shm_alloc_action);
 	init_mock_function_with_return(shmget, ret_shmid);
 	init_mock_function_with_return(shmat, ret_buffer);
+	init_mock_function(shmdt);
+	init_mock_function(shmctl);
 	init_mock_function_with_return(sem_new_with_ppid, &ret_sem);
 	init_mock_function(sem_close);
 	init_mock_function(sem_unlink_with_ppid);
+	init_mock_function_with_function(strerror, stub_strerror);
 	return 0;
 }
 
@@ -116,10 +126,34 @@ SUITE_CASE("init with all resources") {
 	CUE_EXPECT_CALLED_WITH_PTR(shmctl, 3, nullptr);
 }
 
-//happy path
+int stub_shmget_failed(key_t, size_t, int) {
+	errno = 100;
+	return -1;
+}
+
+SUITE_CASE("shmget failed") {
+	init_mock_function_with_function(shmget, stub_shmget_failed);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(sem_new_with_ppid);
+
+	CUE_EXPECT_NEVER_CALLED(shmat);
+
+	CUE_EXPECT_NEVER_CALLED(circular_shm_alloc_action);
+
+	CUE_EXPECT_NEVER_CALLED(shmdt);
+
+	CUE_EXPECT_NEVER_CALLED(sem_close);
+
+	CUE_EXPECT_NEVER_CALLED(sem_unlink_with_ppid);
+
+	CUE_EXPECT_NEVER_CALLED(shmctl);
+
+	CUE_ASSERT_STDERR_EQ("Error[shm_cbuf]: 100\n");
+}
+
 //shmget failed checking
-//save shmid
 //save count
-//save buffer
 
 SUITE_END(circular_shm_alloc_test);

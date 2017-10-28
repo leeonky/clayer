@@ -44,6 +44,7 @@ AM_COND_IF([ENV_TEST], [],
 # Testing Makefile
 AM_COND_IF([ENV_PRD], [],
 	  [AC_CONFIG_FILES([
+	   mock_std/Makefile
 	   mock_ffmpeg/Makefile
 	   mock_sys/Makefile
 	   lffmpeg_test/Makefile

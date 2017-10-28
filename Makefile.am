@@ -12,6 +12,7 @@ endif
 if !ENV_PRD
 SUBDIRS += mock_ffmpeg
 SUBDIRS += mock_sys
+SUBDIRS += mock_std
 SUBDIRS += lffmpeg_test
 SUBDIRS += mem_test
 endif
