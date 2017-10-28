@@ -11,44 +11,31 @@ namespace {
 		size_t page_size = getpagesize();
 		return (size+page_size-1)/page_size*page_size;
 	}
-	static void output_errno() {
-		fprintf(app_stderr, "Error[shm_cbuf]: %s\n", strerror(errno));
-		print_stack(app_stderr);
-	}
 }
 
 int circular_shm::initialize_and_action(size_t size, int count, const std::function<int(circular_shm &)> &action) {
-	//int res = 0;
 	element_size = alignment_size(size);
-	return shmget(element_size*count, [action](int id) {
-			return 0;
+	element_count = count;
+	return shmget(element_size*count, [this, &action](int id) {
+			shm_id = id;
+			return shmat(id, [this, &action](void *buf) {
+				buffer = static_cast<int8_t *>(buf);
+				sem_id = getpid();
+				return sem_new_with_id(sem_id, element_count, [this, &action](sem_t *s){
+					semaphore = s;
+					return action(*this);
+					});
+				});
 			});
-
-	//if((shm_id = shmget(IPC_PRIVATE, count*element_size, 0666|IPC_CREAT)) != -1) {
-		//if((buffer = static_cast<int8_t*>(shmat(shm_id, nullptr, 0))) != (void *)-1) {
-			//sem_id = getpid();
-			//if(SEM_FAILED != (semaphore = sem_new_with_id(sem_id, count))) {
-				//res = action(*this);
-				//sem_close(semaphore);
-				//sem_unlink_with_id(sem_id);
-			//} else {
-				//res = -1;
-				//output_errno();
-			//}
-			//shmdt(buffer);
-		//} else {
-			//res = -1;
-			//output_errno();
-		//}
-		//shmctl(shm_id, IPC_RMID, nullptr);
-	//} else {
-		//res = -1;
-		//output_errno();
-	//}
-	//return res;
 }
 
-int circular_shm::alloc(size_t size, int count, const std::function<int(circular_shm &)> &action) {
+int circular_shm::create(size_t size, int count, const std::function<int(circular_shm &)> &action) {
 	return circular_shm().initialize_and_action(size, count, action);
+}
+
+const char *circular_shm::serialize_to_string() {
+	static char buf[1024] = {};
+	sprintf(buf, "BUFFER id:%d size:%zd count:%d sem:%d", shm_id, element_size, element_count, sem_id);
+	return buf;
 }
 

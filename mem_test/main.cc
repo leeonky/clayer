@@ -7,6 +7,6 @@ char *strerror_r(int e, char *buffer, size_t buflen) {
 
 int main() {
 	init_test();
-	ADD_SUITE(circular_shm_alloc_test);
+	ADD_SUITE(circular_shm_create_test);
 	return run_test();
 }
