@@ -1,4 +1,3 @@
-#include <cstdarg>
 #include "lffmpeg.h"
 #include "stdexd/stdexd.h"
 
@@ -17,7 +16,7 @@ namespace {
 
 #define not_support_media_type(t) unsupported_operation(__FUNCTION__, t)
 
-int avformat_open_input(const char *file, std::function<int(AVFormatContext &)> action) {
+int avformat_open_input(const char *file, const std::function<int(AVFormatContext &)> &action) {
 	int res = 0, ret;
 	AVFormatContext *format_context;
 	av_register_all();
@@ -29,7 +28,7 @@ int avformat_open_input(const char *file, std::function<int(AVFormatContext &)> 
 	return res;
 }
 
-int avformat_find_stream(AVFormatContext &av_format_context, enum AVMediaType type, int track, std::function<int(AVStream &)> action) {
+int avformat_find_stream(AVFormatContext &av_format_context, enum AVMediaType type, int track, const std::function<int(AVStream &)> &action) {
 	int res, ret;
 	if(-1 == track)
 		track = 0;
@@ -70,7 +69,7 @@ char *avstream_info(const AVStream &stream) {
 	return buffer;
 }
 
-int av_new_packet(std::function<int(AVPacket &)> action) {
+int av_new_packet(const std::function<int(AVPacket &)> &action) {
 	int res;
 	AVPacket av_packet;
 	av_init_packet(&av_packet);
@@ -79,7 +78,7 @@ int av_new_packet(std::function<int(AVPacket &)> action) {
 	return res;
 }
 
-int av_new_frame(std::function<int(AVFrame &)> action) {
+int av_new_frame(const std::function<int(AVFrame &)> &action) {
 	int res;
 	AVFrame *av_frame = av_frame_alloc();
 	if(av_frame) {
@@ -99,7 +98,7 @@ namespace {
 		int samples_size;
 	};
 
-	int init_decoding_context(AVStream &stream, std::function<int(decoding_context &)> action) {
+	int init_decoding_context(AVStream &stream, const std::function<int(decoding_context &)> &action) {
 		decoding_context context;
 		switch(stream.codecpar->codec_type) {
 			case AVMEDIA_TYPE_VIDEO:
@@ -126,7 +125,7 @@ namespace {
 	}
 }
 
-int avcodec_open(AVStream &stream, std::function<int(AVCodecContext &)> action) {
+int avcodec_open(AVStream &stream, const std::function<int(AVCodecContext &)> &action) {
 	int res = 0, ret;
 	AVCodec *av_codec;
 	AVCodecContext *av_codec_context;
@@ -162,7 +161,7 @@ int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext 
 	return res;
 }
 
-int avcodec_receive_frame(AVCodecContext &codec_context, std::function<int(const AVFrame &)> action) {
+int avcodec_receive_frame(AVCodecContext &codec_context, const std::function<int(const AVFrame &)> &action) {
 	int res;
 	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
 	if(!(res = avcodec_receive_frame(&codec_context, context->working_av_frame))) {

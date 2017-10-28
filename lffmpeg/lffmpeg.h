@@ -8,21 +8,21 @@ extern "C" {
 #include <libswresample/swresample.h>
 }
 
-extern int avformat_open_input(const char *, std::function<int(AVFormatContext &)>);
+extern int avformat_open_input(const char *, const std::function<int(AVFormatContext &)> &);
 
-extern int avformat_find_stream(AVFormatContext &, enum AVMediaType, int, std::function<int(AVStream &)>);
+extern int avformat_find_stream(AVFormatContext &, enum AVMediaType, int, const std::function<int(AVStream &)> &);
 
 extern char *avstream_info(const AVStream &);
 
-extern int av_new_packet(std::function<int(AVPacket &)>);
+extern int av_new_packet(const std::function<int(AVPacket &)> &);
 
-extern int av_new_frame(std::function<int(AVFrame &)>);
+extern int av_new_frame(const std::function<int(AVFrame &)> &);
 
-extern int avcodec_open(AVStream &, std::function<int(AVCodecContext &)>);
+extern int avcodec_open(AVStream &, const std::function<int(AVCodecContext &)> &);
 
 extern int av_read_and_send_to_avcodec(AVFormatContext &, AVCodecContext &);
 
-extern int avcodec_receive_frame(AVCodecContext &, std::function<int(const AVFrame &)>);
+extern int avcodec_receive_frame(AVCodecContext &, const std::function<int(const AVFrame &)> &);
 
 extern int av_get_buffer_size(const AVCodecContext &);
 

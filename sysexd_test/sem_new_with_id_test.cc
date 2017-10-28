@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <cunitexd.h>
 #include <sys/shm.h>
 #include "mock_std/mock_std.h"

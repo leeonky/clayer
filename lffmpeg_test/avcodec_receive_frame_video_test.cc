@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <cunitexd.h>
 #include "stdexd/stdexd.h"
 #include "mock_ffmpeg/mock_ffmpeg.h"
