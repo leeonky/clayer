@@ -11,8 +11,8 @@ static stub_decoding_context arg_decoding_context;
 static AVStream arg_av_stream;
 
 static AVFrame arg_av_frame;
-static int arg_width, arg_height, arg_align;
-static AVPixelFormat arg_format;
+static int arg_width, arg_height, arg_align, arg_channels, arg_nb_samples;
+static int arg_format;
 
 static char frame_buffer[100];
 
@@ -25,8 +25,8 @@ BEFORE_EACH() {
 	arg_av_frame.opaque = &arg_decoding_context;
 
 	init_mock_function(av_image_copy_to_buffer);
-	//init_mock_function(av_samples_fill_arrays);
-	//init_mock_function(av_samples_copy);
+	init_mock_function(av_samples_fill_arrays);
+	init_mock_function(av_samples_copy);
 	return 0;
 }
 
@@ -65,6 +65,34 @@ SUITE_CASE("failed to copy") {
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
 	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: -10\n");
+}
+
+SUITE_CASE("copy for audio, depents on samples_size, channels, format") {
+	arg_decoding_context.align = arg_align = 1;
+	arg_decoding_context.av_stream->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
+	arg_av_frame.channels = arg_channels = 6;
+	arg_av_frame.nb_samples = arg_nb_samples = 128;
+	arg_av_frame.format = arg_format = AV_SAMPLE_FMT_NB;
+
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
+
+	CUE_EXPECT_CALLED_ONCE(av_samples_fill_arrays);
+	CUE_EXPECT_CALLED_WITH_PTR(av_samples_fill_arrays, 2, NULL);
+	CUE_EXPECT_CALLED_WITH_PTR(av_samples_fill_arrays, 3, frame_buffer);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_fill_arrays, 4, arg_channels);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_fill_arrays, 5, arg_nb_samples);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_fill_arrays, 6, arg_format);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_fill_arrays, 7, arg_align);
+
+	CUE_EXPECT_CALLED_ONCE(av_samples_copy);
+	CUE_EXPECT_CALLED_WITH_PTR(av_samples_copy, 2, arg_av_frame.data);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_copy, 3, 0);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_copy, 4, 0);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_copy, 5, arg_nb_samples);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_copy, 6, arg_channels);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_copy, 7, arg_format);
+
+	CUE_ASSERT_PTR_EQ(params_of(av_samples_fill_arrays, 1), params_of(av_samples_copy, 1));
 }
 
 SUITE_END(av_copy_frame_to_buffer_test);

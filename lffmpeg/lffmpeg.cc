@@ -188,10 +188,26 @@ int av_get_buffer_size(const AVCodecContext &codec_context) {
 
 int av_copy_frame_to_buffer(const AVFrame &av_frame, void *buf, size_t len) {
 	int res=0, ret;
+	uint8_t *planar_buffer[12];
 	decoding_context *context = static_cast<decoding_context *>(av_frame.opaque);
 	switch(context->av_stream->codecpar->codec_type) {
 		case AVMEDIA_TYPE_VIDEO:
-			if((ret=av_image_copy_to_buffer(static_cast<uint8_t *>(buf), len, av_frame.data, av_frame.linesize, static_cast<AVPixelFormat>(av_frame.format), av_frame.width, av_frame.height, context->align)) < 0)
+			if((ret=av_image_copy_to_buffer(static_cast<uint8_t *>(buf),
+							len, av_frame.data,
+							av_frame.linesize,
+							static_cast<AVPixelFormat>(av_frame.format),
+							av_frame.width, av_frame.height, context->align)) < 0)
+				res = log_errno(ret);
+			break;
+		case AVMEDIA_TYPE_AUDIO:
+			if((ret=av_samples_fill_arrays(planar_buffer, NULL,
+							static_cast<const uint8_t *>(buf),
+							av_frame.channels, av_frame.nb_samples,
+							static_cast<AVSampleFormat>(av_frame.format), context->align)) >= 0)
+				res = av_samples_copy(planar_buffer, av_frame.data,
+						0, 0, av_frame.nb_samples, av_frame.channels,
+						static_cast<AVSampleFormat>(av_frame.format));
+			else
 				res = log_errno(ret);
 			break;
 		default:
