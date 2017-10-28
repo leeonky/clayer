@@ -18,10 +18,10 @@ extern_mock_function_1(int, shmdt, const void *);
 extern_mock_function_1(int, sem_wait, sem_t *);
 extern_mock_function_1(int, sem_post, sem_t *);
 
-extern_mock_function_2(sem_t *, sem_new_with_ppid, int, int);
-extern_mock_function_1(sem_t *, sem_load_with_ppid, int);
+extern_mock_function_2(sem_t *, sem_new_with_id, int, int);
+extern_mock_function_1(sem_t *, sem_load_with_id, int);
 extern_mock_function_1(int, sem_close, sem_t *);
-extern_mock_function_1(int, sem_unlink_with_ppid, int);
+extern_mock_function_1(int, sem_unlink_with_id, int);
 
 #ifdef __cplusplus
 }

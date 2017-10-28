@@ -19,16 +19,24 @@ namespace {
 
 int circular_shm::initialize_and_action(size_t size, int count, const std::function<int(circular_shm &)> &action) {
 	int res = 0;
-	element_size = count*alignment_size(size);
-	if((shm_id = shmget(IPC_PRIVATE, element_size, 0666|IPC_CREAT)) != -1) {
-		buffer = static_cast<int8_t*>(shmat(shm_id, nullptr, 0));
-		sem_id = getpid();
-		semaphore = sem_new_with_ppid(sem_id, count);
-		res = action(*this);
-		shmdt(buffer);
+	element_size = alignment_size(size);
+	if((shm_id = shmget(IPC_PRIVATE, count*element_size, 0666|IPC_CREAT)) != -1) {
+		if((buffer = static_cast<int8_t*>(shmat(shm_id, nullptr, 0))) != (void *)-1) {
+			sem_id = getpid();
+			if(SEM_FAILED != (semaphore = sem_new_with_id(sem_id, count))) {
+				res = action(*this);
+				sem_close(semaphore);
+				sem_unlink_with_id(sem_id);
+			} else {
+				res = -1;
+				output_errno();
+			}
+			shmdt(buffer);
+		} else {
+			res = -1;
+			output_errno();
+		}
 		shmctl(shm_id, IPC_RMID, nullptr);
-		sem_close(semaphore);
-		sem_unlink_with_ppid(sem_id);
 	} else {
 		res = -1;
 		output_errno();

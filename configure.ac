@@ -34,10 +34,11 @@ AC_CONFIG_FILES([Makefile])
 AM_COND_IF([ENV_TEST], [],
 	  [AC_CONFIG_FILES([
 	   sysport/Makefile
+	   sysexd/Makefile
 	   stdexd/Makefile
+	   stdport/Makefile
 	   decoder/Makefile
 	   lffmpeg/Makefile
-	   stdport/Makefile
 	   mem/Makefile
 	   ])])
 
@@ -47,8 +48,9 @@ AM_COND_IF([ENV_PRD], [],
 	   mock_std/Makefile
 	   mock_ffmpeg/Makefile
 	   mock_sys/Makefile
-	   lffmpeg_test/Makefile
+	   sysexd_test/Makefile
 	   stdport_test/Makefile
+	   lffmpeg_test/Makefile
 	   mem_test/Makefile
 	   ])])
 

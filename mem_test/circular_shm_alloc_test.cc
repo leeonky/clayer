@@ -32,7 +32,7 @@ BEFORE_EACH() {
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;
 
-	ret_shmid = -1;
+	ret_shmid = 1;
 	arg_size = 1;
 	arg_count = 1;
 
@@ -41,9 +41,9 @@ BEFORE_EACH() {
 	init_mock_function_with_return(shmat, ret_buffer);
 	init_mock_function(shmdt);
 	init_mock_function(shmctl);
-	init_mock_function_with_return(sem_new_with_ppid, &ret_sem);
+	init_mock_function_with_return(sem_new_with_id, &ret_sem);
 	init_mock_function(sem_close);
-	init_mock_function(sem_unlink_with_ppid);
+	init_mock_function(sem_unlink_with_id);
 	init_mock_function_with_function(strerror, stub_strerror);
 	return 0;
 }
@@ -60,7 +60,7 @@ SUITE_CASE("size alignment: size < pagesize") {
 	arg_size = getpagesize()-1;
 	arg_count = 2;
 
-	CUE_ASSERT_SUBJECT_FAILED();
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
 	CUE_EXPECT_CALLED_ONCE(shmget);
 	CUE_EXPECT_CALLED_WITH_INT(shmget, 1, IPC_PRIVATE);
@@ -72,7 +72,7 @@ SUITE_CASE("size alignment: size = pagesize") {
 	arg_size = getpagesize();
 	arg_count = 2;
 
-	CUE_ASSERT_SUBJECT_FAILED();
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
 	CUE_EXPECT_CALLED_ONCE(shmget);
 	CUE_EXPECT_CALLED_WITH_INT(shmget, 1, IPC_PRIVATE);
@@ -84,7 +84,7 @@ SUITE_CASE("size alignment: size > pagesize") {
 	arg_size = getpagesize()*2-1;
 	arg_count = 2;
 
-	CUE_ASSERT_SUBJECT_FAILED();
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
 	CUE_EXPECT_CALLED_ONCE(shmget);
 	CUE_EXPECT_CALLED_WITH_INT(shmget, 1, IPC_PRIVATE);
@@ -105,17 +105,17 @@ SUITE_CASE("init with all resources") {
 	CUE_EXPECT_CALLED_WITH_PTR(shmat, 2, nullptr);
 	CUE_EXPECT_CALLED_WITH_INT(shmat, 3, 0);
 
-	CUE_EXPECT_CALLED_ONCE(sem_new_with_ppid);
-	CUE_EXPECT_CALLED_WITH_INT(sem_new_with_ppid, 1, getpid());
-	CUE_EXPECT_CALLED_WITH_INT(sem_new_with_ppid, 2, arg_count);
+	CUE_EXPECT_CALLED_ONCE(sem_new_with_id);
+	CUE_EXPECT_CALLED_WITH_INT(sem_new_with_id, 1, getpid());
+	CUE_EXPECT_CALLED_WITH_INT(sem_new_with_id, 2, arg_count);
 
 	CUE_EXPECT_CALLED_ONCE(circular_shm_alloc_action);
 
 	CUE_EXPECT_CALLED_ONCE(sem_close);
 	CUE_EXPECT_CALLED_WITH_PTR(sem_close, 1, &ret_sem);
 
-	CUE_EXPECT_CALLED_ONCE(sem_unlink_with_ppid);
-	CUE_EXPECT_CALLED_WITH_INT(sem_unlink_with_ppid, 1, getpid());
+	CUE_EXPECT_CALLED_ONCE(sem_unlink_with_id);
+	CUE_EXPECT_CALLED_WITH_INT(sem_unlink_with_id, 1, getpid());
 
 	CUE_EXPECT_CALLED_ONCE(shmdt);
 	CUE_EXPECT_CALLED_WITH_PTR(shmdt, 1, ret_buffer);
@@ -136,7 +136,7 @@ SUITE_CASE("shmget failed") {
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
-	CUE_EXPECT_NEVER_CALLED(sem_new_with_ppid);
+	CUE_EXPECT_NEVER_CALLED(sem_new_with_id);
 
 	CUE_EXPECT_NEVER_CALLED(shmat);
 
@@ -146,9 +146,57 @@ SUITE_CASE("shmget failed") {
 
 	CUE_EXPECT_NEVER_CALLED(sem_close);
 
-	CUE_EXPECT_NEVER_CALLED(sem_unlink_with_ppid);
+	CUE_EXPECT_NEVER_CALLED(sem_unlink_with_id);
 
 	CUE_EXPECT_NEVER_CALLED(shmctl);
+
+	CUE_ASSERT_STDERR_EQ("Error[shm_cbuf]: 100\n");
+}
+
+void *stub_shmat_failed(int, const void *, int) {
+	errno = 10;
+	return (void *)-1;
+}
+
+SUITE_CASE("shmat failed") {
+	init_mock_function_with_function(shmat, stub_shmat_failed);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(sem_new_with_id);
+
+	CUE_EXPECT_NEVER_CALLED(circular_shm_alloc_action);
+
+	CUE_EXPECT_NEVER_CALLED(shmdt);
+
+	CUE_EXPECT_NEVER_CALLED(sem_close);
+
+	CUE_EXPECT_NEVER_CALLED(sem_unlink_with_id);
+
+	CUE_EXPECT_CALLED_ONCE(shmctl);
+
+	CUE_ASSERT_STDERR_EQ("Error[shm_cbuf]: 10\n");
+}
+
+static sem_t *stub_sem_new_with_id_failed(int, int) {
+	errno = 100;
+	return SEM_FAILED;
+}
+
+SUITE_CASE("failed to init semaphore") {
+	init_mock_function_with_function(sem_new_with_id, stub_sem_new_with_id_failed);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(circular_shm_alloc_action);
+
+	CUE_EXPECT_NEVER_CALLED(sem_close);
+
+	CUE_EXPECT_NEVER_CALLED(sem_unlink_with_id);
+
+	CUE_EXPECT_CALLED_ONCE(shmdt);
+
+	CUE_EXPECT_CALLED_ONCE(shmctl);
 
 	CUE_ASSERT_STDERR_EQ("Error[shm_cbuf]: 100\n");
 }

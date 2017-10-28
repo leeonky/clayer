@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 
-sem_t *sem_new_with_ppid(int, int);
-sem_t *sem_load_with_ppid(int);
-int sem_unlink_with_ppid(int);
+sem_t *sem_new_with_id(int, int);
+sem_t *sem_load_with_id(int);
+int sem_unlink_with_id(int);
 
 #ifdef __cplusplus
 }
