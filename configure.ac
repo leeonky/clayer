@@ -33,18 +33,22 @@ AC_CONFIG_FILES([Makefile])
 # Production Makefile
 AM_COND_IF([ENV_TEST], [],
 	  [AC_CONFIG_FILES([
+	   sysport/Makefile
 	   stdexd/Makefile
 	   decoder/Makefile
 	   lffmpeg/Makefile
 	   stdport/Makefile
+	   mem/Makefile
 	   ])])
 
 # Testing Makefile
 AM_COND_IF([ENV_PRD], [],
 	  [AC_CONFIG_FILES([
 	   mock_ffmpeg/Makefile
+	   mock_sys/Makefile
 	   lffmpeg_test/Makefile
 	   stdport_test/Makefile
+	   mem_test/Makefile
 	   ])])
 
 AC_OUTPUT
