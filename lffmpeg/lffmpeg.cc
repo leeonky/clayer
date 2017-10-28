@@ -116,8 +116,10 @@ namespace {
 				context.av_packet = &av_packet;
 				return av_new_frame([&](AVFrame &working_av_frame) -> int {
 					context.working_av_frame = &working_av_frame;
+					working_av_frame.opaque = &context;
 					return av_new_frame([&](AVFrame &decoded_av_frame) -> int {
 						context.decoded_av_frame = &decoded_av_frame;
+						decoded_av_frame.opaque = &context;
 						return action(context);
 						});
 					});
@@ -182,5 +184,20 @@ int av_get_buffer_size(const AVCodecContext &codec_context) {
 			not_support_media_type(codec_context.codec_type);
 			return -1;
 	}
+}
+
+int av_copy_frame_to_buffer(const AVFrame &av_frame, void *buf, size_t len) {
+	int res=0, ret;
+	decoding_context *context = static_cast<decoding_context *>(av_frame.opaque);
+	switch(context->av_stream->codecpar->codec_type) {
+		case AVMEDIA_TYPE_VIDEO:
+			if((ret=av_image_copy_to_buffer(static_cast<uint8_t *>(buf), len, av_frame.data, av_frame.linesize, static_cast<AVPixelFormat>(av_frame.format), av_frame.width, av_frame.height, context->align)) < 0)
+				res = log_errno(ret);
+			break;
+		default:
+			not_support_media_type(context->av_stream->codecpar->codec_type);
+			return -1;
+	}
+	return res;
 }
 

@@ -26,5 +26,7 @@ extern int avcodec_receive_frame(AVCodecContext &, const std::function<int(const
 
 extern int av_get_buffer_size(const AVCodecContext &);
 
+extern int av_copy_frame_to_buffer(const AVFrame &, void *, size_t);
+
 #endif
 
