@@ -8,7 +8,7 @@
 #define log_errno(no) log_errno("liblffmpeg", no, av_strerror)
 
 namespace {
-	static inline void unsupported_operation(const char *fun, enum AVMediaType t) {
+	inline void unsupported_operation(const char *fun, enum AVMediaType t) {
 		fprintf(stderr, "%s not support [%s] yet\n", fun, av_get_media_type_string(t));
 		abort();
 	}
@@ -96,6 +96,7 @@ namespace {
 		AVStream *av_stream;
 		int align;
 		int samples_size;
+		bool stream_ended = false;
 	};
 
 	int init_decoding_context(AVStream &stream, const std::function<int(decoding_context &)> &action) {
@@ -164,12 +165,43 @@ int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext 
 	return res;
 }
 
+namespace {
+	inline int output_frame(AVFrame *avframe, const std::function<int(const AVFrame &)> &action) {
+		int res = action(*avframe);
+		avframe->nb_samples = 0;
+		avframe->pkt_duration = 0;
+		return res;
+	}
+}
+
 int avcodec_receive_frame(AVCodecContext &codec_context, const std::function<int(const AVFrame &)> &action) {
 	int res;
 	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
+	AVFrame *wframe = context->working_av_frame;
+	AVFrame *rframe = context->decoded_av_frame;
 	if(!(res = avcodec_receive_frame(&codec_context, context->working_av_frame))) {
-		res = action(*context->working_av_frame);
+		switch(codec_context.codec_type) {
+			case AVMEDIA_TYPE_VIDEO:
+				res = action(*wframe);
+				break;
+			case AVMEDIA_TYPE_AUDIO:
+				if(rframe->nb_samples + wframe->nb_samples > context->samples_size)
+					res = output_frame(rframe, action);
+				if(!rframe->nb_samples)
+					av_frame_set_best_effort_timestamp(rframe, av_frame_get_best_effort_timestamp(wframe));
+				av_samples_copy(rframe->data, wframe->data,
+						rframe->nb_samples, 0,
+						wframe->nb_samples,
+						wframe->channels, (enum AVSampleFormat)wframe->format);
+				rframe->nb_samples += wframe->nb_samples;
+				break;
+			default:
+				not_support_media_type(codec_context.codec_type);
+				return -1;
+		}
 	}
+	if(context->stream_ended && rframe->nb_samples)
+		output_frame(rframe, action);
 	return res;
 }
 
