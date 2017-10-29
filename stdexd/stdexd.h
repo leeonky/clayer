@@ -1,8 +1,13 @@
 #ifndef STDEXD_STDEXD_H
 #define STDEXD_STDEXD_H
 
+#include <functional>
+#include <vector>
+#include <map>
+#include <utility>
 #include <cstdarg>
 #include <cstdio>
+#include <getopt.h>
 
 extern FILE *app_stdin, *app_stdout, *app_stderr;
 
@@ -16,5 +21,16 @@ int log_errno(const char *module, Ter er, Estr ster) {
 	ster(er, buffer, sizeof(buffer));
 	return log_error(module, "%s", buffer);
 }
+
+class command_argument {
+
+public:
+	command_argument require_all_argument(const char *, int, const std::function<void(const char *)> &);
+	const char *parse(int, char **);
+
+private:
+	std::vector<option> long_options;
+	std::map<int, std::function<void(const char *)>> argument_handlers;
+};
 
 #endif

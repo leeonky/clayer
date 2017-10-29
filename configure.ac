@@ -50,6 +50,7 @@ AM_COND_IF([ENV_PRD], [],
 	   mock_ffmpeg/Makefile
 	   sysexd_test/Makefile
 	   stdport_test/Makefile
+	   stdexd_test/Makefile
 	   lffmpeg_test/Makefile
 	   mem_test/Makefile
 	   ])])

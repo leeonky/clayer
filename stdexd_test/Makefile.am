@@ -1,0 +1,4 @@
+noinst_PROGRAMS = libstdexd.test
+libstdexd_test_SOURCES = main.cc ../stdexd/stdexd.cc stdarg_test.cc
+libstdexd_test_LDADD = -lcunit -lcunitexd -lmock_std
+libstdexd_test_LDFLAGS = -L../mock_std
