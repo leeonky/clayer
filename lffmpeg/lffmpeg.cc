@@ -1,3 +1,4 @@
+#include <cinttypes>
 #include "lffmpeg.h"
 #include "stdexd/stdexd.h"
 
@@ -43,7 +44,7 @@ int avformat_find_stream(AVFormatContext &av_format_context, enum AVMediaType ty
 	return res;
 }
 
-char *avstream_info(const AVStream &stream) {
+const char *avstream_info(const AVStream &stream) {
 	static __thread char buffer[1024];
 	char layout_string_buffer[1024];
 	AVCodecParameters *parameters = stream.codecpar;
@@ -291,5 +292,21 @@ int64_t av_frame_pts(const AVFrame &frame) {
 		context->previous_duration = guess_duration(frame);
 
 	return context->previous_pts;
+}
+
+const char *av_frame_info(int index, const AVFrame &frame) {
+	decoding_context *context = static_cast<decoding_context *>(frame.opaque);
+	static __thread char buffer[1024];
+	switch(context->av_stream->codecpar->codec_type) {
+		case AVMEDIA_TYPE_VIDEO:
+			sprintf(buffer, "FRAMES %d=>%" PRId64, index, av_frame_pts(frame));
+			break;
+		case AVMEDIA_TYPE_AUDIO:
+			sprintf(buffer, "SAMPLES %d=>%" PRId64 ",%d", index, av_frame_pts(frame), frame.nb_samples);
+			break;
+		default:
+			not_support_media_type(context->av_stream->codecpar->codec_type);
+	}
+	return buffer;
 }
 
