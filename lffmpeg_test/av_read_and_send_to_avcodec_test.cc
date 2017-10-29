@@ -76,6 +76,8 @@ SUITE_CASE("should read from media untill get right stream packet and send to de
 	CUE_EXPECT_CALLED_ONCE(avcodec_send_packet);
 	CUE_EXPECT_CALLED_WITH_PTR(avcodec_send_packet, 1, &arg_av_codec_context);
 	CUE_EXPECT_CALLED_WITH_PTR(avcodec_send_packet, 2, &arg_av_packet);
+
+	CUE_ASSERT_EQ(arg_decoding_context.stream_ended, 0);
 }
 
 SUITE_CASE("return from avcodec_send_packet") {
@@ -95,6 +97,8 @@ SUITE_CASE("enter last mode when get to the end of file") {
 	CUE_EXPECT_CALLED_ONCE(avcodec_send_packet);
 	CUE_EXPECT_CALLED_WITH_PTR(avcodec_send_packet, 1, &arg_av_codec_context);
 	CUE_EXPECT_CALLED_WITH_PTR(avcodec_send_packet, 2, nullptr);
+
+	CUE_ASSERT_EQ(arg_decoding_context.stream_ended, 1);
 }
 
 SUITE_END(av_read_and_send_to_avcodec_test);

@@ -160,8 +160,10 @@ int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext 
 		;
 	if(res >= 0)
 		res = avcodec_send_packet(&codec_context, context->av_packet);
-	else
+	else{
 		avcodec_send_packet(&codec_context, nullptr);
+		context->stream_ended = 1;
+	}
 	return res;
 }
 
