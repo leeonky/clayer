@@ -94,12 +94,15 @@ namespace {
 		AVPacket *av_packet;
 		AVFrame *working_av_frame, *decoded_av_frame;
 		AVStream *av_stream;
+		AVCodecContext *av_codec_context;
 		int align;
 		int samples_size;
 		bool stream_ended = false;
+		int64_t previous_pts = 0;
+		int64_t previous_duration = 0;
 	};
 
-	int init_decoding_context(AVStream &stream, const std::function<int(decoding_context &)> &action) {
+	int init_decoding_context(AVStream &stream, AVCodecContext &codec_context, const std::function<int(decoding_context &)> &action) {
 		decoding_context context;
 		switch(stream.codecpar->codec_type) {
 			case AVMEDIA_TYPE_VIDEO:
@@ -114,6 +117,7 @@ namespace {
 				break;
 		}
 		context.av_stream = &stream;
+		context.av_codec_context = &codec_context;
 		return av_new_packet([&](AVPacket &av_packet) -> int {
 				context.av_packet = &av_packet;
 				return av_new_frame([&](AVFrame &working_av_frame) -> int {
@@ -137,7 +141,7 @@ int avcodec_open(AVStream &stream, const std::function<int(AVCodecContext &)> &a
 		if ((av_codec_context = avcodec_alloc_context3(av_codec))) {
 			if ((ret=avcodec_parameters_to_context(av_codec_context, stream.codecpar)) >= 0
 					&& (!(ret=avcodec_open2(av_codec_context, av_codec, nullptr)))) {
-				res = init_decoding_context(stream, [action, av_codec_context](decoding_context &context) -> int {
+				res = init_decoding_context(stream, *av_codec_context, [action, av_codec_context](decoding_context &context) -> int {
 						av_codec_context->opaque = &context;
 						return action(*av_codec_context);
 						});
@@ -180,31 +184,31 @@ int avcodec_receive_frame(AVCodecContext &codec_context, const std::function<int
 	int res;
 	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
 	AVFrame *wframe = context->working_av_frame;
-	AVFrame *rframe = context->decoded_av_frame;
+	AVFrame *dframe = context->decoded_av_frame;
 	if(!(res = avcodec_receive_frame(&codec_context, context->working_av_frame))) {
 		switch(codec_context.codec_type) {
 			case AVMEDIA_TYPE_VIDEO:
 				res = action(*wframe);
 				break;
 			case AVMEDIA_TYPE_AUDIO:
-				if(rframe->nb_samples + wframe->nb_samples > context->samples_size)
-					res = output_audio_frame(rframe, action);
-				if(!rframe->nb_samples)
-					av_frame_set_best_effort_timestamp(rframe, av_frame_get_best_effort_timestamp(wframe));
-				av_samples_copy(rframe->data, wframe->data,
-						rframe->nb_samples, 0,
+				if(dframe->nb_samples + wframe->nb_samples > context->samples_size)
+					res = output_audio_frame(dframe, action);
+				if(!dframe->nb_samples)
+					av_frame_set_best_effort_timestamp(dframe, av_frame_get_best_effort_timestamp(wframe));
+				av_samples_copy(dframe->data, wframe->data,
+						dframe->nb_samples, 0,
 						wframe->nb_samples,
 						wframe->channels, (enum AVSampleFormat)wframe->format);
-				rframe->nb_samples += wframe->nb_samples;
-				rframe->pkt_duration = rframe->nb_samples;
+				dframe->nb_samples += wframe->nb_samples;
+				dframe->pkt_duration = dframe->nb_samples;
 				break;
 			default:
 				not_support_media_type(codec_context.codec_type);
 				return -1;
 		}
 	}
-	if(context->stream_ended && rframe->nb_samples)
-		output_audio_frame(rframe, action);
+	if(context->stream_ended && dframe->nb_samples)
+		output_audio_frame(dframe, action);
 	return res;
 }
 
@@ -251,5 +255,41 @@ int av_copy_frame_to_buffer(const AVFrame &av_frame, void *buf, size_t len) {
 			return -1;
 	}
 	return res;
+}
+
+namespace {
+	inline int64_t guess_duration(const AVFrame &frame) {
+		decoding_context *context = static_cast<decoding_context *>(frame.opaque);
+		AVCodecContext *codec_context = context->av_codec_context;
+		switch(context->av_stream->codecpar->codec_type) {
+			case AVMEDIA_TYPE_VIDEO:
+				if(codec_context->framerate.num == 0 && codec_context->framerate.den == 1)
+					return (int64_t)1000000*125/2997;
+				else
+					return (int64_t)1000000 * codec_context->framerate.den / codec_context->framerate.num;
+			case AVMEDIA_TYPE_AUDIO:
+				return (int64_t)frame.nb_samples*1000000/frame.sample_rate;
+			default:
+				not_support_media_type(context->av_stream->codecpar->codec_type);
+				break;
+		}
+		return -1;
+	}
+}
+
+int64_t av_frame_pts(const AVFrame &frame) {
+	decoding_context *context = static_cast<decoding_context *>(frame.opaque);
+	AVStream *stream = context->av_stream; 
+	int64_t pts = av_frame_get_best_effort_timestamp(&frame);
+	if(AV_NOPTS_VALUE == pts)
+		context->previous_pts += context->previous_duration;
+	else
+		context->previous_pts = av_rescale_q(pts-stream->start_time, stream->time_base, AV_TIME_BASE_Q);
+	if(frame.pkt_duration)
+		context->previous_duration = av_rescale_q(frame.pkt_duration, stream->time_base, AV_TIME_BASE_Q);
+	else
+		context->previous_duration = guess_duration(frame);
+
+	return context->previous_pts;
 }
 

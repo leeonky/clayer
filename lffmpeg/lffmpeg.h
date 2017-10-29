@@ -28,5 +28,7 @@ extern int av_get_buffer_size(const AVCodecContext &);
 
 extern int av_copy_frame_to_buffer(const AVFrame &, void *, size_t);
 
+extern int64_t av_frame_pts(const AVFrame &);
+
 #endif
 

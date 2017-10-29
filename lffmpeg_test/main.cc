@@ -13,6 +13,7 @@ int main() {
 	ADD_SUITE(av_get_buffer_size_test);
 	ADD_SUITE(av_copy_frame_to_buffer_test);
 	ADD_SUITE(avcodec_receive_frame_audio_test);
+	ADD_SUITE(av_frame_pts_test);
 	return run_test();
 }
 

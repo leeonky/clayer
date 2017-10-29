@@ -64,11 +64,14 @@ struct stub_decoding_context {
 	AVPacket *av_packet;
 	AVFrame *working_av_frame, *decoded_av_frame;
 	AVStream *av_stream;
+	AVCodecContext *av_codec_context;
 	int align;
 	int samples_size;
 #ifdef __cplusplus
 	bool stream_ended;
 #endif
+	int64_t previous_pts;
+	int64_t previous_duration;
 };
 
 #endif

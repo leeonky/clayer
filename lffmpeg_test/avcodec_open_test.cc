@@ -61,6 +61,7 @@ static int avcodec_open_action_assert(AVCodecContext *av_codec_context) {
 	ret_av_packet = context->av_packet;
 	CUE_ASSERT_PTR_EQ(context->working_av_frame, &ret_working_av_frame);
 	CUE_ASSERT_PTR_EQ(context->decoded_av_frame, &ret_decoded_av_frame);
+	CUE_ASSERT_PTR_EQ(context->av_codec_context, av_codec_context);
 	return 0;
 }
 
