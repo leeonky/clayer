@@ -20,7 +20,7 @@ int avformat_open_input(const char *file, const std::function<int(AVFormatContex
 	int res = 0, ret;
 	AVFormatContext *format_context;
 	av_register_all();
-	if (!(ret = avformat_open_input(&format_context, file, NULL, NULL))) {
+	if (!(ret = avformat_open_input(&format_context, file, nullptr, nullptr))) {
 		res = action(*format_context);
 		avformat_close_input(&format_context);
 	} else
@@ -32,7 +32,7 @@ int avformat_find_stream(AVFormatContext &av_format_context, enum AVMediaType ty
 	int res, ret;
 	if(-1 == track)
 		track = 0;
-	if((ret = avformat_find_stream_info(&av_format_context, NULL)) >= 0) {
+	if((ret = avformat_find_stream_info(&av_format_context, nullptr)) >= 0) {
 		int matched = 0;
 		for (size_t i=0; i<av_format_context.nb_streams; ++i)
 			if(av_format_context.streams[i]->codecpar->codec_type == type && matched++ == track)
@@ -134,7 +134,7 @@ int avcodec_open(AVStream &stream, const std::function<int(AVCodecContext &)> &a
 	if((av_codec = avcodec_find_decoder(stream.codecpar->codec_id))) {
 		if ((av_codec_context = avcodec_alloc_context3(av_codec))) {
 			if ((ret=avcodec_parameters_to_context(av_codec_context, stream.codecpar)) >= 0
-					&& (!(ret=avcodec_open2(av_codec_context, av_codec, NULL)))) {
+					&& (!(ret=avcodec_open2(av_codec_context, av_codec, nullptr)))) {
 				res = init_decoding_context(stream, [action, av_codec_context](decoding_context &context) -> int {
 						av_codec_context->opaque = &context;
 						return action(*av_codec_context);
@@ -159,7 +159,7 @@ int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext 
 	if(res >= 0)
 		res = avcodec_send_packet(&codec_context, context->av_packet);
 	else
-		avcodec_send_packet(&codec_context, NULL);
+		avcodec_send_packet(&codec_context, nullptr);
 	return res;
 }
 
@@ -178,7 +178,7 @@ int av_get_buffer_size(const AVCodecContext &codec_context) {
 		case AVMEDIA_TYPE_VIDEO:
 			return av_image_get_buffer_size(codec_context.pix_fmt, codec_context.width, codec_context.height, context->align);
 		case AVMEDIA_TYPE_AUDIO:
-			return av_samples_get_buffer_size(NULL, codec_context.channels,
+			return av_samples_get_buffer_size(nullptr, codec_context.channels,
 					context->samples_size, codec_context.sample_fmt, context->align);
 		default:
 			not_support_media_type(codec_context.codec_type);
@@ -200,7 +200,7 @@ int av_copy_frame_to_buffer(const AVFrame &av_frame, void *buf, size_t len) {
 				res = log_errno(ret);
 			break;
 		case AVMEDIA_TYPE_AUDIO:
-			if((ret=av_samples_fill_arrays(planar_buffer, NULL,
+			if((ret=av_samples_fill_arrays(planar_buffer, nullptr,
 							static_cast<const uint8_t *>(buf),
 							av_frame.channels, av_frame.nb_samples,
 							static_cast<AVSampleFormat>(av_frame.format), context->align)) >= 0)

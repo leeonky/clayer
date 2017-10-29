@@ -77,7 +77,7 @@ SUITE_CASE("copy for audio, depents on samples_size, channels, format") {
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
 	CUE_EXPECT_CALLED_ONCE(av_samples_fill_arrays);
-	CUE_EXPECT_CALLED_WITH_PTR(av_samples_fill_arrays, 2, NULL);
+	CUE_EXPECT_CALLED_WITH_PTR(av_samples_fill_arrays, 2, nullptr);
 	CUE_EXPECT_CALLED_WITH_PTR(av_samples_fill_arrays, 3, frame_buffer);
 	CUE_EXPECT_CALLED_WITH_INT(av_samples_fill_arrays, 4, arg_channels);
 	CUE_EXPECT_CALLED_WITH_INT(av_samples_fill_arrays, 5, arg_nb_samples);

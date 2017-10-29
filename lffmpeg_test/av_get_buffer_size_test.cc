@@ -50,7 +50,7 @@ SUITE_CASE("get frame buffer size for audio") {
 	CUE_ASSERT_EQ(av_get_buffer_size(arg_codec_context), 1000);
 
 	CUE_EXPECT_CALLED_ONCE(av_samples_get_buffer_size);
-	CUE_EXPECT_CALLED_WITH_PTR(av_samples_get_buffer_size, 1, NULL);
+	CUE_EXPECT_CALLED_WITH_PTR(av_samples_get_buffer_size, 1, nullptr);
 	CUE_EXPECT_CALLED_WITH_INT(av_samples_get_buffer_size, 2, arg_channels);
 	CUE_EXPECT_CALLED_WITH_INT(av_samples_get_buffer_size, 3, arg_samples_size);
 	CUE_EXPECT_CALLED_WITH_INT(av_samples_get_buffer_size, 4, arg_sample_format);

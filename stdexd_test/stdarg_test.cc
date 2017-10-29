@@ -39,16 +39,16 @@ SUITE_CASE("parse paramters") {
 	init_subject("", "--ver", "01", "-t", "ok", "--action=go", "-pfoo", "hello");
 
 	CUE_ASSERT_STRING_EQ(command_argument()
-			.require_all_argument("ver", 'v', [](const char *arg){
+			.require_full_argument("ver", 'v', [](const char *arg){
 				assert_arg_1(arg);
 				})
-			.require_all_argument("test", 't', [](const char *arg){
+			.require_full_argument("test", 't', [](const char *arg){
 				assert_arg_2(arg);
 				})
-			.require_all_argument("action", 'a', [](const char *arg){
+			.require_full_argument("action", 'a', [](const char *arg){
 				assert_arg_3(arg);
 				})
-			.require_all_argument("prev", 'p', [](const char *arg){
+			.require_full_argument("prev", 'p', [](const char *arg){
 				assert_arg_4(arg);
 				})
 			.parse(actxt.argc, actxt.argv), "hello");

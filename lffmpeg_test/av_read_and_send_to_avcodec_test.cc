@@ -94,7 +94,7 @@ SUITE_CASE("enter last mode when get to the end of file") {
 
 	CUE_EXPECT_CALLED_ONCE(avcodec_send_packet);
 	CUE_EXPECT_CALLED_WITH_PTR(avcodec_send_packet, 1, &arg_av_codec_context);
-	CUE_EXPECT_CALLED_WITH_PTR(avcodec_send_packet, 2, NULL);
+	CUE_EXPECT_CALLED_WITH_PTR(avcodec_send_packet, 2, nullptr);
 }
 
 SUITE_END(av_read_and_send_to_avcodec_test);

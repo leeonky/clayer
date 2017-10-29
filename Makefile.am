@@ -5,8 +5,8 @@ SUBDIRS += sysport
 SUBDIRS += sysexd
 SUBDIRS += stdport
 SUBDIRS += stdexd
-SUBDIRS += decoder
 SUBDIRS += lffmpeg
+SUBDIRS += decoder
 SUBDIRS += mem
 endif
 

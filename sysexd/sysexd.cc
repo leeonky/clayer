@@ -46,4 +46,3 @@ int sem_new_with_id(int id, int count, const std::function<int(sem_t *)> &action
 	}
 	return res;
 }
-

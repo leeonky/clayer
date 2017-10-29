@@ -25,7 +25,7 @@ int log_errno(const char *module, Ter er, Estr ster) {
 class command_argument {
 
 public:
-	command_argument require_all_argument(const char *, int, const std::function<void(const char *)> &);
+	command_argument require_full_argument(const char *, int, const std::function<void(const char *)> &);
 	const char *parse(int, char **);
 
 private:

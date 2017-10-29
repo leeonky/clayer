@@ -37,8 +37,8 @@ AM_COND_IF([ENV_TEST], [],
 	   sysexd/Makefile
 	   stdexd/Makefile
 	   stdport/Makefile
-	   decoder/Makefile
 	   lffmpeg/Makefile
+	   decoder/Makefile
 	   mem/Makefile
 	   ])])
 

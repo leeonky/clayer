@@ -109,7 +109,7 @@ SUITE_CASE("should open and close stream's decoder") {
 }
 
 SUITE_CASE("failed to find decoder") {
-	init_mock_function_with_return(avcodec_find_decoder, NULL);
+	init_mock_function_with_return(avcodec_find_decoder, nullptr);
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
@@ -126,7 +126,7 @@ SUITE_CASE("failed to find decoder") {
 }
 
 SUITE_CASE("failed to alloc codec_context") {
-	init_mock_function_with_return(avcodec_alloc_context3, NULL);
+	init_mock_function_with_return(avcodec_alloc_context3, nullptr);
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 

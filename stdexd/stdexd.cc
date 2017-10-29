@@ -30,7 +30,7 @@ int log_error(const char *module, const char *format, ...) {
 	return -1;
 }
 
-command_argument command_argument::require_all_argument(const char *long_opt, int opt, const std::function<void(const char *)> &action) {
+command_argument command_argument::require_full_argument(const char *long_opt, int opt, const std::function<void(const char *)> &action) {
 	command_argument ca(*this);
 	ca.long_options.push_back({long_opt, required_argument, nullptr, opt});
 	ca.argument_handlers.insert({opt, action});

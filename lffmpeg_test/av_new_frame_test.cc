@@ -53,7 +53,7 @@ SUITE_CASE("alloc AVFrame") {
 }
 
 SUITE_CASE("failed to alloc AVFrame") {
-	init_mock_function_with_return(av_frame_alloc, NULL);
+	init_mock_function_with_return(av_frame_alloc, nullptr);
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
