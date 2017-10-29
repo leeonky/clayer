@@ -188,11 +188,13 @@ SUITE_CASE("stub_decoding_context args for video decoder") {
 static int avcodec_open_action_assert_audio(AVCodecContext *av_codec_context) {
 	stub_decoding_context *context = static_cast<stub_decoding_context *>(av_codec_context->opaque);
 	CUE_ASSERT_EQ(context->align, 1);
+	CUE_ASSERT_EQ(context->samples_size, 10);
 	return 0;
 }
 
 SUITE_CASE("decoding_context args for audio decoder") {
 	arg_codec_parameters.codec_type = AVMEDIA_TYPE_AUDIO;
+	arg_codec_parameters.sample_rate = 1000;
 	init_mock_function_with_function(avcodec_open_action, avcodec_open_action_assert_audio);
 	av_frame_alloc_called_times = 0;
 	init_mock_function_with_function(av_frame_alloc, stub_av_frame_alloc);
