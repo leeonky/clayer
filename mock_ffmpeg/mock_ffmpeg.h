@@ -66,7 +66,9 @@ struct stub_decoding_context {
 	AVStream *av_stream;
 	int align;
 	int samples_size;
+#ifdef __cplusplus
 	bool stream_ended;
+#endif
 };
 
 #endif

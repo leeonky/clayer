@@ -37,7 +37,7 @@ SUBJECT(int) {
 }
 
 static int64_t arg_pts;
-static int arg_channels, arg_format, arg_samples_size, arg_working_av_frame_size, arg_decoded_av_frame_size;
+static int arg_channels, arg_format, arg_working_av_frame_size, arg_decoded_av_frame_size;
 
 SUITE_CASE("set decoded frame pts with working frame pts when first copy") {
 	arg_pts = 1024;
@@ -81,6 +81,7 @@ SUITE_CASE("cache audio data from wframe to rframe") {
 	CUE_EXPECT_NEVER_CALLED(av_frame_set_best_effort_timestamp);
 
 	CUE_ASSERT_EQ(arg_decoded_av_frame.nb_samples, arg_decoded_av_frame_size + arg_working_av_frame_size);
+	CUE_ASSERT_EQ(arg_decoded_av_frame.pkt_duration, arg_decoded_av_frame.nb_samples);
 }
 
 static int audio_decode_action_assert(const AVFrame *frame) {
@@ -112,7 +113,7 @@ SUITE_CASE("drain rframe when rframe full") {
 	CUE_EXPECT_CALLED_WITH_INT(av_samples_copy, 7, arg_format);
 
 	CUE_ASSERT_EQ(arg_decoded_av_frame.nb_samples, arg_working_av_frame_size);
-	CUE_ASSERT_EQ(arg_decoded_av_frame.pkt_duration, 0);
+	CUE_ASSERT_EQ(arg_decoded_av_frame.pkt_duration, arg_working_av_frame_size);
 }
 
 SUITE_CASE("stream to the end after last decode") {

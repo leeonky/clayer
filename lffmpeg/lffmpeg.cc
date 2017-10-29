@@ -168,7 +168,7 @@ int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext 
 }
 
 namespace {
-	inline int output_frame(AVFrame *avframe, const std::function<int(const AVFrame &)> &action) {
+	inline int output_audio_frame(AVFrame *avframe, const std::function<int(const AVFrame &)> &action) {
 		int res = action(*avframe);
 		avframe->nb_samples = 0;
 		avframe->pkt_duration = 0;
@@ -188,7 +188,7 @@ int avcodec_receive_frame(AVCodecContext &codec_context, const std::function<int
 				break;
 			case AVMEDIA_TYPE_AUDIO:
 				if(rframe->nb_samples + wframe->nb_samples > context->samples_size)
-					res = output_frame(rframe, action);
+					res = output_audio_frame(rframe, action);
 				if(!rframe->nb_samples)
 					av_frame_set_best_effort_timestamp(rframe, av_frame_get_best_effort_timestamp(wframe));
 				av_samples_copy(rframe->data, wframe->data,
@@ -196,6 +196,7 @@ int avcodec_receive_frame(AVCodecContext &codec_context, const std::function<int
 						wframe->nb_samples,
 						wframe->channels, (enum AVSampleFormat)wframe->format);
 				rframe->nb_samples += wframe->nb_samples;
+				rframe->pkt_duration = rframe->nb_samples;
 				break;
 			default:
 				not_support_media_type(codec_context.codec_type);
@@ -203,7 +204,7 @@ int avcodec_receive_frame(AVCodecContext &codec_context, const std::function<int
 		}
 	}
 	if(context->stream_ended && rframe->nb_samples)
-		output_frame(rframe, action);
+		output_audio_frame(rframe, action);
 	return res;
 }
 
