@@ -13,15 +13,17 @@ public:
 	void *allocate() {
 		if(sem_wait(semaphore) == -1)
 			perror("semaphore wait error");
-		return buffer+element_size*((index++)%element_count);
+		index = (index+1)%element_count;
+		return buffer+element_size*index;
 	}
+	size_t element_size;
+	int element_count;
+	unsigned index = 0;
 
 private:
-	size_t element_size;
-	int element_count, shm_id, sem_id;
+	int shm_id, sem_id;
 	int8_t *buffer;
 	sem_t *semaphore;
-	unsigned index = 0;
 
 	circular_shm() {}
 	int initialize_and_action(size_t, int, const std::function<int(circular_shm &)> &);

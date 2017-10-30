@@ -138,13 +138,13 @@ SUITE_CASE("circular_shm serialize to string") {
 }
 
 static int circular_shm_create_action_assert_allocate(circular_shm *cshm) {
-	CUE_ASSERT_PTR_EQ(cshm->allocate(), ret_buffer);
+	CUE_ASSERT_PTR_EQ(cshm->allocate(), ret_buffer+getpagesize());
 
 	CUE_EXPECT_CALLED_ONCE(sem_wait);
 	CUE_EXPECT_CALLED_WITH_PTR(sem_wait, 1, &ret_sem);
 
-	CUE_ASSERT_PTR_EQ(cshm->allocate(), ret_buffer+getpagesize());
 	CUE_ASSERT_PTR_EQ(cshm->allocate(), ret_buffer);
+	CUE_ASSERT_PTR_EQ(cshm->allocate(), ret_buffer+getpagesize());
 	return 0;
 }
 
