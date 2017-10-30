@@ -189,6 +189,7 @@ int avcodec_receive_frame(AVCodecContext &codec_context, const std::function<int
 	if(!(res = avcodec_receive_frame(&codec_context, context->working_av_frame))) {
 		switch(codec_context.codec_type) {
 			case AVMEDIA_TYPE_VIDEO:
+				wframe->opaque = context;
 				res = action(*wframe);
 				break;
 			case AVMEDIA_TYPE_AUDIO:

@@ -27,19 +27,31 @@ int main(int argc, char **argv) {
 	return avformat_open_input(file_name,
 			[=](AVFormatContext &format_context){
 			return avformat_find_stream(format_context, track_type, track_index,
-				[buffer_count](AVStream &stream){
+				[&](AVStream &stream){
 				fprintf(app_stdout, "%s\n", avstream_info(stream));
 				fflush(app_stdout);
 				return avcodec_open(stream,
-					[buffer_count](AVCodecContext &codec_context){
+					[&](AVCodecContext &codec_context){
 					return circular_shm::create(av_get_buffer_size(codec_context), buffer_count,
-						[](circular_shm &buffer){
+						[&](circular_shm &buffer){
 						fprintf(app_stdout, "%s\n", buffer.serialize_to_string());
 						fflush(app_stdout);
+						auto frame_decoded = [&](const AVFrame &frame){
+						if(!av_copy_frame_to_buffer(frame, buffer.allocate(), buffer.element_size)){
+							fprintf(app_stdout, "%s\n", av_frame_info(buffer.index, frame));
+							fflush(app_stdout);
+						}
+						return 0;
+						};
+
+						while(!av_read_and_send_to_avcodec(format_context, codec_context))
+						avcodec_receive_frame(codec_context, frame_decoded);
+						while(!avcodec_receive_frame(codec_context, frame_decoded))
+						;
 						return 0;
 						});
 					});
+					});
 				});
-			});
 }
 

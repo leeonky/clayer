@@ -17,11 +17,10 @@ public:
 		return buffer+element_size*index;
 	}
 	size_t element_size;
-	int element_count;
 	unsigned index = 0;
 
 private:
-	int shm_id, sem_id;
+	int shm_id, sem_id, element_count;
 	int8_t *buffer;
 	sem_t *semaphore;
 

@@ -62,6 +62,9 @@ static int avcodec_open_action_assert(AVCodecContext *av_codec_context) {
 	CUE_ASSERT_PTR_EQ(context->working_av_frame, &ret_working_av_frame);
 	CUE_ASSERT_PTR_EQ(context->decoded_av_frame, &ret_decoded_av_frame);
 	CUE_ASSERT_PTR_EQ(context->av_codec_context, av_codec_context);
+
+	CUE_ASSERT_PTR_EQ(context->working_av_frame->opaque, context);
+	CUE_ASSERT_PTR_EQ(context->decoded_av_frame->opaque, context);
 	return 0;
 }
 
