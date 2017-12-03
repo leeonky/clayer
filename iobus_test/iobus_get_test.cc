@@ -1,0 +1,74 @@
+#include <cstdio>
+#include <cstdlib>
+#include <memory>
+#include <cunitexd.h>
+#include "stdexd/stdexd.h"
+#include "iobus/iobus.h"
+
+SUITE_START("iobus_get_test");
+
+std::unique_ptr<iobus> iob;
+
+mock_function_2(int, get_message_action, const char *, const char *);
+mock_function_2(int, get_message_action2, const char *, const char *);
+
+BEFORE_EACH() {
+	init_subject("");
+	iob.reset(new iobus(actxt.input_stream, actxt.output_stream, actxt.error_stream));
+
+	init_mock_function(get_message_action);
+	init_mock_function(get_message_action2);
+	return 0;
+}
+
+AFTER_EACH() {
+	return close_subject();
+}
+
+SUBJECT(int) {
+	return iob->get(get_message_action);
+}
+
+SUITE_CASE("get from stdin") {
+	init_subject("TEST a:1");
+
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
+
+	CUE_EXPECT_CALLED_ONCE(get_message_action);
+	CUE_EXPECT_CALLED_WITH_STRING(get_message_action, 1, "TEST");
+	CUE_EXPECT_CALLED_WITH_STRING(get_message_action, 2, "a:1");
+}
+
+SUITE_CASE("should cache last result when action return non zero") {
+	init_subject("TEST a:1");
+	init_mock_function_with_return(get_message_action, 100);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(100);
+
+	CUE_ASSERT_EQ(iob->get(get_message_action2), 0);
+
+	CUE_EXPECT_CALLED_ONCE(get_message_action2);
+	CUE_EXPECT_CALLED_WITH_STRING(get_message_action2, 1, "TEST");
+	CUE_EXPECT_CALLED_WITH_STRING(get_message_action2, 2, "a:1");
+}
+
+SUITE_CASE("bad format: empty args") {
+	init_subject("TEST\n");
+
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
+
+	CUE_EXPECT_CALLED_ONCE(get_message_action);
+	CUE_EXPECT_CALLED_WITH_STRING(get_message_action, 1, "TEST");
+	CUE_EXPECT_CALLED_WITH_STRING(get_message_action, 2, "");
+}
+
+SUITE_CASE("bad format: empty line") {
+	init_subject("\n");
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(get_message_action);
+}
+
+SUITE_END(iobus_get_test);
+

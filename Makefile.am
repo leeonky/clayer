@@ -6,8 +6,9 @@ SUBDIRS += sysexd
 SUBDIRS += stdport
 SUBDIRS += stdexd
 SUBDIRS += lffmpeg
-SUBDIRS += decoder
 SUBDIRS += mem
+SUBDIRS += iobus
+SUBDIRS += decoder
 endif
 
 if !ENV_PRD
@@ -18,6 +19,7 @@ SUBDIRS += sysexd_test
 SUBDIRS += stdexd_test
 SUBDIRS += lffmpeg_test
 SUBDIRS += mem_test
+SUBDIRS += iobus_test
 endif
 
 EXTRA_DIST = test.sh

@@ -40,6 +40,7 @@ AM_COND_IF([ENV_TEST], [],
 	   lffmpeg/Makefile
 	   decoder/Makefile
 	   mem/Makefile
+	   iobus/Makefile
 	   ])])
 
 # Testing Makefile
@@ -53,6 +54,7 @@ AM_COND_IF([ENV_PRD], [],
 	   stdexd_test/Makefile
 	   lffmpeg_test/Makefile
 	   mem_test/Makefile
+	   iobus_test/Makefile
 	   ])])
 
 AC_OUTPUT
