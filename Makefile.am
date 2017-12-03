@@ -13,6 +13,7 @@ endif
 
 if !ENV_PRD
 SUBDIRS += mock_ffmpeg
+SUBDIRS += mock_sdl2
 SUBDIRS += mock_sys
 SUBDIRS += mock_std
 SUBDIRS += sysexd_test
