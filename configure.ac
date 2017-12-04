@@ -58,6 +58,7 @@ AM_COND_IF([ENV_PRD], [],
 	   mem_test/Makefile
 	   iobus_test/Makefile
 	   lsdl2_test/Makefile
+	   media_test/Makefile
 	   ])])
 
 AC_OUTPUT

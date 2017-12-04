@@ -53,6 +53,7 @@ extern_mock_void_function_1(av_free, void *);
 extern_mock_function_5(int, swr_convert, struct SwrContext *, uint8_t **, int, const uint8_t **, int);
 
 extern_mock_function_1(const char *, av_get_pix_fmt_name, enum AVPixelFormat);
+extern_mock_function_1(enum AVPixelFormat, av_get_pix_fmt, const char *);
 extern_mock_void_function_4(av_get_channel_layout_string, char *, int, int, uint64_t);
 extern_mock_function_1(const char *, av_get_sample_fmt_name, enum AVSampleFormat);
 
