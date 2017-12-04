@@ -94,10 +94,26 @@ SUITE_CASE("create sdl texture") {
 	CUE_EXPECT_CALLED_WITH_PTR(video_action, 5, ret_texture);
 }
 
-//event not match
-//args not match
-//open failed
-//ffmpeg format => sdl format
+SUITE_CASE("event not match") {
+	init_subject("AUDIO width:1920 height:1080 format:yuv420p");
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+}
+
+SUITE_CASE("args not match") {
+	init_subject("VIDEO width:1920 format:yuv420p");
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Invalid VIDEO arguments 'width:1920 format:yuv420p'\n");
+}
+
+SUITE_CASE("unsupport format") {
+	init_subject("VIDEO width:1920 height:1080 format:yuv420p");
+	init_mock_function_with_return(av_get_pix_fmt, AV_PIX_FMT_NONE);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+}
 
 SUITE_END(open_video_test);
 

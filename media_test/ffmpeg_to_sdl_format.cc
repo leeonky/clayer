@@ -12,7 +12,6 @@
 SUITE_START("ffmpeg_to_sdl_format");
 
 static const char *arg_format;
-static enum AVPixelFormat ret_format;
 
 BEFORE_EACH() {
 	init_subject("");
@@ -44,7 +43,7 @@ SUITE_CASE("parse ffmpeg format from name failed") {
 
 	CUE_ASSERT_EQ(AVPixelFormat_to_SDL(arg_format), SDL_PIXELFORMAT_UNKNOWN);
 
-	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Unknow ffmpeg format\n");
+	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Unknow ffmpeg format 'test'\n");
 }
 
 SUITE_CASE("unsupport format") {

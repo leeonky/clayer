@@ -22,8 +22,10 @@ int SDL_CreateWindow(const char *caption,
 
 int SDL_CreateTexture(SDL_Window *window, int width, int height, Uint32 format, const std::function<int(int, int, SDL_Renderer *, SDL_Texture *)> &action) {
 	int res = 0;
+	SDL_Renderer *renderer;
        	//int w, h;
-	if(SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)) {
+	if((renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC))
+			|| (renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE))) {
 		//SDL_GL_GetDrawableSize(window, &w, &h);
 		//w = w>width ? width : w;
 		//h = h>height ? height : h;
