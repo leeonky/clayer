@@ -8,9 +8,9 @@
 SUITE_START("SDL_CreateWindow_test");
 
 static SDL_Window *ret_window;
-const char *arg_title;
-int arg_width, arg_height, arg_x, arg_y;
-Uint32 arg_flag;
+static const char *arg_title;
+static int arg_width, arg_height, arg_x, arg_y;
+static Uint32 arg_flag;
 mock_function_1(int, sdl_window_action, SDL_Window *);
 
 BEFORE_EACH() {

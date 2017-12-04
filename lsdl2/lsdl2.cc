@@ -19,3 +19,21 @@ int SDL_CreateWindow(const char *caption,
 		res = log_sdl_error();
 	return res;
 }
+
+int SDL_CreateTexture(SDL_Window *window, int width, int height, Uint32 format, const std::function<int(int, int, SDL_Texture *)> &action) {
+	int res = 0, w, h;
+	if(SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)) {
+		SDL_GL_GetDrawableSize(window, &w, &h);
+		w = w>width ? width : w;
+		h = h>height ? height : h;
+		if(SDL_Texture *texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, w, h)) {
+			res = action(w, h, texture);
+			SDL_DestroyTexture(texture);
+		} else
+			res = log_sdl_error();
+		SDL_DestroyRenderer(renderer);
+	} else
+		res = log_sdl_error();
+	return res;
+}
+
