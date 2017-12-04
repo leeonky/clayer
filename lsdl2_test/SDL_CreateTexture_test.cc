@@ -14,12 +14,12 @@ static int ret_width, ret_height;
 static int arg_width, arg_height;
 static Uint32 arg_format;
 
-mock_function_3(int, sdl_texture_action, int, int, SDL_Texture *);
+mock_function_4(int, sdl_texture_action, int, int, SDL_Renderer *, SDL_Texture *);
 
-static void stub_SDL_GL_GetDrawableSize(SDL_Window *window, int *w, int *h) {
-	*w = ret_width;
-	*h = ret_height;
-}
+//static void stub_SDL_GL_GetDrawableSize(SDL_Window *window, int *w, int *h) {
+	//*w = ret_width;
+	//*h = ret_height;
+//}
 
 BEFORE_EACH() {
 	init_subject("");
@@ -35,7 +35,7 @@ BEFORE_EACH() {
 	arg_format = 1024;
 
 	init_mock_function_with_return(SDL_CreateRenderer, ret_renderer);
-	init_mock_function_with_function(SDL_GL_GetDrawableSize, stub_SDL_GL_GetDrawableSize);
+	//init_mock_function_with_function(SDL_GL_GetDrawableSize, stub_SDL_GL_GetDrawableSize);
 	init_mock_function_with_return(SDL_CreateTexture, ret_texture);
 	init_mock_function(sdl_texture_action);
 	init_mock_function(SDL_DestroyTexture);
@@ -59,8 +59,8 @@ SUITE_CASE("create sdl texture") {
 	CUE_EXPECT_CALLED_WITH_INT(SDL_CreateRenderer, 2, -1);
 	CUE_EXPECT_CALLED_WITH_INT(SDL_CreateRenderer, 3, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-	CUE_EXPECT_CALLED_ONCE(SDL_GL_GetDrawableSize);
-	CUE_EXPECT_CALLED_WITH_PTR(SDL_GL_GetDrawableSize, 1, arg_window);
+	//CUE_EXPECT_CALLED_ONCE(SDL_GL_GetDrawableSize);
+	//CUE_EXPECT_CALLED_WITH_PTR(SDL_GL_GetDrawableSize, 1, arg_window);
 
 	CUE_EXPECT_CALLED_ONCE(SDL_CreateTexture);
 	CUE_EXPECT_CALLED_WITH_PTR(SDL_CreateTexture, 1, ret_renderer);
@@ -72,7 +72,8 @@ SUITE_CASE("create sdl texture") {
 	CUE_EXPECT_CALLED_ONCE(sdl_texture_action);
 	CUE_EXPECT_CALLED_WITH_INT(sdl_texture_action, 1, arg_width);
 	CUE_EXPECT_CALLED_WITH_INT(sdl_texture_action, 2, arg_height);
-	CUE_EXPECT_CALLED_WITH_PTR(sdl_texture_action, 3, ret_texture);
+	CUE_EXPECT_CALLED_WITH_PTR(sdl_texture_action, 3, ret_renderer);
+	CUE_EXPECT_CALLED_WITH_PTR(sdl_texture_action, 4, ret_texture);
 
 	CUE_EXPECT_CALLED_ONCE(SDL_DestroyTexture);
 	CUE_EXPECT_CALLED_WITH_PTR(SDL_DestroyTexture, 1, ret_texture);

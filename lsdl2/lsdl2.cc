@@ -20,19 +20,34 @@ int SDL_CreateWindow(const char *caption,
 	return res;
 }
 
-int SDL_CreateTexture(SDL_Window *window, int width, int height, Uint32 format, const std::function<int(int, int, SDL_Texture *)> &action) {
-	int res = 0, w, h;
+int SDL_CreateTexture(SDL_Window *window, int width, int height, Uint32 format, const std::function<int(int, int, SDL_Renderer *, SDL_Texture *)> &action) {
+	int res = 0;
+       	//int w, h;
 	if(SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)) {
-		SDL_GL_GetDrawableSize(window, &w, &h);
-		w = w>width ? width : w;
-		h = h>height ? height : h;
-		if(SDL_Texture *texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, w, h)) {
-			res = action(w, h, texture);
+		//SDL_GL_GetDrawableSize(window, &w, &h);
+		//w = w>width ? width : w;
+		//h = h>height ? height : h;
+		//if(SDL_Texture *texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, w, h)) {
+			//res = action(w, h, renderer, texture);
+			//SDL_DestroyTexture(texture);
+		//} else
+		if(SDL_Texture *texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STREAMING, width, height)) {
+			res = action(width, height, renderer, texture);
 			SDL_DestroyTexture(texture);
 		} else
 			res = log_sdl_error();
 		SDL_DestroyRenderer(renderer);
 	} else
+		res = log_sdl_error();
+	return res;
+}
+
+int SDL_PresentYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas, int *lines) {
+	int res = 0;
+	if(!SDL_UpdateYUVTexture(texture, NULL, datas[0], lines[0], datas[1], lines[1], datas[2], lines[2])
+			&& !SDL_RenderCopy(renderer, texture,  NULL, NULL))
+		SDL_RenderPresent(renderer);
+	else
 		res = log_sdl_error();
 	return res;
 }
