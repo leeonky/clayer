@@ -14,6 +14,7 @@ int main() {
 	ADD_SUITE(av_copy_frame_to_buffer_test);
 	ADD_SUITE(avcodec_receive_frame_audio_test);
 	ADD_SUITE(av_frame_pts_test);
+	ADD_SUITE(av_image_fill_arrays_test);
 	return run_test();
 }
 

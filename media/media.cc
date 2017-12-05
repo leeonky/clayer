@@ -48,8 +48,9 @@ int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
 				frame_list list;
-				while(list.count<MAX_FRAMES_COUNT && 2==fscanf(file, "%d=>%" PRId64, &list.frames[list.count].index, &list.frames[list.count].timestamp))
-					list.count++;
+				while(list.count<MAX_FRAMES_COUNT
+					&& 2==fscanf(file, "%d=>%" PRId64, &list.frames[list.count].index, &list.frames[list.count].timestamp))
+				list.count++;
 				return action(list);
 				});
 			});

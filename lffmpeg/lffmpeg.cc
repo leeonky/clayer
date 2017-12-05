@@ -107,7 +107,7 @@ namespace {
 		decoding_context context;
 		switch(stream.codecpar->codec_type) {
 			case AVMEDIA_TYPE_VIDEO:
-				context.align = 64;
+				context.align = VIDEO_ALIGN;
 				break;
 			case AVMEDIA_TYPE_AUDIO:
 				context.align = 1;
@@ -309,5 +309,16 @@ const char *av_frame_info(int index, const AVFrame &frame) {
 			not_support_media_type(context->av_stream->codecpar->codec_type);
 	}
 	return buffer;
+}
+
+int av_image_fill_arrays(int width, int height, enum AVPixelFormat format, const void *buffer, const std::function<int(uint8_t **, int *)> &action) {
+	uint8_t* datas[4];
+	int lines[4], res;
+	int ret = av_image_fill_arrays(datas, lines, (const uint8_t *)buffer, format, width, height, VIDEO_ALIGN);
+	if(ret<0)
+		res = log_errno(ret);
+	else
+		res = action(datas, lines);
+	return res;
 }
 

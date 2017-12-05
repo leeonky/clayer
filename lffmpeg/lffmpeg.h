@@ -8,6 +8,8 @@ extern "C" {
 #include <libswresample/swresample.h>
 }
 
+#define VIDEO_ALIGN 64
+
 extern int avformat_open_input(const char *, const std::function<int(AVFormatContext &)> &);
 
 extern int avformat_find_stream(AVFormatContext &, enum AVMediaType, int, const std::function<int(AVStream &)> &);
@@ -31,6 +33,8 @@ extern int av_copy_frame_to_buffer(const AVFrame &, void *, size_t);
 extern int64_t av_frame_pts(const AVFrame &);
 
 extern const char *av_frame_info(int, const AVFrame &);
+
+extern int av_image_fill_arrays(int, int, enum AVPixelFormat, const void *, const std::function<int(uint8_t **, int *)> &);
 
 #endif
 
