@@ -41,8 +41,19 @@ int sem_new_with_id(int id, int count, const std::function<int(sem_t *)> &action
 		res = action(semaphore);
 		sem_close(semaphore);
 		sem_unlink_with_id(id);
-	} else {
+	} else
 		res = log_errno();
-	}
 	return res;
 }
+
+int sem_load_with_id(int id, const std::function<int(sem_t *)> &action) {
+	int res;
+	sem_t *semaphore;
+	if(SEM_FAILED != (semaphore = sem_load_with_id(id))) {
+		res = action(semaphore);
+		sem_close(semaphore);
+	} else
+		res = log_errno();
+	return res;
+}
+
