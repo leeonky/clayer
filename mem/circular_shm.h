@@ -8,6 +8,7 @@ class circular_shm {
 
 public:
 	static int create(size_t, int, const std::function<int(circular_shm &)> &);
+	static int load(int, size_t, int, int, const std::function<int(circular_shm &)> &);
 	const char *serialize_to_string();
 
 	void *allocate() {
@@ -26,6 +27,7 @@ private:
 
 	circular_shm() {}
 	int initialize_and_action(size_t, int, const std::function<int(circular_shm &)> &);
+	int load_and_action(int, size_t, int, int, const std::function<int(circular_shm &)> &);
 };
 
 #endif

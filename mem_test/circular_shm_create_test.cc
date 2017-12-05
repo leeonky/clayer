@@ -158,6 +158,5 @@ SUITE_CASE("allocate buffer") {
 
 	CUE_EXPECT_CALLED_ONCE(circular_shm_create_action);
 }
-//save semaphore
 
 SUITE_END(circular_shm_create_test);
