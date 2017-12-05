@@ -33,4 +33,6 @@ private:
 	std::map<int, std::function<void(const char *)>> argument_handlers;
 };
 
+int fmemopen(void *, size_t, const char *, const std::function<int(FILE *)> &);
+
 #endif

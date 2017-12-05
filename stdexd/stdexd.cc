@@ -59,3 +59,14 @@ const char *command_argument::parse(int argc, char **argv) {
 	return "";
 }
 
+int fmemopen(void *buf, size_t size, const char *mode, const std::function<int(FILE *)> &action) {
+	int res = 0;
+	FILE *f = fmemopen(buf, size, mode);
+	if(f) {
+		res = action(f);
+		fclose(f);
+	} else
+		res = -1;
+	return res;
+}
+
