@@ -46,3 +46,13 @@ int open_video(iobus &iob, const char *caption, int x, int y, int width, int hei
 			});
 }
 
+int load_buffer(iobus &iob, const std::function<int(circular_shm &)> &action) {
+	return iob.get([&](const char *command, const char *arguments){
+			int res = 0;
+			int shm_id, sem_id, count;
+			size_t element_size;
+			sscanf(arguments, "id:%d size:%zu count:%d sem:%d", &shm_id, &element_size, &count, &sem_id);
+			return circular_shm::load(shm_id, element_size, count, sem_id, action);
+			});
+}
+

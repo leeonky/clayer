@@ -33,44 +33,29 @@ namespace {
 	}
 }
 
-int circular_shm::initialize_and_action(size_t size, int count, const std::function<int(circular_shm &)> &action) {
-	element_size = alignment_size(size);
-	element_count = count;
-	return shmget(element_size*count, [this, &action](int id) {
-			last_shm_id = shm_id = id;
-			return shmat(id, [this, &action](void *buf) {
-				buffer = static_cast<int8_t *>(buf);
-				last_sem_id = sem_id = getpid();
-				return sem_new_with_id(sem_id, element_count, [this, &action](sem_t *s){
-					semaphore = s;
+int circular_shm::create(size_t size, int count, const std::function<int(circular_shm &)> &action) {
+	size_t element_size = alignment_size(size);
+	return shmget(element_size*count, [&](int id) {
+			last_shm_id = id;
+			return shmat(id, [&](void *buf) {
+				int sem_id = getpid();
+				last_sem_id = sem_id;
+				return sem_new_with_id(sem_id, count, [&](sem_t *s){
+					circular_shm shm(id, element_size, count, sem_id, static_cast<int8_t *>(buf), s);
 					register_cbuf_clean();
-					return action(*this);
+					return action(shm);
 					});
 				});
 			});
 }
 
-int circular_shm::load_and_action(int shm_id, size_t element_size, int count, int sem_id, const std::function<int(circular_shm &)> &action) {
-	this->shm_id = shm_id;
-	this->element_size = element_size;
-	this->element_count = count;
-	this->sem_id = sem_id;
-
+int circular_shm::load(int shm_id, size_t element_size, int count, int sem_id, const std::function<int(circular_shm &)> &action) {
 	return shmat(shm_id, [&](void *buf) {
-			buffer = static_cast<int8_t *>(buf);
 			return sem_load_with_id(sem_id, [&](sem_t *s) {
-				semaphore = s;
-				return action(*this);
+				circular_shm shm(shm_id, element_size, count, sem_id, static_cast<int8_t *>(buf), s);
+				return action(shm);
 				});
 			});
-}
-
-int circular_shm::create(size_t size, int count, const std::function<int(circular_shm &)> &action) {
-	return circular_shm().initialize_and_action(size, count, action);
-}
-
-int circular_shm::load(int shm_id, size_t element_size, int count, int sem_id, const std::function<int(circular_shm &)> &action) {
-	return circular_shm().load_and_action(shm_id, element_size, count, sem_id, action);
 }
 
 const char *circular_shm::serialize_to_string() {

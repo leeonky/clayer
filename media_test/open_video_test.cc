@@ -21,7 +21,7 @@ static SDL_Texture *ret_texture;
 
 mock_function_5(int, video_action, SDL_Window *, SDL_Renderer *, int, int, SDL_Texture *);
 
-std::unique_ptr<iobus> iob;
+static std::unique_ptr<iobus> iob;
 
 BEFORE_EACH() {
 	init_subject("");
