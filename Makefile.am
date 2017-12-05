@@ -9,7 +9,9 @@ SUBDIRS += lffmpeg
 SUBDIRS += lsdl2
 SUBDIRS += mem
 SUBDIRS += iobus
+SUBDIRS += media
 SUBDIRS += decoder
+SUBDIRS += screen
 endif
 
 if !ENV_PRD

@@ -40,9 +40,7 @@ ltmain.sh
 ###########
 *.test
 decoder/decoder
-vbuf/vbuf
-vplayer/vplayer
-aplayer/aplayer
+screen/screen
 rsp/rsp
 
 .dev

@@ -7,7 +7,6 @@
 #define log_error(format, ...) log_error("libiobus", (format), ## __VA_ARGS__)
 
 int iobus::get(const std::function<int(const char *, const char *)> &action) {
-	int res = 0;
 	size_t len = 0;
 	if(processed) {
 		if(-1 != getline(&line, &len, file_in) && 1 == sscanf(line, "%s", command)) {
@@ -17,9 +16,7 @@ int iobus::get(const std::function<int(const char *, const char *)> &action) {
 		} else
 			return -1;
 	}
-	if(!(res = action(command, arguments)))
-		processed = true;
-	return res;
+	return action(command, arguments);
 }
 
 int iobus::get(const char *event, const std::function<int(const char *, const char *)> &action, int arg_count, const char *format, ...) {
@@ -29,6 +26,7 @@ int iobus::get(const char *event, const std::function<int(const char *, const ch
 	res = get([&](const char *command, const char *arguments) {
 			int r = 0;
 			if(!strcmp(command, event)) {
+				processed = true;
 				if(arg_count == vsscanf(arguments, format, args)) {
 					r = action(command, arguments);
 				} else

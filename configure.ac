@@ -42,6 +42,8 @@ AM_COND_IF([ENV_TEST], [],
 	   mem/Makefile
 	   iobus/Makefile
 	   lsdl2/Makefile
+	   media/Makefile
+	   screen/Makefile
 	   ])])
 
 # Testing Makefile
