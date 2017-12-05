@@ -13,6 +13,10 @@ public:
 	}
 
 	int get(const std::function<int(const char *, const char *)> &);
+	int get(const char *, const std::function<int(const char *, const char *)> &, int, const char *, ...);
+	int get(const char *event, const std::function<int(const char *, const char *)> &action) {
+		return get(event, action, 0, "");
+	}
 private:
 	FILE *file_in, *file_out, *file_err;
 	char *line;

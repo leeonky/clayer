@@ -17,6 +17,7 @@ static size_t arg_size;
 static int arg_count, arg_shmid, arg_sem_id;
 static char ret_buffer[4096*10];
 static sem_t ret_sem;
+static int arg_index;
 
 SUITE_START("circular_shm_load_test");
 
@@ -36,6 +37,7 @@ BEFORE_EACH() {
 	init_mock_function(shmdt);
 	init_mock_function_with_return(sem_load_with_id, &ret_sem);
 	init_mock_function(sem_close);
+	init_mock_function(sem_post);
 	return 0;
 }
 
@@ -74,45 +76,27 @@ SUITE_CASE("init with all resources") {
 	CUE_EXPECT_CALLED_WITH_PTR(shmdt, 1, ret_buffer);
 }
 
-//static int circular_shm_create_action_assert_serialize(circular_shm *cshm) {
-	//char buffer[1024];
-	//sprintf(buffer, "BUFFER id:%d size:%d count:%d sem:%d", ret_shmid, getpagesize(), arg_count, getpid());
-	//CUE_ASSERT_STRING_EQ(cshm->serialize_to_string(), buffer);
-	//return 0;
-//}
+mock_function_1(int, post_action, void *);
 
-//SUITE_CASE("circular_shm serialize to string") {
-	//arg_size = 1;
-	//arg_count = 1024;
-	//init_mock_function_with_return(shmget, ret_shmid=100);
-	//init_mock_function_with_function(circular_shm_create_action, circular_shm_create_action_assert_serialize);
+static int assert_circular_shm_post(circular_shm *shm) {
+	arg_index = 1;
+	shm->free(arg_index, post_action);
 
-	//CUE_ASSERT_SUBJECT_SUCCEEDED();
+	CUE_EXPECT_CALLED_ONCE(post_action);
 
-	//CUE_EXPECT_CALLED_ONCE(circular_shm_create_action);
-//}
+	CUE_EXPECT_CALLED_WITH_PTR(post_action, 1, ret_buffer+arg_index*arg_size);
 
-//static int circular_shm_create_action_assert_allocate(circular_shm *cshm) {
-	//CUE_ASSERT_PTR_EQ(cshm->allocate(), ret_buffer+getpagesize());
+	CUE_EXPECT_CALLED_ONCE(sem_post);
+	CUE_EXPECT_CALLED_WITH_PTR(sem_post, 1, &ret_sem);
+	return 0;
+}
 
-	//CUE_EXPECT_CALLED_ONCE(sem_wait);
-	//CUE_EXPECT_CALLED_WITH_PTR(sem_wait, 1, &ret_sem);
+SUITE_CASE("release buffer") {
+	init_mock_function_with_function(circular_shm_load_action, assert_circular_shm_post);
 
-	//CUE_ASSERT_PTR_EQ(cshm->allocate(), ret_buffer);
-	//CUE_ASSERT_PTR_EQ(cshm->allocate(), ret_buffer+getpagesize());
-	//return 0;
-//}
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
-//SUITE_CASE("allocate buffer") {
-	//arg_size = 1;
-	//arg_count = 2;
-	//init_mock_function_with_function(circular_shm_create_action, circular_shm_create_action_assert_allocate);
-	//init_mock_function(sem_wait);
-
-	//CUE_ASSERT_SUBJECT_SUCCEEDED();
-
-	//CUE_EXPECT_CALLED_ONCE(circular_shm_create_action);
-//}
-//save semaphore
+	CUE_EXPECT_CALLED_ONCE(circular_shm_load_action);
+}
 
 SUITE_END(circular_shm_load_test);

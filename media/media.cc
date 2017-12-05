@@ -23,36 +23,28 @@ Uint32 AVPixelFormat_to_SDL(const char *format) {
 }
 
 int open_video(iobus &iob, const char *caption, int x, int y, int width, int height, Uint32 flag, const std::function<int(SDL_Window *, SDL_Renderer *, int, int, SDL_Texture *)> &action) {
-	return iob.get([&](const char *command, const char *arguments){
-			int res = 0;
-			if(!strcmp(command, "VIDEO")) {
-				int vw, vh;
-				char format [128] = "";
-				if(3==sscanf(arguments, "width:%d height:%d format:%s", &vw, &vh, format)){
-					Uint32 sdl_format = AVPixelFormat_to_SDL(format);
-					if(sdl_format != SDL_PIXELFORMAT_UNKNOWN) {
-						res = SDL_CreateWindow(caption, x, y, width, height, flag, [&](SDL_Window *window){
-							return SDL_CreateTexture(window, vw, vh, sdl_format, [&](int w, int h, SDL_Renderer *renderer, SDL_Texture *texture){
-								return action(window, renderer, w, h, texture);
-								});
-							});
-					} else
-						res = -1;
-				} else
-					res = log_error("Invalid VIDEO arguments '%s'", arguments);
+	int vw, vh;
+	char format [128] = "";
+	return iob.get("VIDEO", [&](const char*, const char*) {
+			int res;
+			Uint32 sdl_format = AVPixelFormat_to_SDL(format);
+			if(sdl_format != SDL_PIXELFORMAT_UNKNOWN) {
+				res = SDL_CreateWindow(caption, x, y, width, height, flag, [&](SDL_Window *window){
+					return SDL_CreateTexture(window, vw, vh, sdl_format, [&](int w, int h, SDL_Renderer *renderer, SDL_Texture *texture){
+						return action(window, renderer, w, h, texture);
+						});
+					});
 			} else
 				res = -1;
 			return res;
-			});
+			}, 3, "width:%d height:%d format:%s", &vw, &vh, format);
 }
 
 int load_buffer(iobus &iob, const std::function<int(circular_shm &)> &action) {
-	return iob.get([&](const char *command, const char *arguments){
-			int res = 0;
-			int shm_id, sem_id, count;
-			size_t element_size;
-			sscanf(arguments, "id:%d size:%zu count:%d sem:%d", &shm_id, &element_size, &count, &sem_id);
+	int shm_id, sem_id, count;
+	size_t element_size;
+	return iob.get("BUFFER", [&](const char*, const char*) {
 			return circular_shm::load(shm_id, element_size, count, sem_id, action);
-			});
+			}, 4, "id:%d size:%zu count:%d sem:%d", &shm_id, &element_size, &count, &sem_id);
 }
 

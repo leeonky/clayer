@@ -63,5 +63,19 @@ SUITE_CASE("load circular_shm") {
 	CUE_EXPECT_CALLED_WITH_INT(sem_load_with_id, 1, 7214);
 }
 
+SUITE_CASE("event not match") {
+	init_subject("AUDIO id:0 size:3112960 count:16 sem:7214");
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+}
+
+SUITE_CASE("args not match") {
+	init_subject("BUFFER id:0 size:3112960 count:16");
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_ASSERT_STDERR_EQ("Error[libiobus]: Invalid BUFFER arguments 'id:0 size:3112960 count:16'\n");
+}
+
 SUITE_END(load_buffer_test);
 

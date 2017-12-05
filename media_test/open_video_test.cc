@@ -105,7 +105,7 @@ SUITE_CASE("args not match") {
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
-	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Invalid VIDEO arguments 'width:1920 format:yuv420p'\n");
+	CUE_ASSERT_STDERR_EQ("Error[libiobus]: Invalid VIDEO arguments 'width:1920 format:yuv420p'\n");
 }
 
 SUITE_CASE("unsupport format") {

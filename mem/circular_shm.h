@@ -17,9 +17,14 @@ public:
 		index = (index+1)%element_count;
 		return buffer+element_size*index;
 	}
+
+	void free(int index, const std::function<void(void *)> &action) {
+		action(buffer+element_size*index);
+		sem_post(semaphore);
+	}
+
 	size_t element_size;
 	unsigned index = 0;
-
 
 private:
 	int shm_id, sem_id, element_count;
