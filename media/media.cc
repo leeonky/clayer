@@ -23,7 +23,7 @@ Uint32 AVPixelFormat_to_SDL(enum AVPixelFormat format) {
 int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat)> &action) {
 	int vw, vh;
 	char format [128] = "";
-	return iob.get("VIDEO", [&](const char*, const char*) {
+	return iob.get("VIDEO", [&](const char *, const char *) {
 			int res;
 			enum AVPixelFormat av_format = av_get_pix_fmt(format);
 			if(av_format != AV_PIX_FMT_NONE)
@@ -37,8 +37,15 @@ int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat
 int buffer_event(iobus &iob, const std::function<int(int, size_t, int, int)> &action) {
 	int shm_id, sem_id, count;
 	size_t element_size;
-	return iob.get("BUFFER", [&](const char*, const char*) {
+	return iob.get("BUFFER", [&](const char *, const char *) {
 			return action(shm_id, element_size, count, sem_id);
 			}, 4, "id:%d size:%zu count:%d sem:%d", &shm_id, &element_size, &count, &sem_id);
+}
+
+int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
+	return iob.get("FRAMES", [&](const char *, const char *) {
+			frame_list list;
+			return action(list);
+			});
 }
 
