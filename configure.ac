@@ -26,7 +26,7 @@ AC_CHECK_HEADERS([cstdlib])
 AM_CONDITIONAL([ENV_TEST], [test "x$ENV" = xTEST])
 AM_CONDITIONAL([ENV_PRD], [test "x$ENV" != xDEV && test "x$ENV" != xTEST])
 
-AC_SUBST(AM_CPPFLAGS, "-std=c++11 -fno-exceptions -fno-rtti -Wall -Wextra")
+AC_SUBST(AM_CXXFLAGS, "-std=c++11 -fno-exceptions -fno-rtti -Wall -Wextra")
 
 AC_CONFIG_FILES([Makefile])
 
