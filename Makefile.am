@@ -15,10 +15,10 @@ SUBDIRS += screen
 endif
 
 if !ENV_PRD
-SUBDIRS += mock_ffmpeg
-SUBDIRS += mock_sdl2
 SUBDIRS += mock_sys
 SUBDIRS += mock_std
+SUBDIRS += mock_ffmpeg
+SUBDIRS += mock_sdl2
 SUBDIRS += sysexd_test
 SUBDIRS += stdexd_test
 SUBDIRS += lffmpeg_test

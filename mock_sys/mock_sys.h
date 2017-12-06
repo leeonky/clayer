@@ -1,14 +1,15 @@
 #ifndef MOCK_SYSCALL_
 #define MOCK_SYSCALL_
 
-#include <cunitexd.h>
-#include <sys/shm.h>
-#include <semaphore.h>
-#include <unistd.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <cunitexd.h>
+#include <sys/shm.h>
+#include <semaphore.h>
+#include <unistd.h>
 
 extern_mock_function_3(int, shmget, key_t, size_t, int);
 extern_mock_function_3(void *, shmat, int, const void *, int);

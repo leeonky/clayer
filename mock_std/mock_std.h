@@ -1,11 +1,11 @@
 #ifndef MOCK_STD_
 #define MOCK_STD_
 
-#include <cunitexd.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <cunitexd.h>
 #include <stdio.h>
 
 extern_mock_function_3(FILE *, fmemopen, void *, size_t, const char *);
