@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <cunitexd.h>
 #include "stdexd/stdexd.h"
-#include "mock.h"
+#include "mock_std/mock_std.h"
 
 SUITE_START("fmemopen_test");
 

@@ -1,9 +1,16 @@
 #include <cunitexd.h>
 
+#ifdef __APPLE__
+int strerror_r(int e, char *buffer, size_t buflen) {
+	snprintf(buffer, buflen, "%d", e);
+	return 0;
+}
+#else
 char *strerror_r(int e, char *buffer, size_t buflen) {
 	snprintf(buffer, buflen, "%d", e);
 	return buffer;
 }
+#endif
 
 int main() {
 	init_test();

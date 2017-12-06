@@ -1,6 +1,7 @@
 #include <sys/shm.h>
 #include <cstdio>
 #include <cstring>
+#include <cerrno>
 #include "stdexd/stdexd.h"
 #include "sysexd.h"
 #include "sysport/sysport.h"
