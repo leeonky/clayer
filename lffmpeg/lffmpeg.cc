@@ -19,7 +19,7 @@ namespace {
 
 int avformat_open_input(const char *file, const std::function<int(AVFormatContext &)> &action) {
 	int res = 0, ret;
-	AVFormatContext *format_context;
+	AVFormatContext *format_context = nullptr;
 	av_register_all();
 	if (!(ret = avformat_open_input(&format_context, file, nullptr, nullptr))) {
 		res = action(*format_context);

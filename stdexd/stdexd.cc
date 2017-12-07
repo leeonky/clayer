@@ -46,7 +46,7 @@ const char *command_argument::parse(int argc, char **argv) {
 	string option_str;
 	std::for_each(argument_handlers.begin(), argument_handlers.end(),
 			[&](const std::pair<int, std::function<void(const char *)>> &handler){
-			option_str.append(std::to_string(handler.first)).append(":");
+			option_str.append(std::string(1, handler.first)).append(":");
 			});
 
 	while((c=getopt_long(argc, argv, option_str.c_str(), long_options.data(), &option_index)) != -1) {
