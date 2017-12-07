@@ -26,7 +26,7 @@ AFTER_EACH() {
 SUITE_CASE("parse with empty args") {
 	init_subject("");
 
-	CUE_ASSERT_STRING_EQ(command_argument().parse(actxt.argc, actxt.argv), "");
+	CUE_ASSERT_PTR_EQ(command_argument().parse(actxt.argc, actxt.argv), NULL);
 }
 
 SUITE_CASE("parse with last arg") {

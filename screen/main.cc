@@ -5,7 +5,7 @@
 #include "lsdl2/lsdl2.h"
 #include "media/media.h"
 
-int play_main() {
+int main(int, char **) {
 	iobus iob(stdin, stdout, stderr);
 	return video_event(iob, [&](int fw, int fh, enum AVPixelFormat av_format){
 			return SDL_CreateWindow("", 0, 0, 1920, 1080, 0,
@@ -32,8 +32,4 @@ int play_main() {
 					});	
 				});
 			});
-}
-
-int main(int, char **) {
-	play_main();
 }

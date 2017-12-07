@@ -45,9 +45,8 @@ const char *command_argument::parse(int argc, char **argv) {
 
 	string option_str;
 	std::for_each(argument_handlers.begin(), argument_handlers.end(),
-			[&option_str](const std::pair<int, std::function<void(const char *)>> &handler){
-			option_str += handler.first;
-			option_str += ':';
+			[&](const std::pair<int, std::function<void(const char *)>> &handler){
+			option_str.append(std::to_string(handler.first)).append(":");
 			});
 
 	while((c=getopt_long(argc, argv, option_str.c_str(), long_options.data(), &option_index)) != -1) {
@@ -57,7 +56,7 @@ const char *command_argument::parse(int argc, char **argv) {
 	}
 	if(optind < argc)
 		return argv[optind];
-	return "";
+	return NULL;
 }
 
 int fmemopen(void *buf, size_t size, const char *mode, const std::function<int(FILE *)> &action) {

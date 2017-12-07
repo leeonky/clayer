@@ -1,6 +1,7 @@
 #ifndef IOBUS_H
 #define IOBUS_H
 #include <functional>
+#include <cstdlib>
 
 class iobus {
 public:

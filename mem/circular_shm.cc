@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <signal.h>
+#include <cstdlib>
 #include "circular_shm.h"
 #include "stdexd/stdexd.h"
 #include "sysexd/sysexd.h"
