@@ -31,6 +31,7 @@ BEFORE_EACH() {
 	app_stderr = actxt.error_stream;
 
 	av_frame_alloc_called_times = 0;
+	ret_decoded_av_frame.pkt_duration = ret_decoded_av_frame.nb_samples = ret_decoded_av_frame.channels = ret_decoded_av_frame.format = -1;
 
 	init_mock_function_with_return(avcodec_find_decoder, &ret_codec);
 	init_mock_function_with_return(avcodec_alloc_context3, &ret_codec_context);
@@ -43,6 +44,7 @@ BEFORE_EACH() {
 	init_mock_function(av_packet_unref);
 	init_mock_function(av_frame_alloc);
 	init_mock_function(av_frame_free);
+	init_mock_function(av_samples_alloc);
 
 	arg_av_stream.codecpar = &arg_codec_parameters;
 	return 0;
@@ -206,6 +208,30 @@ SUITE_CASE("decoding_context args for audio decoder") {
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
 	CUE_EXPECT_CALLED_ONCE(avcodec_open_action);
+
+	CUE_EXPECT_CALLED_ONCE(av_samples_alloc);
+	CUE_EXPECT_CALLED_WITH_PTR(av_samples_alloc, 1, ret_decoded_av_frame.data);
+	CUE_EXPECT_CALLED_WITH_PTR(av_samples_alloc, 2, ret_decoded_av_frame.linesize);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_alloc, 3, ret_codec_context.channels);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_alloc, 4, 10);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_alloc, 5, ret_codec_context.sample_fmt);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_alloc, 6, 1);
+
+	CUE_ASSERT_EQ(ret_decoded_av_frame.nb_samples, 0);
+	CUE_ASSERT_EQ(ret_decoded_av_frame.pkt_duration, 0);
+	CUE_ASSERT_EQ(ret_decoded_av_frame.channels, ret_codec_context.channels);
+	CUE_ASSERT_EQ(ret_decoded_av_frame.format, ret_codec_context.sample_fmt);
+}
+
+SUITE_CASE("failed to av_samples_alloc") {
+	arg_codec_parameters.codec_type = AVMEDIA_TYPE_AUDIO;
+	arg_codec_parameters.sample_rate = 1000;
+	init_mock_function_with_return(av_samples_alloc, -100);
+	init_mock_function_with_function(av_frame_alloc, stub_av_frame_alloc);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: -100\n");
 }
 
 SUITE_END(avcodec_open_test);

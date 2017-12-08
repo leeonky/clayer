@@ -127,6 +127,15 @@ namespace {
 					return av_new_frame([&](AVFrame &decoded_av_frame) -> int {
 						context.decoded_av_frame = &decoded_av_frame;
 						decoded_av_frame.opaque = &context;
+						if(AVMEDIA_TYPE_AUDIO == stream.codecpar->codec_type) {
+							decoded_av_frame.nb_samples = 0;
+							decoded_av_frame.pkt_duration = 0;
+							decoded_av_frame.channels = codec_context.channels;
+							decoded_av_frame.format = codec_context.sample_fmt;
+							int ret = av_samples_alloc(decoded_av_frame.data, decoded_av_frame.linesize, codec_context.channels, context.samples_size, codec_context.sample_fmt, context.align);
+							if(ret<0)
+								return log_errno(ret);
+						}
 						return action(context);
 						});
 					});
