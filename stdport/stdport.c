@@ -1,3 +1,5 @@
+#include "stdport.h"
+#include <sys/time.h>
 #ifdef __APPLE__
 
 #include <stdio.h>
@@ -88,4 +90,14 @@ FILE *fmemopen(void *buf, size_t size, const char *mode) {
 }
 
 #endif
+
+int64_t usectime() {
+	int64_t us = 0;
+	struct timeval tv;
+	if(!gettimeofday(&tv, 0)) {
+		us = tv.tv_sec;
+		us = us*1000000 + tv.tv_usec;
+	}
+	return us;
+}
 

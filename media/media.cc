@@ -1,4 +1,5 @@
 #include <cinttypes>
+#include <unistd.h>
 #include "media.h"
 #include "stdexd/stdexd.h"
 #include "lffmpeg/lffmpeg.h"
@@ -54,5 +55,12 @@ int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
 				return action(list);
 				});
 			});
+}
+
+int media_clock::wait(int64_t pts, int64_t period) {
+	int64_t now = usectime();
+	int64_t s = pts - offset - (now-base);
+	usleep(s);
+	return 0;
 }
 

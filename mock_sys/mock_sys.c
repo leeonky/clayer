@@ -12,3 +12,6 @@ mock_function_2(sem_t *, sem_new_with_id, int, int);
 mock_function_1(sem_t *, sem_load_with_id, int);
 mock_function_1(int, sem_close, sem_t *);
 mock_function_1(int, sem_unlink_with_id, int);
+
+mock_function_0(int64_t, usectime);
+mock_function_1(int, usleep, useconds_t);

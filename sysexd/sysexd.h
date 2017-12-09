@@ -11,5 +11,6 @@ int shmat(int, const std::function<int(void *)> &);
 int sem_new_with_id(int, int, const std::function<int(sem_t *)> &);
 
 int sem_load_with_id(int, const std::function<int(sem_t *)> &);
+
 #endif
 

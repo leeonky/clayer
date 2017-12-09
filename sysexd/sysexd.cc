@@ -57,4 +57,3 @@ int sem_load_with_id(int id, const std::function<int(sem_t *)> &action) {
 		res = log_errno();
 	return res;
 }
-

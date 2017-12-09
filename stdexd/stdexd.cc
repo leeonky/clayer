@@ -69,4 +69,3 @@ int fmemopen(void *buf, size_t size, const char *mode, const std::function<int(F
 		res = -1;
 	return res;
 }
-
