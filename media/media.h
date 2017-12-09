@@ -3,9 +3,8 @@
 
 #include <functional>
 #include "iobus/iobus.h"
-#include "lsdl2/lsdl2.h"
 #include "lffmpeg/lffmpeg.h"
-#include "mem/circular_shm.h"
+#include "lsdl2/lsdl2.h"
 #include "stdport/stdport.h"
 
 Uint32 AVPixelFormat_to_SDL(enum AVPixelFormat);
