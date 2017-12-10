@@ -58,9 +58,13 @@ int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
 }
 
 int media_clock::wait(int64_t pts, int64_t period) {
-	int64_t now = usectime();
-	int64_t s = pts - offset - (now-base);
-	usleep(s);
+	int64_t s = pts - offset - (usectime()-base);
+	if(s<0)
+		return -1;
+	if(s>period)
+		usleep(period);
+	else if(s)
+		usleep(s);
 	return 0;
 }
 

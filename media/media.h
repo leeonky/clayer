@@ -25,6 +25,10 @@ class media_clock {
 public:
 	media_clock(): base(usectime()), offset() {}
 	int wait(int64_t, int64_t);
+	void sync(int64_t base, int64_t offset) {
+		this->base = base;
+		this->offset = offset;
+	}
 private:
 	int64_t base, offset;
 };
