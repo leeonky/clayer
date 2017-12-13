@@ -15,10 +15,12 @@ int main(int, char **) {
 					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid) {
 						return circular_shm::load(shmid, size, count, semid,
 							[&](circular_shm &shm){
+							media_clock clock;
 							while(!frames_event(iob, [&](frame_list &frames){
 									for(int i=0; i<frames.count; i++){
 										shm.free(frames.frames[i].index, [&](void *buffer){
 											return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
+												clock.wait(frames.frames[i].timestamp, 30000);
 												return SDL_PresentYUV(renderer, texture, datas, lines);
 												});
 											});

@@ -331,3 +331,18 @@ int av_image_fill_arrays(int width, int height, enum AVPixelFormat format, const
 	return res;
 }
 
+int swr_alloc_set_opts_and_init(int64_t in_layout, enum AVSampleFormat in_format, int in_rate, int64_t out_layout, enum AVSampleFormat out_format, int out_rate, const std::function<int(SwrContext *)> &action) {
+	int res = 0;
+	if(SwrContext *swr_context = swr_alloc_set_opts(
+				NULL, out_layout, out_format, out_rate,
+			       	in_layout, in_format, in_rate, 0, NULL)) {
+		if(int ret = swr_init(swr_context))
+			res = log_errno(ret);
+		else
+			res = action(swr_context);
+		swr_free(&swr_context);
+	} else
+		res = log_error("swr_alloc_set_opts failed");
+	return res;
+}
+
