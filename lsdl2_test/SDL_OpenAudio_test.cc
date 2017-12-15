@@ -48,13 +48,14 @@ SUBJECT(int) {
 	return SDL_OpenAudio(arg_device_index, arg_freq, arg_channels, arg_format, open_audio_action_ref);
 }
 
-static SDL_AudioDeviceID stub_SDL_OpenAudioDevice_assert(const char *, int, const SDL_AudioSpec *desired, SDL_AudioSpec *, int) {
+static SDL_AudioDeviceID stub_SDL_OpenAudioDevice_assert(const char *, int, const SDL_AudioSpec *desired, SDL_AudioSpec *obtained, int) {
 	CUE_ASSERT_EQ(desired->freq, arg_freq);
 	CUE_ASSERT_EQ(desired->format, arg_format);
 	CUE_ASSERT_EQ(desired->channels, arg_channels);
 	void *p = (void *)desired->callback;
 	CUE_ASSERT_PTR_EQ(p, NULL);
 	CUE_ASSERT_PTR_EQ(desired->userdata, NULL);
+	*obtained = *desired;
 	return ret_device_id;
 }
 
@@ -129,6 +130,19 @@ SUITE_CASE("failed to open device") {
 	CUE_EXPECT_CALLED_ONCE(SDL_QuitSubSystem);
 
 	CUE_ASSERT_STDERR_EQ("Error[liblsdl2]: sdl error\n");
+}
+
+static SDL_AudioDeviceID stub_SDL_OpenAudioDevice_changed(const char *, int, const SDL_AudioSpec *desired, SDL_AudioSpec *obtained, int) {
+	obtained->freq = desired->freq + 10;
+	return ret_device_id;
+}
+
+SUITE_CASE("open succeded but arguments changed") {
+	init_mock_function_with_function(SDL_OpenAudioDevice, stub_SDL_OpenAudioDevice_changed);
+
+	CUE_ASSERT_SUBJECT_SUCCEEDED();
+
+	CUE_ASSERT_STDERR_EQ("Warning[liblsdl2]: audio parameters changed\n");
 }
 
 SUITE_END(SDL_OpenAudio_test);

@@ -31,6 +31,16 @@ int log_error(const char *module, const char *format, ...) {
 	return -1;
 }
 
+int log_warning(const char *module, const char *format, ...) {
+	va_list list;
+	fprintf(app_stderr, "Warning[%s]: ", module);
+	va_start(list, format);
+	vfprintf(app_stderr, format, list);
+	va_end(list);
+	fprintf(app_stderr, "\n");
+	return -1;
+}
+
 command_argument command_argument::require_full_argument(const char *long_opt, int opt, const std::function<void(const char *)> &action) {
 	command_argument ca(*this);
 	ca.long_options.push_back({long_opt, required_argument, nullptr, opt});

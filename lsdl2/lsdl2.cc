@@ -66,6 +66,8 @@ int SDL_OpenAudio(int index, int freq, int channels, SDL_AudioFormat format, con
 			desired.channels = channels;
 			desired.format = format;
 			if(SDL_AudioDeviceID device_id = SDL_OpenAudioDevice(device_name, 0, &desired, &obtained, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE)) {
+				if(desired.freq != obtained.freq || desired.channels != obtained.channels || desired.format != obtained.format)
+					log_warning("liblsdl2", "audio parameters changed");
 				res = action(device_id, obtained);
 				SDL_CloseAudioDevice(device_id);
 			} else

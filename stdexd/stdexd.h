@@ -14,6 +14,7 @@ extern FILE *app_stdin, *app_stdout, *app_stderr;
 void print_stack(FILE *);
 
 extern int log_error(const char *, const char *, ...);
+extern int log_warning(const char *, const char *, ...);
 
 template<typename Ter, typename Estr>
 int log_errno(const char *module, Ter er, Estr ster) {
