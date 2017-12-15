@@ -54,3 +54,27 @@ int SDL_PresentYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas
 	return res;
 }
 
+int SDL_OpenAudio(int index, int freq, int channels, SDL_AudioFormat format, const std::function<int(SDL_AudioDeviceID, const SDL_AudioSpec &)> &action) {
+	int res;
+	if(!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+		if(const char *device_name = SDL_GetAudioDeviceName(index, 0)) {
+			SDL_AudioSpec obtained;
+			SDL_AudioSpec desired;
+			memset(&obtained, 0, sizeof(SDL_AudioSpec));
+			memset(&desired, 0, sizeof(SDL_AudioSpec));
+			desired.freq = freq;
+			desired.channels = channels;
+			desired.format = format;
+			if(SDL_AudioDeviceID device_id = SDL_OpenAudioDevice(device_name, 0, &desired, &obtained, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE)) {
+				res = action(device_id, obtained);
+				SDL_CloseAudioDevice(device_id);
+			} else
+				res = log_sdl_error();
+		} else
+			res = log_sdl_error();
+		SDL_QuitSubSystem(SDL_INIT_AUDIO);
+	} else
+		res = log_sdl_error();
+	return res;
+}
+

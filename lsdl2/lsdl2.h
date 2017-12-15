@@ -13,4 +13,6 @@ int SDL_CreateTexture(SDL_Window *, int, int, Uint32, const std::function<int(in
 
 int SDL_PresentYUV(SDL_Renderer *, SDL_Texture *, uint8_t **, int *);
 
+int SDL_OpenAudio(int, int, int, SDL_AudioFormat, const std::function<int(SDL_AudioDeviceID, const SDL_AudioSpec &)> &);
+
 #endif
