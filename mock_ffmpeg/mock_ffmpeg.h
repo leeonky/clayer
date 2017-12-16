@@ -57,6 +57,9 @@ extern_mock_function_1(enum AVPixelFormat, av_get_pix_fmt, const char *);
 extern_mock_void_function_4(av_get_channel_layout_string, char *, int, int, uint64_t);
 extern_mock_function_1(const char *, av_get_sample_fmt_name, enum AVSampleFormat);
 
+extern_mock_function_1(uint64_t, av_get_channel_layout, const char *);
+extern_mock_function_1(enum AVSampleFormat, av_get_sample_fmt, const char *);
+
 #ifdef __cplusplus
 }
 #endif

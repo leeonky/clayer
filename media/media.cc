@@ -57,6 +57,23 @@ int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
 			});
 }
 
+int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSampleFormat)> &action) {
+	int rate, channels;
+	char layout[128], format[128];
+	return iob.get("AUDIO", [&](const char *, const char *) {
+			int res = 0;
+			enum AVSampleFormat av_format = av_get_sample_fmt(format);
+			if(int64_t av_layout = av_get_channel_layout(layout)) {
+				if(AV_SAMPLE_FMT_NONE == av_format)
+					res = log_error("Unsupport ffmpeg format '%s'", format);
+				else
+					res = action(rate, channels, av_layout, av_format);
+			} else
+				res = log_error("Unsupport ffmpeg layout '%s'", layout);
+			return res;
+			}, 4, "sample_rate:%d channels:%d layout:%s format:%s", &rate, &channels, layout, format);
+}
+
 int media_clock::wait(int64_t pts, int64_t period) {
 	int64_t s = pts - offset - (usectime()-base);
 	if(s<0)

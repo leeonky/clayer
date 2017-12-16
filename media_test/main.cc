@@ -7,6 +7,7 @@ int main() {
 	ADD_SUITE(buffer_event_test);
 	ADD_SUITE(frames_event_test);
 	ADD_SUITE(media_clock_test);
+	ADD_SUITE(audio_event_test);
 	return run_test();
 }
 
