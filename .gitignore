@@ -41,6 +41,6 @@ ltmain.sh
 *.test
 decoder/decoder
 screen/screen
-rsp/rsp
+speaker/speaker
 
 .dev

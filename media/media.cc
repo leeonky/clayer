@@ -8,7 +8,6 @@
 #define log_error(format, ...) log_error("libmedia", (format), ## __VA_ARGS__)
 
 Uint32 AVPixelFormat_to_SDL(enum AVPixelFormat format) {
-
 	switch(format) {
 		case AV_PIX_FMT_YUV420P:
 		case AV_PIX_FMT_YUV422P:
@@ -17,8 +16,24 @@ Uint32 AVPixelFormat_to_SDL(enum AVPixelFormat format) {
 		case AV_PIX_FMT_YUV411P:
 			return SDL_PIXELFORMAT_IYUV;
 		default:
-			log_error("Unknow support format '%d'", format);
+			log_error("Unknow support ffmpeg video format '%d'", format);
 	  		return SDL_PIXELFORMAT_UNKNOWN;
+	}
+}
+
+SDL_AudioFormat AVSampleFormat_to_SDL(enum AVSampleFormat format) {
+	switch(format) {
+		case AV_SAMPLE_FMT_U8:
+			return AUDIO_U8;
+		case AV_SAMPLE_FMT_S16:
+			return AUDIO_S16;
+		case AV_SAMPLE_FMT_S32:
+			return AUDIO_S32;
+		case AV_SAMPLE_FMT_FLT:
+			return AUDIO_F32;
+		default:
+			log_error("Unknow support ffmpeg audio format '%d'", format);
+	  		return 0;
 	}
 }
 
@@ -31,7 +46,7 @@ int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat
 			if(av_format != AV_PIX_FMT_NONE)
 				res = action(vw, vh, av_format);
 			else
-				res = log_error("Unsupport ffmpeg format '%s'", format);
+				res = log_error("Unsupport ffmpeg video format '%s'", format);
 			return res;
 			}, 3, "width:%d height:%d format:%s", &vw, &vh, format);
 }
@@ -51,7 +66,20 @@ int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
 				frame_list list;
 				while(list.count<MAX_FRAMES_COUNT
 					&& 2==fscanf(file, "%d=>%" PRId64, &list.frames[list.count].index, &list.frames[list.count].timestamp))
-				list.count++;
+					list.count++;
+				return action(list);
+				});
+			});
+}
+
+int samples_event(iobus &iob, const std::function<int(sample_list &)> &action) {
+	return iob.get("SAMPLES", [&](const char *, const char *arguments) {
+			arguments = strlen(arguments)==0 ? " " : arguments;
+			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
+				sample_list list;
+				while(list.count<MAX_SAMPLES_COUNT
+					&& 3==fscanf(file, "%d=>%" PRId64 ",%d", &list.samples[list.count].index, &list.samples[list.count].timestamp, &list.samples[list.count].nb_samples))
+					list.count++;
 				return action(list);
 				});
 			});
@@ -65,11 +93,11 @@ int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSa
 			enum AVSampleFormat av_format = av_get_sample_fmt(format);
 			if(int64_t av_layout = av_get_channel_layout(layout)) {
 				if(AV_SAMPLE_FMT_NONE == av_format)
-					res = log_error("Unsupport ffmpeg format '%s'", format);
+					res = log_error("Unsupport ffmpeg audio format '%s'", format);
 				else
 					res = action(rate, channels, av_layout, av_format);
 			} else
-				res = log_error("Unsupport ffmpeg layout '%s'", layout);
+				res = log_error("Unsupport ffmpeg audio layout '%s'", layout);
 			return res;
 			}, 4, "sample_rate:%d channels:%d layout:%s format:%s", &rate, &channels, layout, format);
 }

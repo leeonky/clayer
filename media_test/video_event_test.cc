@@ -68,7 +68,7 @@ SUITE_CASE("unsupport format") {
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
-	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Unsupport ffmpeg format 'yuv420p'\n");
+	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Unsupport ffmpeg video format 'yuv420p'\n");
 }
 
 SUITE_END(video_event_test);

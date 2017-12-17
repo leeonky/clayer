@@ -64,7 +64,7 @@ SUITE_CASE("unsupport format") {
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
-	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Unsupport ffmpeg format 's32'\n");
+	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Unsupport ffmpeg audio format 's32'\n");
 }
 
 SUITE_CASE("unsupport layout") {
@@ -73,7 +73,7 @@ SUITE_CASE("unsupport layout") {
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
-	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Unsupport ffmpeg layout '7.1'\n");
+	CUE_ASSERT_STDERR_EQ("Error[libmedia]: Unsupport ffmpeg audio layout '7.1'\n");
 }
 
 SUITE_END(audio_event_test);

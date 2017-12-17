@@ -12,6 +12,7 @@ SUBDIRS += iobus
 SUBDIRS += media
 SUBDIRS += decoder
 SUBDIRS += screen
+SUBDIRS += speaker
 endif
 
 if !ENV_PRD

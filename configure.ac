@@ -45,6 +45,7 @@ AM_COND_IF([ENV_TEST], [],
 	   lsdl2/Makefile
 	   media/Makefile
 	   screen/Makefile
+	   speaker/Makefile
 	   ])])
 
 # Testing Makefile
