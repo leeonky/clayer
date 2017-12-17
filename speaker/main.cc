@@ -13,9 +13,11 @@ int main(int, char **) {
 					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid) {
 						return circular_shm::load(shmid, size, count, semid,
 							[&](circular_shm &shm){
+						SDL_PauseAudioDevice(device_id, 0);
 						while (!samples_event(iob, [&](sample_list &samples) {
 								for(int i=0; i<samples.count; i++){
 									shm.free(samples.samples[i].index, [&](void *buffer){
+										SDL_QueueAudio(device_id, buffer, audio_spec.channels, audio_spec.format, samples.samples[i].nb_samples);
 										});
 								}
 								return 0;
