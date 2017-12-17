@@ -87,11 +87,5 @@ SUITE_CASE("two samples") {
 	CUE_EXPECT_CALLED_ONCE(samples_event_action);
 }
 
-//SUITE_CASE("event not match") {
-	//init_subject("AUDIO 1=>0");
-
-	//CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
-//}
-
 SUITE_END(samples_event_test);
 

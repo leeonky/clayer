@@ -80,3 +80,7 @@ int SDL_OpenAudio(int index, int freq, int channels, SDL_AudioFormat format, con
 	return res;
 }
 
+int SDL_QueueAudio(SDL_AudioDeviceID device_id, const void *buffer, int channels, SDL_AudioFormat format, int samples) {
+	return SDL_QueueAudio(device_id, buffer, channels*samples*(SDL_AUDIO_BITSIZE(format)>>3));
+}
+

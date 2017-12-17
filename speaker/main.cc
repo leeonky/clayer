@@ -13,6 +13,14 @@ int main(int, char **) {
 					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid) {
 						return circular_shm::load(shmid, size, count, semid,
 							[&](circular_shm &shm){
+						while (!samples_event(iob, [&](sample_list &samples) {
+								for(int i=0; i<samples.count; i++){
+									shm.free(samples.samples[i].index, [&](void *buffer){
+										});
+								}
+								return 0;
+								}))
+						;
 						return 0;
 						});
 					});
