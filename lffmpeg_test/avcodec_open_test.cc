@@ -194,7 +194,7 @@ SUITE_CASE("stub_decoding_context args for video decoder") {
 static int avcodec_open_action_assert_audio(AVCodecContext *av_codec_context) {
 	stub_decoding_context *context = static_cast<stub_decoding_context *>(av_codec_context->opaque);
 	CUE_ASSERT_EQ(context->align, 1);
-	CUE_ASSERT_EQ(context->samples_size, 10);
+	CUE_ASSERT_EQ(context->samples_size, 100);
 	return 0;
 }
 
@@ -213,7 +213,7 @@ SUITE_CASE("decoding_context args for audio decoder") {
 	CUE_EXPECT_CALLED_WITH_PTR(av_samples_alloc, 1, ret_decoded_av_frame.data);
 	CUE_EXPECT_CALLED_WITH_PTR(av_samples_alloc, 2, ret_decoded_av_frame.linesize);
 	CUE_EXPECT_CALLED_WITH_INT(av_samples_alloc, 3, ret_codec_context.channels);
-	CUE_EXPECT_CALLED_WITH_INT(av_samples_alloc, 4, 10);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_alloc, 4, 100);
 	CUE_EXPECT_CALLED_WITH_INT(av_samples_alloc, 5, ret_codec_context.sample_fmt);
 	CUE_EXPECT_CALLED_WITH_INT(av_samples_alloc, 6, 1);
 

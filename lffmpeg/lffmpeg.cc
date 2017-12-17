@@ -111,7 +111,7 @@ namespace {
 				break;
 			case AVMEDIA_TYPE_AUDIO:
 				context.align = 1;
-				context.samples_size = stream.codecpar->sample_rate/100;
+				context.samples_size = stream.codecpar->sample_rate/10;
 				break;
 			default:
 				context.align = 0;
