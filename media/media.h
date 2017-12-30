@@ -45,4 +45,7 @@ public:
 private:
 	int64_t base, offset;
 };
+
+void wait_at_least(int64_t, int64_t);
+
 #endif

@@ -7,6 +7,7 @@ int main() {
 	ADD_SUITE(SDL_Present_test);
 	ADD_SUITE(SDL_OpenAudio_test);
 	ADD_SUITE(SDL_QueueAudio_test);
+	ADD_SUITE(SDL_AudioLast_test);
 	return run_test();
 }
 

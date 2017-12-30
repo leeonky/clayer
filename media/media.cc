@@ -113,3 +113,9 @@ int media_clock::wait(int64_t pts, int64_t period) {
 	return 0;
 }
 
+void wait_at_least(int64_t waiting, int64_t least) {
+	waiting -= least;
+	if (waiting>0)
+		usleep(waiting);
+}
+

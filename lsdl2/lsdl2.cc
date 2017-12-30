@@ -84,3 +84,8 @@ int SDL_QueueAudio(SDL_AudioDeviceID device_id, const void *buffer, int channels
 	return SDL_QueueAudio(device_id, buffer, channels*samples*(SDL_AUDIO_BITSIZE(format)>>3));
 }
 
+int SDL_AudioLast(SDL_AudioDeviceID device_id, const SDL_AudioSpec &spec) {
+	int64_t left = SDL_GetQueuedAudioSize(device_id);
+	return left*1000000/(spec.channels*(SDL_AUDIO_BITSIZE(spec.format)>>3))/spec.freq;
+}
+
