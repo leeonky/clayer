@@ -13,14 +13,11 @@ SUITE_START("video_event_test");
 
 mock_function_3(int, video_event_action, int, int, enum AVPixelFormat);
 
-static std::unique_ptr<iobus> iob;
-
 BEFORE_EACH() {
 	init_subject("");
 	app_stdin = actxt.input_stream;
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;
-	iob.reset(new iobus(actxt.input_stream, actxt.output_stream, actxt.error_stream));
 
 	init_mock_function_with_return(av_get_pix_fmt, AV_PIX_FMT_YUV420P);
 	init_mock_function(video_event_action);
@@ -32,7 +29,8 @@ AFTER_EACH() {
 }
 
 SUBJECT(int) {
-	return video_event(*iob, video_event_action);
+	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
+	return video_event(iob, video_event_action);
 }
 
 SUITE_CASE("create sdl texture") {

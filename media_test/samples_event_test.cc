@@ -17,14 +17,11 @@ int samples_event_action_ref(sample_list &list) {
 	return samples_event_action(&list);
 }
 
-static std::unique_ptr<iobus> iob;
-
 BEFORE_EACH() {
 	init_subject("");
 	app_stdin = actxt.input_stream;
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;
-	iob.reset(new iobus(actxt.input_stream, actxt.output_stream, actxt.error_stream));
 	return 0;
 }
 
@@ -33,7 +30,8 @@ AFTER_EACH() {
 }
 
 SUBJECT(int) {
-	return samples_event(*iob, samples_event_action_ref);
+	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
+	return samples_event(iob, samples_event_action_ref);
 }
 
 static int assert_sample_list_0(sample_list *list) {

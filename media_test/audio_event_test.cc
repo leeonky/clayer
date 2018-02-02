@@ -16,14 +16,11 @@ static enum AVSampleFormat ret_format;
 
 mock_function_4(int, audio_event_action, int, int, int64_t, enum AVSampleFormat);
 
-static std::unique_ptr<iobus> iob;
-
 BEFORE_EACH() {
 	init_subject("");
 	app_stdin = actxt.input_stream;
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;
-	iob.reset(new iobus(actxt.input_stream, actxt.output_stream, actxt.error_stream));
 
 	ret_layout = AV_CH_LAYOUT_MONO;
 	ret_format = AV_SAMPLE_FMT_S16;
@@ -39,7 +36,8 @@ AFTER_EACH() {
 }
 
 SUBJECT(int) {
-	return audio_event(*iob, audio_event_action);
+	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
+	return audio_event(iob, audio_event_action);
 }
 
 SUITE_CASE("create sdl texture") {

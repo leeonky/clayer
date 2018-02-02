@@ -11,14 +11,11 @@ SUITE_START("buffer_event_test");
 
 mock_function_4(int, buffer_event_action, int, size_t, int, int);
 
-static std::unique_ptr<iobus> iob;
-
 BEFORE_EACH() {
 	init_subject("");
 	app_stdin = actxt.input_stream;
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;
-	iob.reset(new iobus(actxt.input_stream, actxt.output_stream, actxt.error_stream));
 	return 0;
 }
 
@@ -27,7 +24,8 @@ AFTER_EACH() {
 }
 
 SUBJECT(int) {
-	return buffer_event(*iob, buffer_event_action);
+	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
+	return buffer_event(iob, buffer_event_action);
 }
 
 SUITE_CASE("load circular_shm") {
