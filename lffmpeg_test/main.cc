@@ -16,6 +16,7 @@ int main() {
 	ADD_SUITE(av_frame_pts_test);
 	ADD_SUITE(av_image_fill_arrays_test);
 	ADD_SUITE(swr_alloc_set_opts_and_init_test);
+	ADD_SUITE(swr_resample_size_test);
 	return run_test();
 }
 

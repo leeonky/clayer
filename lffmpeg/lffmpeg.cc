@@ -346,3 +346,9 @@ int swr_alloc_set_opts_and_init(int64_t in_layout, enum AVSampleFormat in_format
 	return res;
 }
 
+size_t swr_resample_size(size_t size, int64_t in_layout, enum AVSampleFormat in_format, int in_rate, int64_t out_layout, enum AVSampleFormat out_format, int out_rate) {
+	size_t out_unit_size = av_get_bytes_per_sample(out_format)*av_get_channel_layout_nb_channels(out_layout)*out_rate;
+	size_t in_unit_size = av_get_bytes_per_sample(in_format)*av_get_channel_layout_nb_channels(in_layout)*in_rate;
+	return (size*out_unit_size+in_unit_size-1)/in_unit_size;
+}
+

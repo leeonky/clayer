@@ -38,5 +38,7 @@ extern int av_image_fill_arrays(int, int, enum AVPixelFormat, const void *, cons
 
 extern int swr_alloc_set_opts_and_init(int64_t, enum AVSampleFormat, int, int64_t, enum AVSampleFormat, int, const std::function<int(SwrContext *)> &);
 
+extern size_t swr_resample_size(size_t, int64_t, enum AVSampleFormat, int, int64_t, enum AVSampleFormat, int);
+
 #endif
 
