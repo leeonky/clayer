@@ -42,5 +42,6 @@ ltmain.sh
 decoder/decoder
 screen/screen
 speaker/speaker
+resampler/resampler
 
 .dev

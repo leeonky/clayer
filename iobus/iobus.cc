@@ -6,6 +6,15 @@
 #undef log_error
 #define log_error(format, ...) log_error("libiobus", (format), ## __VA_ARGS__)
 
+void iobus::post(const char *format, ...) {
+	va_list args;
+	va_start(args, format);
+	vfprintf(file_out, format, args);
+	fprintf(file_out, "\n");
+	fflush(file_out);
+	va_end(args);
+}
+
 int iobus::get(const std::function<int(const char *, const char *)> &action) {
 	size_t len = 0;
 	if(processed) {
@@ -37,5 +46,21 @@ int iobus::get(const char *event, const std::function<int(const char *, const ch
 			});
 	va_end(args);
 	return res;
+}
+
+void iobus::recaption_and_post() {
+	if(line) {
+		fprintf(file_out, "%s", line);
+		fflush(file_out);
+	}
+}
+
+int iobus::pass_through() {
+	while(!get([&](const char *, const char *){
+				recaption_and_post();
+				return 0;
+				}))
+	processed = true;
+	return -1;
 }
 

@@ -5,29 +5,54 @@
 #include "lsdl2/lsdl2.h"
 #include "media/media.h"
 
-int main(int, char **) {
+int main(int argc, char **argv) {
 	iobus iob(stdin, stdout, stderr);
-	//return audio_event(iob, [&](int sample_rate, int channels, int64_t layout, enum AVSampleFormat format){
-			//return SDL_OpenAudio(0, sample_rate, channels, AVSampleFormat_to_SDL(format), [&](SDL_AudioDeviceID device_id, const SDL_AudioSpec &audio_spec){
-					//return buffer_event(iob, [&](int shmid, size_t size, int count, int semid) {
-						//return circular_shm::load(shmid, size, count, semid,
-							//[&](circular_shm &shm){
-						//SDL_PauseAudioDevice(device_id, 0);
-						//while (!samples_event(iob, [&](sample_list &samples) {
-								//for(int i=0; i<samples.count; i++){
-									//shm.free(samples.samples[i].index, [&](void *buffer){
-										//SDL_QueueAudio(device_id, buffer, audio_spec.channels, audio_spec.format, samples.samples[i].nb_samples);
-										//});
-									//wait_at_least(SDL_AudioLast(device_id, audio_spec), 400000);
-								//}
-								//return 0;
-								//}))
-						//;
-						//wait_at_least(SDL_AudioLast(device_id, audio_spec), 0);
-						//return 0;
-						//});
-					//});
-				//});
-			//});
+	const char *arg_rate="", *arg_layout="", *arg_format="";
+	command_argument().require_full_argument("rate", 'r', [&](const char *arg){
+			arg_rate = arg;
+			})
+	.require_full_argument("layout", 'l', [&](const char *arg){
+			arg_layout = arg;
+			})
+	.require_full_argument("format", 'f', [&](const char *arg){
+			arg_format = arg;
+			}).parse(argc, argv);
+
+	return audio_event(iob, [&](int sample_rate, int /*channels*/, int64_t layout, enum AVSampleFormat format){
+			int out_rate = analyze_sample_rate(sample_rate, arg_rate);
+			int64_t out_layout  = analyze_channel_layout(layout, arg_layout);
+			enum AVSampleFormat out_format = analyze_sample_format(format, arg_format);
+			if(out_rate==sample_rate && out_layout==layout && out_format==format) {
+				iob.recaption_and_post();
+				return iob.pass_through();
+			}
+			return swr_alloc_set_opts_and_init(layout, format, sample_rate, out_layout, out_format, out_rate, [&](resample_context &rs_context) {
+					char layout_string_buffer[1024];
+					av_get_channel_layout_string(layout_string_buffer, sizeof(layout_string_buffer), rs_context.out_channels, rs_context.out_layout);
+					iob.post("AUDIO sample_rate:%d channels:%d layout:%s format:%s", out_rate, rs_context.out_channels, layout_string_buffer, av_get_sample_fmt_name(out_format));
+					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid) {
+							return circular_shm::load(shmid, size, count, semid,
+									[&](circular_shm &shm){
+									return circular_shm::create(rs_context.resample_size(size), count,
+											[&](circular_shm &out_shm){
+											iob.post(out_shm.serialize_to_string());
+											while (!samples_event(iob, [&](sample_list &samples) {
+														for(int i=0; i<samples.count; i++){
+														shm.free(samples.samples[i].index, [&](void *buffer){
+																int ret = swr_convert(rs_context, buffer, samples.samples[i].nb_samples, out_shm.allocate());
+																if(ret>=0) {
+																	iob.post("SAMPLES %d=>%" PRId64 ",%d", out_shm.index, samples.samples[i].timestamp, ret);
+																}
+																});
+														}
+														return 0;
+														}));
+
+											return 0;
+											});
+									});
+					});
+			});
+	});
 }
 

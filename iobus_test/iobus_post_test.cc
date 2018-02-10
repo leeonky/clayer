@@ -24,5 +24,28 @@ SUITE_CASE("post message") {
 	CUE_ASSERT_STDOUT_EQ("hello\n");
 }
 
+SUITE_CASE("post last") {
+	iobus iob(app_stdin, app_stdout, app_stderr);
+
+	iob.recaption_and_post();
+
+	CUE_ASSERT_STDOUT_EQ("");
+}
+
+SUITE_CASE("post last with content") {
+	init_subject("HELLO WORLD\n");
+	app_stdout = actxt.output_stream;
+	app_stdin = actxt.input_stream;
+
+	iobus iob(app_stdin, app_stdout, app_stderr);
+
+	iob.get([&](const char *, const char *){
+			iob.recaption_and_post();
+			return 0;
+			});
+
+	CUE_ASSERT_STDOUT_EQ("HELLO WORLD\n");
+}
+
 SUITE_END(iobus_post_test);
 
