@@ -7,6 +7,9 @@
 #undef log_error
 #define log_error(format, ...) log_error("liblffmpeg", (format), ## __VA_ARGS__)
 
+#undef log_warning
+#define log_warning(format, ...) log_warning("liblffmpeg", (format), ## __VA_ARGS__)
+
 #undef log_errno
 #define log_errno(no) log_errno("liblffmpeg", no, av_strerror)
 
@@ -361,16 +364,24 @@ int swr_alloc_set_opts_and_init(int64_t in_layout, enum AVSampleFormat in_format
 	return res;
 }
 
-//int swr_convert(struct SwrContext *swr, void *out_buf, void *in_buf, size_t size) {
 int swr_convert(resample_context &context, void *in_buf, size_t size, void *out_buf) {
 	int ret = 0;
 	uint8_t *outs[MAX_PLAN_NUMBER];
 	uint8_t *ins[MAX_PLAN_NUMBER];
 
 	size_t out_size = (size*context.out_rate+context.in_rate-1)/context.in_rate;
-	av_samples_fill_arrays(outs, nullptr, static_cast<const uint8_t *>(out_buf), context.out_channels, out_size, context.out_format, 1);
-	av_samples_fill_arrays(ins, nullptr, static_cast<const uint8_t *>(in_buf), context.in_channels, size, context.in_format, 1);
-	swr_convert(context.swr_context, outs, out_size, const_cast<const uint8_t**>(ins), size);
+	if(av_samples_fill_arrays(outs, nullptr, static_cast<const uint8_t *>(out_buf), context.out_channels, out_size, context.out_format, 1) >= 0) {
+		if(av_samples_fill_arrays(ins, nullptr, static_cast<const uint8_t *>(in_buf), context.in_channels, size, context.in_format, 1) >= 0 ) {
+			ret = swr_convert(context.swr_context, outs, out_size, const_cast<const uint8_t**>(ins), size);
+			if(ret < 0)
+				ret = log_error("swr_convert failed");
+			else if(ret != static_cast<int>(out_size))
+				log_warning("swr_convert expect %d but got %d", out_size, ret);
+		}
+		else
+			ret = log_error("failed to fill input samples to arrays");
+	} else
+		ret = log_error("failed to fill output samples to arrays");
 	return ret;
 }
 
