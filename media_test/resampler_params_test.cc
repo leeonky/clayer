@@ -144,6 +144,13 @@ SUITE_CASE("flt and double to int") {
 	CUE_ASSERT_EQ(analyze_sample_format(AV_SAMPLE_FMT_DBL, "int"), AV_SAMPLE_FMT_S64);
 }
 
+SUITE_CASE("flt32 and flt64") {
+	CUE_ASSERT_EQ(analyze_sample_format(AV_SAMPLE_FMT_FLTP, "flt64"), AV_SAMPLE_FMT_DBLP);
+	CUE_ASSERT_EQ(analyze_sample_format(AV_SAMPLE_FMT_FLT, "flt64"), AV_SAMPLE_FMT_DBL);
+	CUE_ASSERT_EQ(analyze_sample_format(AV_SAMPLE_FMT_DBLP, "flt32"), AV_SAMPLE_FMT_FLTP);
+	CUE_ASSERT_EQ(analyze_sample_format(AV_SAMPLE_FMT_DBL, "flt32"), AV_SAMPLE_FMT_FLT);
+}
+
 SUITE_CASE("maxbit") {
 	CUE_ASSERT_EQ(analyze_sample_format(AV_SAMPLE_FMT_S64, "maxbit32"), AV_SAMPLE_FMT_S32);
 	CUE_ASSERT_EQ(analyze_sample_format(AV_SAMPLE_FMT_S64P, "maxbit32"), AV_SAMPLE_FMT_S32P);

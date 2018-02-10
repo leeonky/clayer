@@ -181,6 +181,30 @@ enum AVSampleFormat analyze_sample_format(enum AVSampleFormat format, const char
 						default:
 							break;
 					}
+				else if(!strcmp(command, "flt32")) {
+					switch(new_format) {
+						case AV_SAMPLE_FMT_DBLP:
+							new_format = AV_SAMPLE_FMT_FLTP;
+							break;
+						case AV_SAMPLE_FMT_DBL:
+							new_format = AV_SAMPLE_FMT_FLT;
+							break;
+						default:
+							break;
+					}
+				}
+				else if(!strcmp(command, "flt64")) {
+					switch(new_format) {
+						case AV_SAMPLE_FMT_FLTP:
+							new_format = AV_SAMPLE_FMT_DBLP;
+							break;
+						case AV_SAMPLE_FMT_FLT:
+							new_format = AV_SAMPLE_FMT_DBL;
+							break;
+						default:
+							break;
+					}
+				}
 				else if (strstr(command, "maxbit")) {
 					int maxbit = 32;
 					sscanf(command, "maxbit%d", &maxbit);
