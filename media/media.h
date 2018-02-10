@@ -46,6 +46,12 @@ private:
 	int64_t base, offset;
 };
 
-void wait_at_least(int64_t, int64_t);
+extern void wait_at_least(int64_t, int64_t);
+
+extern int64_t analyze_channel_layout(int64_t, const char *);
+
+extern int analyze_sample_rate(int, const char *);
+
+extern enum AVSampleFormat analyze_sample_format(enum AVSampleFormat, const char *);
 
 #endif

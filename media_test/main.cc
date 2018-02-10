@@ -9,6 +9,7 @@ int main() {
 	ADD_SUITE(media_clock_test);
 	ADD_SUITE(audio_event_test);
 	ADD_SUITE(samples_event_test);
+	ADD_SUITE(resampler_params_test);
 	return run_test();
 }
 

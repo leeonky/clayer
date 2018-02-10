@@ -1,3 +1,6 @@
+#include <regex>
+#include <numeric>
+#include <algorithm>
 #include <cinttypes>
 #include <unistd.h>
 #include "media.h"
@@ -117,5 +120,113 @@ void wait_at_least(int64_t waiting, int64_t least) {
 	waiting -= least;
 	if (waiting>0)
 		usleep(waiting);
+}
+
+int64_t analyze_channel_layout(int64_t layout, const char *arg) {
+	if(!strlen(arg))
+		return layout;
+	else if (!strcmp("max2.1", arg)) {
+		if(av_get_channel_layout_nb_channels(layout) > 3)
+			return AV_CH_LAYOUT_2POINT1;
+		else
+			return layout;
+	} else if (!strcmp("max5.1", arg)) {
+		if(av_get_channel_layout_nb_channels(layout) > 6)
+			if(AV_CH_LAYOUT_7POINT1_WIDE_BACK == layout)
+				return AV_CH_LAYOUT_5POINT1_BACK;
+			else
+				return AV_CH_LAYOUT_5POINT1;
+		else
+			return layout;
+	} else
+		return av_get_channel_layout(arg);
+}
+
+int analyze_sample_rate(int rate, const char *arg) {
+	int new_rate=0;
+	if(!strlen(arg))
+		return rate;
+	else if(strstr(arg, "max")) {
+		sscanf(arg, "max%d", &new_rate);
+		if(rate > new_rate)
+			return new_rate;
+		else
+			return rate;
+	} else {
+		sscanf(arg, "%d", &new_rate);
+		return new_rate;
+	}
+}
+
+enum AVSampleFormat analyze_sample_format(enum AVSampleFormat format, const char *arg) {
+	std::regex reg("[^:]+");
+	std::string str_arg(arg);
+	return std::accumulate(std::sregex_iterator(str_arg.begin(), str_arg.end(), reg), std::sregex_iterator(), format,
+			[](enum AVSampleFormat new_format, const std::smatch &matched) {
+				const char *command = matched.str().c_str();
+				if(!strcmp(command, "pack"))
+					new_format = av_get_packed_sample_fmt(new_format);
+				else if(!strcmp(command, "plan"))
+					new_format = av_get_planar_sample_fmt(new_format);
+				else if(!strcmp(command, "int"))
+					switch(new_format) {
+						case AV_SAMPLE_FMT_DBLP:
+						case AV_SAMPLE_FMT_FLTP:
+							new_format = AV_SAMPLE_FMT_S64P;
+							break;
+						case AV_SAMPLE_FMT_DBL:
+						case AV_SAMPLE_FMT_FLT:
+							new_format = AV_SAMPLE_FMT_S64;
+							break;
+						default:
+							break;
+					}
+				else if (strstr(command, "maxbit")) {
+					int maxbit = 32;
+					sscanf(command, "maxbit%d", &maxbit);
+					if(maxbit>=32 && maxbit<64) {
+						switch(new_format){
+							case AV_SAMPLE_FMT_S64:
+								new_format = AV_SAMPLE_FMT_S32;
+								break;
+							case AV_SAMPLE_FMT_S64P:
+								new_format = AV_SAMPLE_FMT_S32P;
+								break;
+							default:
+								break;
+						}
+					} else if(maxbit>=16 && maxbit<32) {
+						switch(new_format){
+							case AV_SAMPLE_FMT_S64:
+							case AV_SAMPLE_FMT_S32:
+								new_format = AV_SAMPLE_FMT_S16;
+								break;
+							case AV_SAMPLE_FMT_S64P:
+							case AV_SAMPLE_FMT_S32P:
+								new_format = AV_SAMPLE_FMT_S16P;
+								break;
+							default:
+								break;
+						}
+					} else if(maxbit>=8 && maxbit<16) {
+						switch(new_format){
+							case AV_SAMPLE_FMT_S64:
+							case AV_SAMPLE_FMT_S32:
+							case AV_SAMPLE_FMT_S16:
+								new_format = AV_SAMPLE_FMT_U8;
+								break;
+							case AV_SAMPLE_FMT_S64P:
+							case AV_SAMPLE_FMT_S32P:
+							case AV_SAMPLE_FMT_S16P:
+								new_format = AV_SAMPLE_FMT_U8P;
+								break;
+							default:
+								break;
+						}
+					}
+				} else
+					new_format = av_get_sample_fmt(command);
+				return new_format;
+				});
 }
 

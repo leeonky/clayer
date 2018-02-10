@@ -13,6 +13,7 @@ SUBDIRS += media
 SUBDIRS += decoder
 SUBDIRS += screen
 SUBDIRS += speaker
+SUBDIRS += resampler
 endif
 
 if !ENV_PRD
