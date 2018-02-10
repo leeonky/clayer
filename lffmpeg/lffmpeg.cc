@@ -2,6 +2,8 @@
 #include "lffmpeg.h"
 #include "stdexd/stdexd.h"
 
+#define MAX_PLAN_NUMBER 16
+
 #undef log_error
 #define log_error(format, ...) log_error("liblffmpeg", (format), ## __VA_ARGS__)
 
@@ -239,7 +241,7 @@ int av_get_buffer_size(const AVCodecContext &codec_context) {
 
 int av_copy_frame_to_buffer(const AVFrame &av_frame, void *buf, size_t len) {
 	int res=0, ret;
-	uint8_t *planar_buffer[12];
+	uint8_t *planar_buffer[MAX_PLAN_NUMBER];
 	decoding_context *context = static_cast<decoding_context *>(av_frame.opaque);
 	switch(context->av_stream->codecpar->codec_type) {
 		case AVMEDIA_TYPE_VIDEO:
@@ -331,24 +333,44 @@ int av_image_fill_arrays(int width, int height, enum AVPixelFormat format, const
 	return res;
 }
 
-int swr_alloc_set_opts_and_init(int64_t in_layout, enum AVSampleFormat in_format, int in_rate, int64_t out_layout, enum AVSampleFormat out_format, int out_rate, const std::function<int(SwrContext *)> &action) {
+int swr_alloc_set_opts_and_init(int64_t in_layout, enum AVSampleFormat in_format, int in_rate, int64_t out_layout, enum AVSampleFormat out_format, int out_rate, const std::function<int(resample_context &)> &action) {
 	int res = 0;
 	if(SwrContext *swr_context = swr_alloc_set_opts(
 				NULL, out_layout, out_format, out_rate,
 			       	in_layout, in_format, in_rate, 0, NULL)) {
 		if(int ret = swr_init(swr_context))
 			res = log_errno(ret);
-		else
-			res = action(swr_context);
+		else {
+			resample_context context;
+			context.in_layout = in_layout;
+			context.in_format = in_format;
+			context.in_rate = in_rate;
+			context.in_sample_bytes = av_get_bytes_per_sample(in_format);
+			context.in_channels = av_get_channel_layout_nb_channels(in_layout);
+			context.out_layout = out_layout;
+			context.out_format = out_format;
+			context.out_rate = out_rate;
+			context.out_sample_bytes = av_get_bytes_per_sample(out_format);
+			context.out_channels = av_get_channel_layout_nb_channels(out_layout);
+			context.swr_context = swr_context;
+			res = action(context);
+		}
 		swr_free(&swr_context);
 	} else
 		res = log_error("swr_alloc_set_opts failed");
 	return res;
 }
 
-size_t swr_resample_size(size_t size, int64_t in_layout, enum AVSampleFormat in_format, int in_rate, int64_t out_layout, enum AVSampleFormat out_format, int out_rate) {
-	size_t out_unit_size = av_get_bytes_per_sample(out_format)*av_get_channel_layout_nb_channels(out_layout)*out_rate;
-	size_t in_unit_size = av_get_bytes_per_sample(in_format)*av_get_channel_layout_nb_channels(in_layout)*in_rate;
-	return (size*out_unit_size+in_unit_size-1)/in_unit_size;
+//int swr_convert(struct SwrContext *swr, void *out_buf, void *in_buf, size_t size) {
+int swr_convert(resample_context &context, void *in_buf, size_t size, void *out_buf) {
+	int ret = 0;
+	uint8_t *outs[MAX_PLAN_NUMBER];
+	uint8_t *ins[MAX_PLAN_NUMBER];
+
+	size_t out_size = (size*context.out_rate+context.in_rate-1)/context.in_rate;
+	av_samples_fill_arrays(outs, nullptr, static_cast<const uint8_t *>(out_buf), context.out_channels, out_size, context.out_format, 1);
+	av_samples_fill_arrays(ins, nullptr, static_cast<const uint8_t *>(in_buf), context.in_channels, size, context.in_format, 1);
+	swr_convert(context.swr_context, outs, out_size, const_cast<const uint8_t**>(ins), size);
+	return ret;
 }
 
