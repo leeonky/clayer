@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 									[&](circular_shm &shm){
 									return circular_shm::create(rs_context.resample_size(size), count,
 											[&](circular_shm &out_shm){
-											iob.post(out_shm.serialize_to_string());
+											iob.post("%s", out_shm.serialize_to_string());
 											while (!samples_event(iob, [&](sample_list &samples) {
 														for(int i=0; i<samples.count; i++){
 														shm.free(samples.samples[i].index, [&](void *buffer){

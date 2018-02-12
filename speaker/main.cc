@@ -15,6 +15,8 @@ int main(int, char **) {
 							[&](circular_shm &shm){
 						SDL_PauseAudioDevice(device_id, 0);
 						while (!samples_event(iob, [&](sample_list &samples) {
+								if(samples.count)
+									iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, usectime(), samples.samples[0].timestamp-SDL_AudioLast(device_id, audio_spec));
 								for(int i=0; i<samples.count; i++){
 									shm.free(samples.samples[i].index, [&](void *buffer){
 										SDL_QueueAudio(device_id, buffer, audio_spec.channels, audio_spec.format, samples.samples[i].nb_samples);
