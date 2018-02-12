@@ -28,6 +28,9 @@ mock_function_3(int, SDL_QueueAudio, SDL_AudioDeviceID, const void *, Uint32);
 
 mock_function_1(Uint32, SDL_GetQueuedAudioSize, SDL_AudioDeviceID);
 
+mock_function_3(int, SDL_GetRendererOutputSize, SDL_Renderer *, int *, int *);
+mock_function_5(int, SDL_QueryTexture, SDL_Texture *, Uint32 *, int *, int *, int *);
+
 const char *SDL_GetError() {
 	return "sdl error";
 }

@@ -46,10 +46,30 @@ int SDL_CreateTexture(SDL_Window *window, int width, int height, Uint32 format, 
 
 int SDL_PresentYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas, int *lines) {
 	int res = 0;
-	if(!SDL_UpdateYUVTexture(texture, NULL, datas[0], lines[0], datas[1], lines[1], datas[2], lines[2])
-			&& !SDL_RenderCopy(renderer, texture,  NULL, NULL))
-		SDL_RenderPresent(renderer);
-	else
+	SDL_Rect target_rect;
+	int renderer_w, renderer_h, texture_w, texture_h;
+	if(!SDL_GetRendererOutputSize(renderer, &renderer_w, &renderer_h)
+			&& !SDL_QueryTexture(texture, NULL, NULL, &texture_w, &texture_h)) {
+		float renderer_w_h_radio = static_cast<float>(renderer_w)/renderer_h;
+		float texture_w_h_radio = static_cast<float>(texture_w)/texture_h;
+
+		if(renderer_w_h_radio > texture_w_h_radio) {
+			target_rect.w = renderer_h*texture_w/texture_h;
+			target_rect.h = renderer_h;
+			target_rect.x = (renderer_w-target_rect.w)/2;
+			target_rect.y = 0;
+		} else {
+			target_rect.w = renderer_w;
+			target_rect.h = renderer_w*texture_h/texture_w;
+			target_rect.x = 0;
+			target_rect.y = (renderer_h-target_rect.h)/2;
+		}
+		if(!SDL_UpdateYUVTexture(texture, NULL, datas[0], lines[0], datas[1], lines[1], datas[2], lines[2])
+				&& !SDL_RenderCopy(renderer, texture,  NULL, &target_rect))
+			SDL_RenderPresent(renderer);
+		else
+			res = log_sdl_error();
+	} else
 		res = log_sdl_error();
 	return res;
 }

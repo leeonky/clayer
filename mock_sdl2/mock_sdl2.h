@@ -36,6 +36,9 @@ extern_mock_function_3(int, SDL_QueueAudio, SDL_AudioDeviceID, const void *, Uin
 
 extern_mock_function_1(Uint32, SDL_GetQueuedAudioSize, SDL_AudioDeviceID);
 
+extern_mock_function_3(int, SDL_GetRendererOutputSize, SDL_Renderer *, int *, int *);
+extern_mock_function_5(int, SDL_QueryTexture, SDL_Texture *, Uint32 *, int *, int *, int *);
+
 #ifdef __cplusplus
 }
 #endif
