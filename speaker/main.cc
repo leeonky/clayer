@@ -19,12 +19,12 @@ int main(int, char **) {
 									shm.free(samples.samples[i].index, [&](void *buffer){
 										SDL_QueueAudio(device_id, buffer, audio_spec.channels, audio_spec.format, samples.samples[i].nb_samples);
 										});
-									wait_at_least(SDL_AudioLast(device_id, audio_spec), 400000);
+									wait_at_most(SDL_AudioLast(device_id, audio_spec), 400000);
 								}
 								return 0;
 								}))
 						;
-						wait_at_least(SDL_AudioLast(device_id, audio_spec), 0);
+						wait_at_most(SDL_AudioLast(device_id, audio_spec), 0);
 						return 0;
 						});
 					});

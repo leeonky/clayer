@@ -46,7 +46,7 @@ private:
 	int64_t base, offset;
 };
 
-extern void wait_at_least(int64_t, int64_t);
+extern void wait_at_most(int64_t, int64_t);
 
 extern int64_t analyze_channel_layout(int64_t, const char *);
 
