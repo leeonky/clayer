@@ -56,11 +56,11 @@ void iobus::recaption_and_post() {
 }
 
 int iobus::pass_through() {
-	while(!get([&](const char *, const char *){
-				recaption_and_post();
-				return 0;
-				}))
+	int ret = get([&](const char *, const char *){
+			recaption_and_post();
+			return 0;
+			});
 	processed = true;
-	return -1;
+	return ret;
 }
 

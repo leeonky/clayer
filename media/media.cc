@@ -105,6 +105,13 @@ int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSa
 			}, 4, "sample_rate:%d channels:%d layout:%s format:%s", &rate, &channels, layout, format);
 }
 
+int clock_event(iobus &iob, const std::function<int(int64_t, int64_t)> &action) {
+	int64_t base, offset;
+	return iob.get("CLOCK", [&](const char *, const char *) {
+			return action(base, offset);
+			}, 2, "base:%" PRId64 " offset:%" PRId64, &base, &offset);
+}
+
 int media_clock::wait(int64_t pts, int64_t period) {
 	int64_t s = pts - offset - (usectime()-base);
 	if(s<0)

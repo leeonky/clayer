@@ -16,7 +16,7 @@ int main(int, char **) {
 						return circular_shm::load(shmid, size, count, semid,
 							[&](circular_shm &shm){
 							media_clock clock;
-							while(!frames_event(iob, [&](frame_list &frames){
+							while((!frames_event(iob, [&](frame_list &frames){
 									for(int i=0; i<frames.count; i++){
 										shm.free(frames.frames[i].index, [&](void *buffer){
 											return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
@@ -26,7 +26,10 @@ int main(int, char **) {
 											});
 									}
 									return 0;
-									}))
+									})) || (!clock_event(iob, [&](int64_t base, int64_t offset){
+										clock.sync(base, offset);
+										return 0;
+										})))
 							;
 							return 0;
 							});

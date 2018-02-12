@@ -12,6 +12,7 @@ SDL_AudioFormat AVSampleFormat_to_SDL(enum AVSampleFormat);
 int video_event(iobus &, const std::function<int(int, int, enum AVPixelFormat)> &);
 int buffer_event(iobus &, const std::function<int(int, size_t, int, int)> &);
 int audio_event(iobus &, const std::function<int(int, int, int64_t, enum AVSampleFormat)> &);
+int clock_event(iobus &, const std::function<int(int64_t, int64_t)> &);
 
 #define MAX_FRAMES_COUNT 128
 struct frame_list {

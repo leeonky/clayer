@@ -10,6 +10,7 @@ int main() {
 	ADD_SUITE(audio_event_test);
 	ADD_SUITE(samples_event_test);
 	ADD_SUITE(resampler_params_test);
+	ADD_SUITE(clock_event_test);
 	return run_test();
 }
 
