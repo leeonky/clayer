@@ -20,7 +20,7 @@ int main(int, char **) {
 									for(int i=0; i<frames.count; i++){
 										shm.free(frames.frames[i].index, [&](void *buffer){
 											return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
-												clock.wait(frames.frames[i].timestamp, 30000);
+												clock.wait(frames.frames[i].timestamp, 100000);
 												return SDL_PresentYUV(renderer, texture, datas, lines);
 												});
 											});
