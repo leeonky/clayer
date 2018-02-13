@@ -34,3 +34,4 @@ set -x
 	"$project_path/decoder/decoder" "$media_file" -v $video &
 	"$project_path/decoder/decoder" "$media_file" -a $audio | "$project_path/resampler/resampler" -f pack:flt32:maxbit32 -lmax5.1 | "$project_path/speaker/speaker"
 ) | "$project_path/screen/screen" $position $size $video_flag
+

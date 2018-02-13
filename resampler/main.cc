@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 			enum AVSampleFormat out_format = analyze_sample_format(format, arg_format);
 			if(out_rate==sample_rate && out_layout==layout && out_format==format) {
 				iob.recaption_and_post();
-				while(iob.pass_through());
+				while(!iob.pass_through());
 				return -1;
 			}
 			return swr_alloc_set_opts_and_init(layout, format, sample_rate, out_layout, out_format, out_rate, [&](resample_context &rs_context) {
