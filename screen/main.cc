@@ -12,6 +12,8 @@ int main(int, char **) {
 				[&](SDL_Window *window){
 				return SDL_CreateTexture(window, fw, fh, AVPixelFormat_to_SDL(av_format),
 					[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
+					SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+					SDL_RenderFillRect(renderer, NULL);
 					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid) {
 						return circular_shm::load(shmid, size, count, semid,
 							[&](circular_shm &shm){
