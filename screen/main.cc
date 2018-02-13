@@ -5,10 +5,30 @@
 #include "lsdl2/lsdl2.h"
 #include "media/media.h"
 
-int main(int, char **) {
+int main(int argc, char **argv) {
+	Uint32 window_flag = 0;
+	int x = SDL_WINDOWPOS_CENTERED, y = SDL_WINDOWPOS_CENTERED;
 	iobus iob(stdin, stdout, stderr);
 	return video_event(iob, [&](int fw, int fh, enum AVPixelFormat av_format){
-			return SDL_CreateWindow("", 0, 0, 1920, 1080, 0,
+			int w = fw, h = fh;
+			char title[128] = "CLAYER";
+
+			command_argument().require_full_argument("position", 'p', [&](const char *arg){
+					sscanf(arg, "%d,%d", &x, &y);
+					})
+			.require_full_argument("size", 's', [&](const char *arg){
+					sscanf(arg, "%dx%d", &w, &h);
+					})
+			.require_full_argument("flag", 'f', [&](const char *arg){
+					if(strstr(arg, "full"))
+						window_flag |= SDL_WINDOW_FULLSCREEN;
+					if(strstr(arg, "opengl"))
+						window_flag |= SDL_WINDOW_OPENGL;
+					if(strstr(arg, "borderless"))
+						window_flag |= SDL_WINDOW_BORDERLESS;
+					}).parse(argc, argv);
+
+			return SDL_CreateWindow(title, x, y, w, h, window_flag,
 				[&](SDL_Window *window){
 				return SDL_CreateTexture(window, fw, fh, AVPixelFormat_to_SDL(av_format),
 					[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
