@@ -10,6 +10,8 @@ do
         eval "$args"
 done
 
+set -x
+
 video=${v:-0}
 audio=${a:-0}
 subtitle=${sub:-}

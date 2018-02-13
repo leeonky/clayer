@@ -13,7 +13,6 @@ int main(int, char **) {
 				return SDL_CreateTexture(window, fw, fh, AVPixelFormat_to_SDL(av_format),
 					[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
 					SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-					SDL_RenderFillRect(renderer, NULL);
 					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid) {
 						return circular_shm::load(shmid, size, count, semid,
 							[&](circular_shm &shm){
@@ -23,6 +22,7 @@ int main(int, char **) {
 										shm.free(frames.frames[i].index, [&](void *buffer){
 											return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
 												clock.wait(frames.frames[i].timestamp, 100000);
+												SDL_RenderClear(renderer);
 												return SDL_PresentYUV(renderer, texture, datas, lines);
 												});
 											});
