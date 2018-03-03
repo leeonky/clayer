@@ -54,12 +54,12 @@ int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat
 			}, 3, "width:%d height:%d format:%s", &vw, &vh, format);
 }
 
-int buffer_event(iobus &iob, const std::function<int(int, size_t, int, int)> &action) {
-	int shm_id, sem_id, count;
+int buffer_event(iobus &iob, const std::function<int(int, size_t, int, int, int)> &action) {
+	int shm_id, sem_id, count, index;
 	size_t element_size;
 	return iob.get("BUFFER", [&](const char *, const char *) {
-			return action(shm_id, element_size, count, sem_id);
-			}, 4, "id:%d size:%zu count:%d sem:%d", &shm_id, &element_size, &count, &sem_id);
+			return action(shm_id, element_size, count, sem_id, index);
+			}, 5, "id:%d size:%zu count:%d sem:%d key:%d", &shm_id, &element_size, &count, &sem_id, &index);
 }
 
 int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
@@ -67,9 +67,11 @@ int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
 				frame_list list;
-				while(list.count<MAX_FRAMES_COUNT
-					&& 2==fscanf(file, "%d=>%" PRId64, &list.frames[list.count].index, &list.frames[list.count].timestamp))
-					list.count++;
+				if(1==fscanf(file, "buffer:%d", &list.buffer_key)) {
+					while(list.count<MAX_FRAMES_COUNT
+						&& 2==fscanf(file, "%d=>%" PRId64, &list.frames[list.count].index, &list.frames[list.count].timestamp))
+						list.count++;
+				}
 				return action(list);
 				});
 			});
@@ -80,9 +82,11 @@ int samples_event(iobus &iob, const std::function<int(sample_list &)> &action) {
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
 				sample_list list;
-				while(list.count<MAX_SAMPLES_COUNT
-					&& 3==fscanf(file, "%d=>%" PRId64 ",%d", &list.samples[list.count].index, &list.samples[list.count].timestamp, &list.samples[list.count].nb_samples))
-					list.count++;
+				if(1==fscanf(file, "buffer:%d", &list.buffer_key)) {
+					while(list.count<MAX_SAMPLES_COUNT
+						&& 3==fscanf(file, "%d=>%" PRId64 ",%d", &list.samples[list.count].index, &list.samples[list.count].timestamp, &list.samples[list.count].nb_samples))
+						list.count++;
+				}
 				return action(list);
 				});
 			});

@@ -9,6 +9,7 @@ int main(int argc, char **argv) {
 	Uint32 window_flag = 0;
 	int x = SDL_WINDOWPOS_CENTERED, y = SDL_WINDOWPOS_CENTERED;
 	iobus iob(stdin, stdout, stderr);
+	circular_shm *shms[MAX_LAYER_COUNT];
 	return video_event(iob, [&](int fw, int fh, enum AVPixelFormat av_format){
 			int w = fw, h = fh;
 			char title[128] = "CLAYER";
@@ -33,13 +34,14 @@ int main(int argc, char **argv) {
 				return SDL_CreateTexture(window, fw, fh, AVPixelFormat_to_SDL(av_format),
 					[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
 					SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid) {
+					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid, int video_buffer_key) {
 						return circular_shm::load(shmid, size, count, semid,
 							[&](circular_shm &shm){
+							shms[video_buffer_key] = &shm;
 							media_clock clock;
 							while((!frames_event(iob, [&](frame_list &frames){
 									for(int i=0; i<frames.count; i++){
-										shm.free(frames.frames[i].index, [&](void *buffer){
+										shms[video_buffer_key]->free(frames.frames[i].index, [&](void *buffer){
 											return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
 												clock.wait(frames.frames[i].timestamp, 100000);
 												SDL_RenderClear(renderer);

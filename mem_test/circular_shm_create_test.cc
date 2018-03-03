@@ -121,8 +121,8 @@ SUITE_CASE("init with all resources") {
 
 static int circular_shm_create_action_assert_serialize(circular_shm *cshm) {
 	char buffer[1024];
-	sprintf(buffer, "BUFFER id:%d size:%d count:%d sem:%d", ret_shmid, getpagesize(), arg_count, getpid());
-	CUE_ASSERT_STRING_EQ(cshm->serialize_to_string(), buffer);
+	sprintf(buffer, "BUFFER id:%d size:%d count:%d sem:%d key:100", ret_shmid, getpagesize(), arg_count, getpid());
+	CUE_ASSERT_STRING_EQ(cshm->serialize_to_string(100), buffer);
 	return 0;
 }
 

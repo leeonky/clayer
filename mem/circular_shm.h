@@ -9,7 +9,7 @@ class circular_shm {
 public:
 	static int create(size_t, int, const std::function<int(circular_shm &)> &);
 	static int load(int, size_t, int, int, const std::function<int(circular_shm &)> &);
-	const char *serialize_to_string();
+	const char *serialize_to_string(int i=0);
 
 	void *allocate() {
 		if(sem_wait(semaphore) == -1)

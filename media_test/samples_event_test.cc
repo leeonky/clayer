@@ -40,7 +40,7 @@ static int assert_sample_list_0(sample_list *list) {
 }
 
 SUITE_CASE("enmpty SAMPLES") {
-	init_subject("SAMPLES");
+	init_subject("SAMPLES buffer:5");
 	init_mock_function_with_function(samples_event_action, assert_sample_list_0);
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
@@ -50,6 +50,7 @@ SUITE_CASE("enmpty SAMPLES") {
 
 static int assert_sample_list_1(sample_list *list) {
 	CUE_ASSERT_EQ(list->count, 1);
+	CUE_ASSERT_EQ(list->buffer_key, 5);
 	CUE_ASSERT_EQ(list->samples[0].index, 1);
 	CUE_ASSERT_EQ(list->samples[0].timestamp, 0);
 	CUE_ASSERT_EQ(list->samples[0].nb_samples, 480);
@@ -57,7 +58,7 @@ static int assert_sample_list_1(sample_list *list) {
 }
 
 SUITE_CASE("one sample") {
-	init_subject("SAMPLES 1=>0,480");
+	init_subject("SAMPLES buffer:5 1=>0,480");
 	init_mock_function_with_function(samples_event_action, assert_sample_list_1);
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
@@ -77,7 +78,7 @@ static int assert_sample_list_2(sample_list *list) {
 }
 
 SUITE_CASE("two samples") {
-	init_subject("SAMPLES 1=>0,480 2=>300,400");
+	init_subject("SAMPLES buffer:5 1=>0,480 2=>300,400");
 	init_mock_function_with_function(samples_event_action, assert_sample_list_2);
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();

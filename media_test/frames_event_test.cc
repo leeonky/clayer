@@ -40,7 +40,7 @@ static int assert_frame_list_0(frame_list *list) {
 }
 
 SUITE_CASE("enmpty FRAMES") {
-	init_subject("FRAMES");
+	init_subject("FRAMES buffer:5");
 	init_mock_function_with_function(frames_event_action, assert_frame_list_0);
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
@@ -56,7 +56,7 @@ static int assert_frame_list_1(frame_list *list) {
 }
 
 SUITE_CASE("one frame") {
-	init_subject("FRAMES 1=>0");
+	init_subject("FRAMES buffer:5 1=>0");
 	init_mock_function_with_function(frames_event_action, assert_frame_list_1);
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
@@ -66,6 +66,7 @@ SUITE_CASE("one frame") {
 
 static int assert_frame_list_2(frame_list *list) {
 	CUE_ASSERT_EQ(list->count, 2);
+	CUE_ASSERT_EQ(list->buffer_key, 5);
 	CUE_ASSERT_EQ(list->frames[0].index, 1);
 	CUE_ASSERT_EQ(list->frames[0].timestamp, 0);
 	CUE_ASSERT_EQ(list->frames[1].index, 2);
@@ -74,7 +75,7 @@ static int assert_frame_list_2(frame_list *list) {
 }
 
 SUITE_CASE("two frames") {
-	init_subject("FRAMES 1=>0 2=>300");
+	init_subject("FRAMES buffer:5 1=>0 2=>300");
 	init_mock_function_with_function(frames_event_action, assert_frame_list_2);
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();

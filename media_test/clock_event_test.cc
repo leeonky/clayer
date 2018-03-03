@@ -25,6 +25,9 @@ SUBJECT(int) {
 
 SUITE_CASE("create sdl texture") {
 	init_subject("CLOCK base:1518407083772393 offset:33194667");
+	app_stdin = actxt.input_stream;
+	app_stdout = actxt.output_stream;
+	app_stderr = actxt.error_stream;
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 

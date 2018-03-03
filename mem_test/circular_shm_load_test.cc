@@ -50,7 +50,7 @@ SUBJECT(int) {
 }
 
 static int assert_circular_shm(circular_shm *shm) {
-	CUE_ASSERT_STRING_EQ(shm->serialize_to_string(), "BUFFER id:1 size:2 count:3 sem:100");
+	CUE_ASSERT_STRING_EQ(shm->serialize_to_string(), "BUFFER id:1 size:2 count:3 sem:100 key:0");
 	return 0;
 }
 

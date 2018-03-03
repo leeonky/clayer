@@ -58,6 +58,9 @@ SUITE_CASE("create sdl texture") {
 
 SUITE_CASE("unsupport format") {
 	init_subject("AUDIO sample_rate:48000 channels:8 layout:7.1 format:s32");
+	app_stdin = actxt.input_stream;
+	app_stdout = actxt.output_stream;
+	app_stderr = actxt.error_stream;
 	init_mock_function_with_return(av_get_sample_fmt, AV_SAMPLE_FMT_NONE);
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
@@ -67,6 +70,9 @@ SUITE_CASE("unsupport format") {
 
 SUITE_CASE("unsupport layout") {
 	init_subject("AUDIO sample_rate:48000 channels:8 layout:7.1 format:s32");
+	app_stdin = actxt.input_stream;
+	app_stdout = actxt.output_stream;
+	app_stderr = actxt.error_stream;
 	init_mock_function_with_return(av_get_channel_layout, 0);
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);

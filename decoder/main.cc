@@ -7,9 +7,13 @@ int main(int argc, char **argv) {
 	int track_index = -1;
 	enum AVMediaType track_type = AVMEDIA_TYPE_VIDEO;
 	int buffer_count = 16;
+	int buffer_key = 0;
 	const char *file_name = command_argument()
 		.require_full_argument("count", 'c', [&](const char *arg){
 				sscanf(arg, "%d", &buffer_count);
+				})
+		.require_full_argument("key", 'k', [&](const char *arg){
+				sscanf(arg, "%d", &buffer_key);
 				})
 		.require_full_argument("video", 'v', [&](const char *arg){
 				sscanf(arg, "%d", &track_index);
@@ -35,10 +39,10 @@ int main(int argc, char **argv) {
 					[&](AVCodecContext &codec_context){
 					return circular_shm::create(av_get_buffer_size(codec_context), buffer_count,
 						[&](circular_shm &buffer){
-						iob.post(buffer.serialize_to_string());
+						iob.post(buffer.serialize_to_string(buffer_key));
 						auto frame_decoded = [&](const AVFrame &frame){
 						if(!av_copy_frame_to_buffer(frame, buffer.allocate(), buffer.element_size))
-							iob.post(av_frame_info(buffer.index, frame));
+							iob.post(av_frame_info(buffer.index, frame, buffer_key));
 						return 0;
 						};
 

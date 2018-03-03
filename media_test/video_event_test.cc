@@ -54,6 +54,9 @@ SUITE_CASE("event not match") {
 
 SUITE_CASE("args not match") {
 	init_subject("VIDEO width:1920 format:yuv420p");
+	app_stdin = actxt.input_stream;
+	app_stdout = actxt.output_stream;
+	app_stderr = actxt.error_stream;
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
@@ -62,6 +65,9 @@ SUITE_CASE("args not match") {
 
 SUITE_CASE("unsupport format") {
 	init_subject("VIDEO width:1920 height:1080 format:yuv420p");
+	app_stdin = actxt.input_stream;
+	app_stdout = actxt.output_stream;
+	app_stderr = actxt.error_stream;
 	init_mock_function_with_return(av_get_pix_fmt, AV_PIX_FMT_NONE);
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);

@@ -58,9 +58,9 @@ int circular_shm::load(int shm_id, size_t element_size, int count, int sem_id, c
 			});
 }
 
-const char *circular_shm::serialize_to_string() {
+const char *circular_shm::serialize_to_string(int i) {
 	static char buf[1024] = {};
-	sprintf(buf, "BUFFER id:%d size:%zd count:%d sem:%d", shm_id, element_size, element_count, sem_id);
+	sprintf(buf, "BUFFER id:%d size:%zd count:%d sem:%d key:%d", shm_id, element_size, element_count, sem_id, i);
 	return buf;
 }
 
