@@ -43,6 +43,7 @@ AM_COND_IF([ENV_TEST], [],
 	   mem/Makefile
 	   iobus/Makefile
 	   lsdl2/Makefile
+	   lport_audio/Makefile
 	   media/Makefile
 	   screen/Makefile
 	   speaker/Makefile
@@ -56,6 +57,7 @@ AM_COND_IF([ENV_PRD], [],
 	   mock_std/Makefile
 	   mock_sdl2/Makefile
 	   mock_ffmpeg/Makefile
+	   mock_port_audio/Makefile
 	   stdport_test/Makefile
 	   sysexd_test/Makefile
 	   stdexd_test/Makefile
@@ -63,6 +65,7 @@ AM_COND_IF([ENV_PRD], [],
 	   mem_test/Makefile
 	   iobus_test/Makefile
 	   lsdl2_test/Makefile
+	   lport_audio_test/Makefile
 	   media_test/Makefile
 	   ])])
 

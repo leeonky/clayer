@@ -43,11 +43,11 @@ int main(int argc, char **argv) {
 									for(int i=0; i<frames.count; i++){
 										shms[video_buffer_key]->free(frames.frames[i].index, [&](void *buffer){
 											return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
-												clock.wait(frames.frames[i].timestamp, 100000);
 												SDL_RenderClear(renderer);
 												return SDL_PresentYUV(renderer, texture, datas, lines);
 												});
 											});
+										clock.wait(frames.frames[i].timestamp, 100000);
 									}
 									return 0;
 									})) || (!clock_event(iob, [&](int64_t base, int64_t offset){
