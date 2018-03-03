@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 					char layout_string_buffer[1024];
 					av_get_channel_layout_string(layout_string_buffer, sizeof(layout_string_buffer), rs_context.out_channels, rs_context.out_layout);
 					iob.post("AUDIO sample_rate:%d channels:%d layout:%s format:%s", out_rate, rs_context.out_channels, layout_string_buffer, av_get_sample_fmt_name(out_format));
-					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid, int /*audio_buffer_key*/) {
+					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid, int audio_buffer_key) {
 							return circular_shm::load(shmid, size, count, semid,
 									[&](circular_shm &shm){
 									return circular_shm::create(rs_context.resample_size(size), count,
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 														shm.free(samples.samples[i].index, [&](void *buffer){
 																int ret = swr_convert(rs_context, buffer, samples.samples[i].nb_samples, out_shm.allocate());
 																if(ret>=0) {
-																	iob.post("SAMPLES %d=>%" PRId64 ",%d", out_shm.index, samples.samples[i].timestamp, ret);
+																	iob.post("SAMPLES buffer:%d %d=>%" PRId64 ",%d", audio_buffer_key, out_shm.index, samples.samples[i].timestamp, ret);
 																}
 																});
 														}
