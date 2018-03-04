@@ -10,6 +10,8 @@ mock_function_1(PaError, Pa_CloseStream, PaStream *);
 
 mock_function_1(const PaDeviceInfo *, Pa_GetDeviceInfo, PaDeviceIndex);
 
+mock_function_1(long, Pa_GetStreamWriteAvailable, PaStream *);
+
 const char *Pa_GetErrorText(PaError er) {
 	return "port audio error";
 }

@@ -2,6 +2,7 @@
 #define MEDIA_H
 
 #include <functional>
+#include <portaudio.h>
 #include "iobus/iobus.h"
 #include "lffmpeg/lffmpeg.h"
 #include "lsdl2/lsdl2.h"
@@ -9,6 +10,8 @@
 
 Uint32 AVPixelFormat_to_SDL(enum AVPixelFormat);
 SDL_AudioFormat AVSampleFormat_to_SDL(enum AVSampleFormat);
+PaSampleFormat AVSampleFormat_to_PortAudio(enum AVSampleFormat);
+
 int video_event(iobus &, const std::function<int(int, int, enum AVPixelFormat)> &);
 int buffer_event(iobus &, const std::function<int(int, size_t, int, int, int)> &);
 int audio_event(iobus &, const std::function<int(int, int, int64_t, enum AVSampleFormat)> &);

@@ -40,6 +40,22 @@ SDL_AudioFormat AVSampleFormat_to_SDL(enum AVSampleFormat format) {
 	}
 }
 
+PaSampleFormat AVSampleFormat_to_PortAudio(enum AVSampleFormat format) {
+	switch(format) {
+		case AV_SAMPLE_FMT_U8:
+			return paUInt8;
+		case AV_SAMPLE_FMT_S16:
+			return paInt16;
+		case AV_SAMPLE_FMT_S32:
+			return paInt32;
+		case AV_SAMPLE_FMT_FLT:
+			return paFloat32;
+		default:
+			log_error("Unknow support ffmpeg audio format '%d'", format);
+			return 0;
+	}
+}
+
 int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat)> &action) {
 	int vw, vh;
 	char format [128] = "";

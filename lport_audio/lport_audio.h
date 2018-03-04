@@ -7,5 +7,7 @@
 
 int Pa_Init_OpenOutputStream(PaDeviceIndex, int, int, PaSampleFormat, const std::function<int(PaStream *)> &);
 
+int64_t Pa_GetStreamLast(PaStream *, long, int);
+
 #endif
 

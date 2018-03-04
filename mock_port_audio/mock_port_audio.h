@@ -18,6 +18,8 @@ extern_mock_function_1(PaError, Pa_CloseStream, PaStream *);
 
 extern_mock_function_1(const PaDeviceInfo *, Pa_GetDeviceInfo, PaDeviceIndex);
 
+extern_mock_function_1(long, Pa_GetStreamWriteAvailable, PaStream *);
+
 #ifdef __cplusplus
 }
 #endif
