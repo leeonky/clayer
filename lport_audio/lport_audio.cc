@@ -45,6 +45,8 @@ int Pa_Init_OpenOutputStream(PaDeviceIndex device, int rate, int channel, PaSamp
 	return ret;
 }
 
-int64_t Pa_GetStreamLast(PaStream *, long, int) {
+int64_t Pa_GetStreamLast(PaStream *stream, long buffer_len, int rate) {
+	int64_t t = (buffer_len-Pa_GetStreamWriteAvailable(stream)) * 1000000 / rate;
+	return t>0 ? t : 0;
 }
 

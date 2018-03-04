@@ -37,10 +37,11 @@ static int play_with_portaudio(iobus &iob) {
 	return audio_event(iob, [&](int sample_rate, int channels, int64_t /*layout*/, enum AVSampleFormat format){
 			return buffer_event(iob, [&](int shmid, size_t size, int count, int semid, int /*audio_buffer_key*/) {
 				return circular_shm::load(shmid, size, count, semid, [&](circular_shm &shm){
-					return Pa_Init_OpenOutputStream(0, sample_rate, channels, AVSampleFormat_to_PortAudio(format), [&](PaStream *stream){
+					return Pa_Init_OpenOutputStream(1, sample_rate, channels, AVSampleFormat_to_PortAudio(format), [&](PaStream *stream){
+						long buffer_len = Pa_GetStreamWriteAvailable(stream);
 						while (!samples_event(iob, [&](sample_list &samples) {
-								//if(samples.count)
-									//iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, usectime(), samples.samples[0].timestamp-SDL_AudioLast(device_id, audio_spec));
+								if(samples.count)
+									iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, usectime(), samples.samples[0].timestamp-Pa_GetStreamLast(stream, buffer_len, sample_rate));
 								for(int i=0; i<samples.count; i++)
 									shm.free(samples.samples[i].index, [&](void *buffer){
 										Pa_WriteStream(stream, buffer, samples.samples[i].nb_samples);
