@@ -31,7 +31,11 @@ int Pa_Init_OpenOutputStream(PaDeviceIndex device, int rate, int channel, PaSamp
 		output_params.suggestedLatency = Pa_GetDeviceInfo(device)->defaultLowInputLatency;
 		if(paNoError == (ret_er = Pa_OpenStream(&stream, nullptr, &output_params, rate,
 				paFramesPerBufferUnspecified, paNoFlag, nullptr, nullptr))) {
-			ret = action(stream);
+			if(paNoError == (ret_er = Pa_StartStream(stream))) {
+				ret = action(stream);
+				Pa_StopStream(stream);
+			} else
+				ret = log_errno(ret_er);
 			Pa_CloseStream(stream);
 		} else
 			ret = log_errno(ret_er);

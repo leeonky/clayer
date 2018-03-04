@@ -35,7 +35,9 @@ BEFORE_EACH() {
 
 	init_mock_function_with_return(Pa_Initialize, paNoError)
 	init_mock_function_with_function(Pa_OpenStream, stub_Pa_Init_OpenOutputStream);
+	init_mock_function_with_return(Pa_StartStream, paNoError);
 	init_mock_function_with_return(Pa_GetDeviceInfo, &ret_device);
+	init_mock_function_with_return(Pa_StopStream, paNoError);
 	init_mock_function_with_return(Pa_CloseStream, paNoError);
 	init_mock_function_with_return(Pa_Terminate, paNoError);
 	init_mock_function(open_stream_action);
@@ -75,8 +77,14 @@ SUITE_CASE("init and open audio") {
 	CUE_EXPECT_CALLED_WITH_PTR(Pa_OpenStream, 7, nullptr);
 	CUE_EXPECT_CALLED_WITH_PTR(Pa_OpenStream, 8, nullptr);
 
+	CUE_EXPECT_CALLED_ONCE(Pa_StartStream);
+	CUE_EXPECT_CALLED_WITH_PTR(Pa_StartStream, 1, ret_stream);
+
 	CUE_EXPECT_CALLED_ONCE(open_stream_action);
 	CUE_EXPECT_CALLED_WITH_PTR(open_stream_action, 1, ret_stream);
+
+	CUE_EXPECT_CALLED_ONCE(Pa_StopStream);
+	CUE_EXPECT_CALLED_WITH_PTR(Pa_StopStream, 1, ret_stream);
 
 	CUE_EXPECT_CALLED_ONCE(Pa_CloseStream);
 	CUE_EXPECT_CALLED_WITH_PTR(Pa_CloseStream, 1, ret_stream);
@@ -91,7 +99,11 @@ SUITE_CASE("failed init audio") {
 
 	CUE_EXPECT_NEVER_CALLED(Pa_OpenStream);
 
+	CUE_EXPECT_NEVER_CALLED(Pa_StartStream);
+
 	CUE_EXPECT_NEVER_CALLED(open_stream_action);
+
+	CUE_EXPECT_NEVER_CALLED(Pa_StopStream);
 
 	CUE_EXPECT_NEVER_CALLED(Pa_CloseStream);
 
@@ -105,9 +117,25 @@ SUITE_CASE("failed to open stream") {
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
+	CUE_EXPECT_NEVER_CALLED(Pa_StartStream);
+
 	CUE_EXPECT_NEVER_CALLED(open_stream_action);
 
+	CUE_EXPECT_NEVER_CALLED(Pa_StopStream);
+
 	CUE_EXPECT_NEVER_CALLED(Pa_CloseStream);
+
+	CUE_ASSERT_STDERR_EQ("Error[liblportaudio]: port audio error\n");
+}
+
+SUITE_CASE("failed to start stream") {
+	init_mock_function_with_return(Pa_StartStream, paInternalError);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(open_stream_action);
+
+	CUE_EXPECT_NEVER_CALLED(Pa_StopStream);
 
 	CUE_ASSERT_STDERR_EQ("Error[liblportaudio]: port audio error\n");
 }

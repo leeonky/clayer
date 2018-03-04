@@ -5,9 +5,7 @@
 #include "lsdl2/lsdl2.h"
 #include "media/media.h"
 
-int main(int, char **) {
-	iobus iob(stdin, stdout, stderr);
-
+static int play_with_sdl2(iobus &iob) {
 	return audio_event(iob, [&](int sample_rate, int channels, int64_t /*layout*/, enum AVSampleFormat format){
 			return SDL_OpenAudio(0, sample_rate, channels, AVSampleFormat_to_SDL(format), [&](SDL_AudioDeviceID device_id, const SDL_AudioSpec &audio_spec){
 					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid, int /*audio_buffer_key*/) {
@@ -32,5 +30,10 @@ int main(int, char **) {
 					});
 				});
 			});
+}
+
+int main(int, char **) {
+	iobus iob(stdin, stdout, stderr);
+	return play_with_sdl2(iob);
 }
 
