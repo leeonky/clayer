@@ -6,9 +6,9 @@
 #include "lport_audio/lport_audio.h"
 #include "media/media.h"
 
-static int play_with_sdl2(iobus &iob) {
+static int play_with_sdl2(iobus &iob, int device) {
 	return audio_event(iob, [&](int sample_rate, int channels, int64_t /*layout*/, enum AVSampleFormat format){
-			return SDL_OpenAudio(0, sample_rate, channels, AVSampleFormat_to_SDL(format), [&](SDL_AudioDeviceID device_id, const SDL_AudioSpec &audio_spec){
+			return SDL_OpenAudio(device, sample_rate, channels, AVSampleFormat_to_SDL(format), [&](SDL_AudioDeviceID device_id, const SDL_AudioSpec &audio_spec){
 					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid, int /*audio_buffer_key*/) {
 						return circular_shm::load(shmid, size, count, semid,
 							[&](circular_shm &shm){
@@ -33,11 +33,11 @@ static int play_with_sdl2(iobus &iob) {
 			});
 }
 
-static int play_with_portaudio(iobus &iob) {
+static int play_with_portaudio(iobus &iob, int device) {
 	return audio_event(iob, [&](int sample_rate, int channels, int64_t /*layout*/, enum AVSampleFormat format){
 			return buffer_event(iob, [&](int shmid, size_t size, int count, int semid, int /*audio_buffer_key*/) {
 				return circular_shm::load(shmid, size, count, semid, [&](circular_shm &shm){
-					return Pa_Init_OpenOutputStream(1, sample_rate, channels, AVSampleFormat_to_PortAudio(format), [&](PaStream *stream){
+					return Pa_Init_OpenOutputStream(device, sample_rate, channels, AVSampleFormat_to_PortAudio(format), [&](PaStream *stream){
 						long buffer_len = Pa_GetStreamWriteAvailable(stream);
 						while (!samples_event(iob, [&](sample_list &samples) {
 								if(samples.count)
@@ -56,8 +56,12 @@ static int play_with_portaudio(iobus &iob) {
 			});
 }
 
-int main(int, char **) {
+int main(int argc, char **argv) {
+	int device = 0;
+	command_argument().require_full_argument("device", 'd', [&](const char *arg){
+			sscanf(arg, "%d", &device);
+			}).parse(argc, argv);
 	iobus iob(stdin, stdout, stderr);
-	return play_with_portaudio(iob);
+	return play_with_portaudio(iob, device);
 }
 
