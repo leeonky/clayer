@@ -11,6 +11,7 @@ int main() {
 	ADD_SUITE(samples_event_test);
 	ADD_SUITE(resampler_params_test);
 	ADD_SUITE(clock_event_test);
+	ADD_SUITE(sub_srt_test);
 	return run_test();
 }
 
