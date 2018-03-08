@@ -22,13 +22,13 @@ namespace {
 	}
 }
 
-subtitle_srt::subtitle_srt(FILE *input) :last_item(0) {
+subtitle_srt::subtitle_srt(FILE *input) {
 	subtitle_srt_item item;
 	while(0==get_line(input, [&](const char *line) { return 1 == sscanf(line, "%d", &item.index); }) 
 		&& 0==get_line(input, [&](const char *line) {
 			int fh, fm, fs, fms, th, tm, ts, tms;
 			bool ret;
-			if(ret = (8==sscanf(line, "%d:%d:%d,%d --> %d:%d:%d,%d", &fh, &fm, &fs, &fms, &th, &tm, &ts, &tms))) {
+			if((ret = (8==sscanf(line, "%d:%d:%d,%d --> %d:%d:%d,%d", &fh, &fm, &fs, &fms, &th, &tm, &ts, &tms)))) {
 				item.from = to_use(fh, fm, fs, fms);
 				item.to = to_use(th, tm, ts, tms);
 			}
@@ -42,21 +42,31 @@ subtitle_srt::subtitle_srt(FILE *input) :last_item(0) {
 				return true;
 		});
 		items.push_back(item);
+		item.content = "";
 	}
+	last_searched = items.begin();
+	last_shown = items.end();
 }
 
-const std::vector<subtitle_srt_item>::const_iterator subtitle_srt::get_item(int64_t time) {
-	if(time >= items[last_item].from) {
-		for(; last_item<items.size(); ++last_item) {
-			if(time >= items[last_item].from && time <= items[last_item].to)
-				return items.begin() + last_item;
-			else if(time <= items[last_item].from)
-				break;
+void subtitle_srt::query_item(int64_t time, const std::function<void(const std::string &)> &action) {
+	if(items.size()) {
+		if(time >= last_searched->from || last_searched == items.begin()) {
+			for(; last_searched != items.end(); ++last_searched) {
+				if(time >= last_searched->from && time <= last_searched->to) {
+					if(last_searched != last_shown) {
+						last_shown = last_searched;
+						action(last_searched->content);
+					}
+					return;
+				}
+				else if(time <= last_searched->from)
+					break;
+			}
+			return action("");
+		} else {
+			last_searched = items.begin();
+			return query_item(time, action);
 		}
-		return items.end();
-	} else {
-		last_item = 0;
-		return get_item(time);
 	}
 }
 

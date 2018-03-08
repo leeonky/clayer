@@ -17,11 +17,12 @@ public:
 class subtitle_srt {
 public:
 	subtitle_srt(FILE *);
+	void query_item(int64_t, const std::function<void(const std::string &)> &);
 	const std::vector<subtitle_srt_item>::const_iterator get_item(int64_t);
 
 private:
 	std::vector<subtitle_srt_item> items;
-	int last_item;
+	std::vector<subtitle_srt_item>::const_iterator last_searched, last_shown;
 };
 
 #endif
