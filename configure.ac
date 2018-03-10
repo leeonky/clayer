@@ -29,6 +29,12 @@ AM_CONDITIONAL([ENV_PRD], [test "x$ENV" != xDEV && test "x$ENV" != xTEST])
 AC_SUBST(AM_CXXFLAGS, "-std=c++11 -fno-exceptions -fno-rtti -Wall -Wextra")
 #AC_SUBST(AM_CXXFLAGS, "-std=c++11 -Wall -Wextra")
 
+MAGICKWAND_CFLAGS=`pkg-config --cflags MagickWand`
+MAGICKWAND_LIBS=`pkg-config --libs MagickWand`
+
+AC_SUBST(MAGICKWAND_CFLAGS)
+AC_SUBST(MAGICKWAND_LIBS)
+
 AC_CONFIG_FILES([Makefile])
 
 # Production Makefile
@@ -48,6 +54,7 @@ AM_COND_IF([ENV_TEST], [],
 	   screen/Makefile
 	   speaker/Makefile
 	   resampler/Makefile
+	   lmagic_wand/Makefile
 	   ])])
 
 # Testing Makefile
@@ -58,6 +65,7 @@ AM_COND_IF([ENV_PRD], [],
 	   mock_sdl2/Makefile
 	   mock_ffmpeg/Makefile
 	   mock_port_audio/Makefile
+	   mock_magic_wand/Makefile
 	   stdport_test/Makefile
 	   sysexd_test/Makefile
 	   stdexd_test/Makefile
@@ -67,6 +75,7 @@ AM_COND_IF([ENV_PRD], [],
 	   lsdl2_test/Makefile
 	   lport_audio_test/Makefile
 	   media_test/Makefile
+	   lmagic_wand_test/Makefile
 	   ])])
 
 AC_OUTPUT
