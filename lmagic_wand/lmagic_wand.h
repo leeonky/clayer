@@ -7,6 +7,12 @@
 
 extern int NewMagickWand(size_t, size_t, const char *, const std::function<int(MagickWand *)> &);
 
+extern int NewDrawingWand(const std::function<int(DrawingWand *)> &);
+
+extern int DrawSetFont(DrawingWand *, int, const char *);
+
+extern void DrawSetFillColor(DrawingWand *, const char *);
+
 #endif
 
 

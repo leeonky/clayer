@@ -83,6 +83,20 @@ SUITE_CASE("MagickSetSize failed") {
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
 	CUE_ASSERT_STDERR_EQ("Error[liblmagic_wand]: MagickWand error\n");
+
+	CUE_EXPECT_NEVER_CALLED(MagickReadImage);
+
+	CUE_EXPECT_NEVER_CALLED(magick_wand_action);
+}
+
+SUITE_CASE("MagickReadImage failed") {
+	init_mock_function_with_return(MagickReadImage, MagickFalse);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_ASSERT_STDERR_EQ("Error[liblmagic_wand]: MagickWand error\n");
+
+	CUE_EXPECT_NEVER_CALLED(magick_wand_action);
 }
 
 SUITE_END(create_magic_wand_test);
