@@ -79,3 +79,15 @@ int fmemopen(void *buf, size_t size, const char *mode, const std::function<int(F
 		res = -1;
 	return res;
 }
+
+int fopen(const char *file, const char *mode, const std::function<int(FILE *)> &action) {
+	int res = 0;
+	FILE *f = fopen(file, mode);
+	if(f) {
+		res = action(f);
+		fclose(f);
+	} else
+		res = -1;
+	return res;
+}
+

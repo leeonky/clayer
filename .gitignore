@@ -43,5 +43,6 @@ decoder/decoder
 screen/screen
 speaker/speaker
 resampler/resampler
+subtitle/subtitle
 
 .dev

@@ -35,5 +35,6 @@ private:
 };
 
 int fmemopen(void *, size_t, const char *, const std::function<int(FILE *)> &);
+int fopen(const char *, const char *, const std::function<int(FILE *)> &);
 
 #endif

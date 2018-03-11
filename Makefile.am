@@ -16,6 +16,7 @@ SUBDIRS += screen
 SUBDIRS += speaker
 SUBDIRS += resampler
 SUBDIRS += lmagic_wand
+SUBDIRS += subtitle
 endif
 
 if !ENV_PRD

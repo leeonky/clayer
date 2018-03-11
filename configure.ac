@@ -55,6 +55,7 @@ AM_COND_IF([ENV_TEST], [],
 	   speaker/Makefile
 	   resampler/Makefile
 	   lmagic_wand/Makefile
+	   subtitle/Makefile
 	   ])])
 
 # Testing Makefile
