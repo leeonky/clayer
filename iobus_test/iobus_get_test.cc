@@ -28,6 +28,7 @@ SUBJECT(int) {
 
 SUITE_CASE("get from stdin") {
 	init_subject("TEST a:1");
+	app_stdin = actxt.input_stream;
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
@@ -38,6 +39,7 @@ SUITE_CASE("get from stdin") {
 
 SUITE_CASE("should cache last result when action return non zero") {
 	init_subject("TEST a:1");
+	app_stdin = actxt.input_stream;
 	init_mock_function_with_return(get_message_action, 100);
 	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
 
@@ -52,6 +54,7 @@ SUITE_CASE("should cache last result when action return non zero") {
 
 SUITE_CASE("bad format: empty args") {
 	init_subject("TEST\n");
+	app_stdin = actxt.input_stream;
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
@@ -62,10 +65,27 @@ SUITE_CASE("bad format: empty args") {
 
 SUITE_CASE("bad format: empty line") {
 	init_subject("\n");
+	app_stdin = actxt.input_stream;
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
 	CUE_EXPECT_NEVER_CALLED(get_message_action);
+}
+
+SUITE_CASE("un except event") {
+	init_subject("DO\n");
+	app_stdin = actxt.input_stream;
+	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
+
+	CUE_ASSERT_EQ(iob.except("TEST"), 0);
+}
+
+SUITE_CASE("except event") {
+	init_subject("TEST\n");
+	app_stdin = actxt.input_stream;
+	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
+
+	CUE_ASSERT_EQ(iob.except("TEST")!=0, 1);
 }
 
 SUITE_END(iobus_get_test);

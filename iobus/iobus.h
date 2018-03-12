@@ -18,6 +18,11 @@ public:
 		return get(event, action, 0, "");
 	}
 	int pass_through();
+	void accept_processed() {
+		processed = true;
+	}
+
+	int except(const char *);
 private:
 	FILE *file_in, *file_out, *file_err;
 	char *line;

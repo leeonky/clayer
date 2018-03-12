@@ -35,7 +35,7 @@ int iobus::get(const char *event, const std::function<int(const char *, const ch
 	res = get([&](const char *command, const char *arguments) {
 			int r = 0;
 			if(!strcmp(command, event)) {
-				processed = true;
+				accept_processed();
 				if(arg_count == vsscanf(arguments, format, args)) {
 					r = action(command, arguments);
 				} else
@@ -58,9 +58,16 @@ void iobus::recaption_and_post() {
 int iobus::pass_through() {
 	int ret = get([&](const char *, const char *){
 			recaption_and_post();
+			accept_processed();
 			return 0;
 			});
-	processed = true;
+	return ret;
+}
+
+int iobus::except(const char *command) {
+	int ret = get([&](const char *cmd, const char *){
+			return !strcmp(cmd, command);
+			});
 	return ret;
 }
 
