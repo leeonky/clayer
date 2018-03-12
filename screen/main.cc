@@ -39,16 +39,14 @@ int main(int argc, char **argv) {
 							[&](circular_shm &shm){
 							shms[video_buffer_key] = &shm;
 							media_clock clock;
-							while((!frames_event(iob, [&](frame_list &frames){
-									for(int i=0; i<frames.count; i++){
-										shms[video_buffer_key]->free(frames.frames[i].index, [&](void *buffer){
-											return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
-												SDL_RenderClear(renderer);
-												return SDL_PresentYUV(renderer, texture, datas, lines);
-												});
+							while((!frame_event(iob, [&](int buffer_key, int index, int64_t pts){
+									shms[buffer_key]->free(index, [&](void *buffer){
+										return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
+											SDL_RenderClear(renderer);
+											return SDL_PresentYUV(renderer, texture, datas, lines);
 											});
-										clock.wait(frames.frames[i].timestamp, 100000);
-									}
+										});
+									clock.wait(pts, 100000);
 									return 0;
 									})) || (!clock_event(iob, [&](int64_t base, int64_t offset){
 										clock.sync(base, offset);

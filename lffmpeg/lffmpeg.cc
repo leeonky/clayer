@@ -314,7 +314,7 @@ const char *av_frame_info(int index, const AVFrame &frame, int buffer_key) {
 	static __thread char buffer[1024];
 	switch(context->av_stream->codecpar->codec_type) {
 		case AVMEDIA_TYPE_VIDEO:
-			sprintf(buffer, "FRAMES buffer:%d %d=>%" PRId64, buffer_key, index, av_frame_pts(frame));
+			sprintf(buffer, "FRAME buffer:%d %d=>%" PRId64, buffer_key, index, av_frame_pts(frame));
 			break;
 		case AVMEDIA_TYPE_AUDIO:
 			sprintf(buffer, "SAMPLES buffer:%d %d=>%" PRId64 ",%d", buffer_key, index, av_frame_pts(frame), frame.nb_samples);
