@@ -63,4 +63,15 @@ extern enum AVSampleFormat analyze_sample_format(enum AVSampleFormat, const char
 
 #define MAX_LAYER_COUNT	32
 
+#define MAX_SUB_LAYER_COUNT 128
+struct layer_list {
+	int buffer_key;
+	struct sub_layer {
+		int x, y, w, h, offset;
+	} sub_layers[MAX_FRAMES_COUNT];
+	int count;
+};
+
+extern int layer_event(iobus &iob, const std::function<int(const layer_list &)> &);
+
 #endif

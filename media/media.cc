@@ -292,3 +292,23 @@ enum AVSampleFormat analyze_sample_format(enum AVSampleFormat format, const char
 				});
 }
 
+int layer_event(iobus &iob, const std::function<int(const layer_list &)> &action) {
+	return iob.get("LAYER", [&](const char *, const char *arguments) {
+			arguments = strlen(arguments)==0 ? " " : arguments;
+			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
+				layer_list list;
+				if(1==fscanf(file, "buffer:%d", &list.buffer_key)) {
+					while(list.count<MAX_SUB_LAYER_COUNT
+						&& 5==fscanf(file, "%d=>%d,%d,%d,%d",
+							&list.sub_layers[list.count].offset,
+							&list.sub_layers[list.count].x,
+							&list.sub_layers[list.count].y,
+							&list.sub_layers[list.count].w,
+							&list.sub_layers[list.count].h))
+						list.count++;
+				}
+				return action(list);
+				});
+			});
+}
+
