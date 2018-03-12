@@ -27,6 +27,7 @@ struct frame_list {
 	int count = 0;
 };
 int frames_event(iobus &, const std::function<int(frame_list &)> &);
+int frame_event(iobus &, const std::function<int(int, int, int64_t)> &);
 
 #define MAX_SAMPLES_COUNT 128
 struct sample_list {

@@ -95,6 +95,14 @@ int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
 			});
 }
 
+int frame_event(iobus &iob, const std::function<int(int, int, int64_t)> &action) {
+	int buffer_key, index;
+	int64_t pts;
+	return iob.get("FRAME", [&](const char *, const char *) {
+			return action(buffer_key, index, pts);
+			}, 3, "buffer:%d %d=>%" PRId64, &buffer_key, &index, &pts);
+}
+
 int samples_event(iobus &iob, const std::function<int(sample_list &)> &action) {
 	return iob.get("SAMPLES", [&](const char *, const char *arguments) {
 			arguments = strlen(arguments)==0 ? " " : arguments;

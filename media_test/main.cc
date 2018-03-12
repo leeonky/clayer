@@ -12,6 +12,7 @@ int main() {
 	ADD_SUITE(resampler_params_test);
 	ADD_SUITE(clock_event_test);
 	ADD_SUITE(sub_srt_test);
+	ADD_SUITE(frame_event_test);
 	return run_test();
 }
 
