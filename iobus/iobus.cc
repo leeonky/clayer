@@ -71,3 +71,9 @@ int iobus::except(const char *command) {
 	return ret;
 }
 
+void iobus::ignore_untill(const char *command) {
+	while(!except(command)) {
+		accept_processed();
+	}
+}
+

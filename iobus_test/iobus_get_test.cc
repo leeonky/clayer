@@ -88,5 +88,17 @@ SUITE_CASE("except event") {
 	CUE_ASSERT_EQ(iob.except("TEST")!=0, 1);
 }
 
+SUITE_CASE("ignore_untill") {
+	init_subject("TEST\nDO");
+	app_stdin = actxt.input_stream;
+	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
+
+	iob.ignore_untill("DO");
+	iob.get(get_message_action);
+
+	CUE_EXPECT_CALLED_ONCE(get_message_action);
+	CUE_EXPECT_CALLED_WITH_STRING(get_message_action, 1, "DO");
+}
+
 SUITE_END(iobus_get_test);
 

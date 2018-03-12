@@ -23,6 +23,7 @@ public:
 	}
 
 	int except(const char *);
+	void ignore_untill(const char *);
 private:
 	FILE *file_in, *file_out, *file_err;
 	char *line;

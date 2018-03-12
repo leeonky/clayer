@@ -59,6 +59,7 @@ PaSampleFormat AVSampleFormat_to_PortAudio(enum AVSampleFormat format) {
 int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat)> &action) {
 	int vw, vh;
 	char format [128] = "";
+	iob.ignore_untill("VIDEO");
 	return iob.get("VIDEO", [&](const char *, const char *) {
 			int res;
 			enum AVPixelFormat av_format = av_get_pix_fmt(format);
@@ -73,6 +74,7 @@ int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat
 int buffer_event(iobus &iob, const std::function<int(int, size_t, int, int, int)> &action) {
 	int shm_id, sem_id, count, index;
 	size_t element_size;
+	iob.ignore_untill("BUFFER");
 	return iob.get("BUFFER", [&](const char *, const char *) {
 			return action(shm_id, element_size, count, sem_id, index);
 			}, 5, "id:%d size:%zu count:%d sem:%d key:%d", &shm_id, &element_size, &count, &sem_id, &index);
@@ -111,6 +113,7 @@ int samples_event(iobus &iob, const std::function<int(sample_list &)> &action) {
 int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSampleFormat)> &action) {
 	int rate, channels;
 	char layout[128], format[128];
+	iob.ignore_untill("AUDIO");
 	return iob.get("AUDIO", [&](const char *, const char *) {
 			int res = 0;
 			enum AVSampleFormat av_format = av_get_sample_fmt(format);
