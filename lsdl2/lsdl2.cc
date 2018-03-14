@@ -44,7 +44,7 @@ int SDL_CreateTexture(SDL_Window *window, int width, int height, Uint32 format, 
 	return res;
 }
 
-int SDL_PresentYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas, int *lines) {
+int SDL_UpdateAndCopyYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas, int *lines) {
 	int res = 0;
 	SDL_Rect target_rect;
 	int renderer_w, renderer_h, texture_w, texture_h;
@@ -64,13 +64,20 @@ int SDL_PresentYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas
 			target_rect.x = 0;
 			target_rect.y = (renderer_h-target_rect.h)/2;
 		}
-		if(!SDL_UpdateYUVTexture(texture, NULL, datas[0], lines[0], datas[1], lines[1], datas[2], lines[2])
-				&& !SDL_RenderCopy(renderer, texture,  NULL, &target_rect))
-			SDL_RenderPresent(renderer);
-		else
+		if(SDL_UpdateYUVTexture(texture, NULL, datas[0], lines[0], datas[1], lines[1], datas[2], lines[2])
+				|| SDL_RenderCopy(renderer, texture,  NULL, &target_rect))
 			res = log_sdl_error();
 	} else
 		res = log_sdl_error();
+	return res;
+}
+
+int SDL_PresentYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas, int *lines) {
+	int res = 0;
+	if(!SDL_UpdateAndCopyYUV(renderer, texture, datas, lines))
+		SDL_RenderPresent(renderer);
+	else
+		res = -1;
 	return res;
 }
 

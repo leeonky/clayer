@@ -5,6 +5,7 @@
 #include <portaudio.h>
 #include "iobus/iobus.h"
 #include "lffmpeg/lffmpeg.h"
+#include "mem/circular_shm.h"
 #include "lsdl2/lsdl2.h"
 #include "stdport/stdport.h"
 
@@ -73,5 +74,24 @@ struct layer_list {
 };
 
 extern int layer_event(iobus &iob, const std::function<int(const layer_list &)> &);
+
+template<typename Processor, typename Action>
+int main_consumer(iobus &iob, circular_shm **shms, const Processor &main_processor, const Action &action) {
+	std::function<int(int, size_t, int, int, int)> buffer_action = [&](int shmid, size_t size, int count, int semid, int buffer_key) {
+		return circular_shm::load(shmid, size, count, semid,
+			[&](circular_shm &shm){
+			shms[buffer_key] = &shm;
+
+			while(buffer_event(iob, buffer_action)) {
+				while(!main_processor(iob, action))
+					;
+				if(iob.ignore_last())
+					break;
+			}
+			return 0;
+			});
+		};
+	return ignore_untill(iob, buffer_event, buffer_action);
+}
 
 #endif
