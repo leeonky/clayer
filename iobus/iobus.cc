@@ -62,13 +62,6 @@ int iobus::get(const char *event, const std::function<int(const char *)> &action
 	return res;
 }
 
-void iobus::recaption_and_post() {
-	if(line) {
-		fprintf(file_out, "%s", line);
-		fflush(file_out);
-	}
-}
-
 int iobus::pass_through() {
 	int ret = get([&](const char *, const char *){
 			return forward_last();

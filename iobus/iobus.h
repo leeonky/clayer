@@ -32,7 +32,12 @@ public:
 
 	int pass_through();
 	int except(const char *);
-	void recaption_and_post();
+	void recaption_and_post() {
+		if(line) {
+			fprintf(file_out, "%s", line);
+			fflush(file_out);
+		}
+	}
 
 private:
 	FILE *file_in, *file_out, *file_err;
@@ -46,5 +51,22 @@ private:
 	}
 };
 
+template<typename Processor, typename Action>
+inline int ignore_untill(iobus &iob, const Processor &proseccor, const Action &action) {
+	while(proseccor(iob, action)) {
+		if(iob.ignore_last())
+			return -1;
+	}
+	return 0;
+}
+
+template<typename Processor, typename Action>
+inline int forward_untill(iobus &iob, const Processor &proseccor, const Action &action) {
+	while(proseccor(iob, action)) {
+		if(iob.forward_last())
+			return -1;
+	}
+	return 0;
+}
 
 #endif
