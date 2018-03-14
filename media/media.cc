@@ -59,7 +59,7 @@ PaSampleFormat AVSampleFormat_to_PortAudio(enum AVSampleFormat format) {
 int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat)> &action) {
 	int vw, vh;
 	char format [128] = "";
-	return iob.get("VIDEO", [&](const char *, const char *) {
+	return iob.get("VIDEO", [&] {
 			int res;
 			enum AVPixelFormat av_format = av_get_pix_fmt(format);
 			if(av_format != AV_PIX_FMT_NONE)
@@ -73,13 +73,13 @@ int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat
 int buffer_event(iobus &iob, const std::function<int(int, size_t, int, int, int)> &action) {
 	int shm_id, sem_id, count, index;
 	size_t element_size;
-	return iob.get("BUFFER", [&](const char *, const char *) {
+	return iob.get("BUFFER", [&] {
 			return action(shm_id, element_size, count, sem_id, index);
 			}, 5, "id:%d size:%zu count:%d sem:%d key:%d", &shm_id, &element_size, &count, &sem_id, &index);
 }
 
 int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
-	return iob.get("FRAMES", [&](const char *, const char *arguments) {
+	return iob.get("FRAMES", [&](const char *arguments) {
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
 				frame_list list;
@@ -96,13 +96,13 @@ int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
 int frame_event(iobus &iob, const std::function<int(int, int, int64_t)> &action) {
 	int buffer_key, index;
 	int64_t pts;
-	return iob.get("FRAME", [&](const char *, const char *) {
+	return iob.get("FRAME", [&] {
 			return action(buffer_key, index, pts);
 			}, 3, "buffer:%d %d=>%" PRId64, &buffer_key, &index, &pts);
 }
 
 int samples_event(iobus &iob, const std::function<int(sample_list &)> &action) {
-	return iob.get("SAMPLES", [&](const char *, const char *arguments) {
+	return iob.get("SAMPLES", [&](const char *arguments) {
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
 				sample_list list;
@@ -119,7 +119,7 @@ int samples_event(iobus &iob, const std::function<int(sample_list &)> &action) {
 int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSampleFormat)> &action) {
 	int rate, channels;
 	char layout[128], format[128];
-	return iob.get("AUDIO", [&](const char *, const char *) {
+	return iob.get("AUDIO", [&] {
 			int res = 0;
 			enum AVSampleFormat av_format = av_get_sample_fmt(format);
 			if(int64_t av_layout = av_get_channel_layout(layout)) {
@@ -135,7 +135,7 @@ int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSa
 
 int clock_event(iobus &iob, const std::function<int(int64_t, int64_t)> &action) {
 	int64_t base, offset;
-	return iob.get("CLOCK", [&](const char *, const char *) {
+	return iob.get("CLOCK", [&] {
 			return action(base, offset);
 			}, 2, "base:%" PRId64 " offset:%" PRId64, &base, &offset);
 }
@@ -290,7 +290,7 @@ enum AVSampleFormat analyze_sample_format(enum AVSampleFormat format, const char
 }
 
 int layer_event(iobus &iob, const std::function<int(const layer_list &)> &action) {
-	return iob.get("LAYER", [&](const char *, const char *arguments) {
+	return iob.get("LAYER", [&](const char *arguments) {
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
 				layer_list list;

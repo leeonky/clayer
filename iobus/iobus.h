@@ -10,26 +10,40 @@ public:
 
 	void post(const char *format, ...);
 
+	int get(const std::function<int(const char *, const char *)> &);
+	int get(const char *, const std::function<int(void)> &, int, const char *, ...);
+	int get(const char *event, const std::function<int(const char *)> &action);
+
+	int forward_last() {
+		if(processed)
+			return -1;
+		fprintf(file_out, "%s", line);
+		fflush(file_out);
+		accept_processed();
+		return 0;
+	}
+
+	int ignore_last() {
+		if(processed)
+			return -1;
+		accept_processed();
+		return 0;
+	}
+
+	int pass_through();
+	int except(const char *);
 	void recaption_and_post();
 
-	int get(const std::function<int(const char *, const char *)> &);
-	int get(const char *, const std::function<int(const char *, const char *)> &, int, const char *, ...);
-	int get(const char *event, const std::function<int(const char *, const char *)> &action) {
-		return get(event, action, 0, "");
-	}
-	int pass_through();
-	void accept_processed() {
-		processed = true;
-	}
-
-	int except(const char *);
-	void ignore_untill(const char *);
 private:
 	FILE *file_in, *file_out, *file_err;
 	char *line;
 	char command[128];
 	const char *arguments;
 	bool processed;
+
+	void accept_processed() {
+		processed = true;
+	}
 };
 
 

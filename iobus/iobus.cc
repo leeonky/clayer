@@ -28,7 +28,7 @@ int iobus::get(const std::function<int(const char *, const char *)> &action) {
 	return action(command, arguments);
 }
 
-int iobus::get(const char *event, const std::function<int(const char *, const char *)> &action, int arg_count, const char *format, ...) {
+int iobus::get(const char *event, const std::function<int(void)> &action, int arg_count, const char *format, ...) {
 	int res = 0;
 	va_list args;
 	va_start(args, format);
@@ -36,15 +36,29 @@ int iobus::get(const char *event, const std::function<int(const char *, const ch
 			int r = 0;
 			if(!strcmp(command, event)) {
 				accept_processed();
-				if(arg_count == vsscanf(arguments, format, args)) {
-					r = action(command, arguments);
-				} else
+				if(arg_count == vsscanf(arguments, format, args))
+					r = action();
+				else
 					r = log_error("Invalid %s arguments '%s'", command, arguments);
 			} else
 				r = -1;
 			return r;
 			});
 	va_end(args);
+	return res;
+}
+
+int iobus::get(const char *event, const std::function<int(const char *)> &action) {
+	int res = 0;
+	res = get([&](const char *command, const char *arguments) {
+			int r = 0;
+			if(!strcmp(command, event)) {
+				accept_processed();
+				r = action(arguments);
+			} else
+				r = -1;
+			return r;
+			});
 	return res;
 }
 
@@ -57,9 +71,7 @@ void iobus::recaption_and_post() {
 
 int iobus::pass_through() {
 	int ret = get([&](const char *, const char *){
-			recaption_and_post();
-			accept_processed();
-			return 0;
+			return forward_last();
 			});
 	return ret;
 }
@@ -69,11 +81,5 @@ int iobus::except(const char *command) {
 			return !strcmp(cmd, command);
 			});
 	return ret;
-}
-
-void iobus::ignore_untill(const char *command) {
-	while(!except(command)) {
-		accept_processed();
-	}
 }
 
