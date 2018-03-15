@@ -82,7 +82,7 @@ int frames_event(iobus &iob, const std::function<int(frame_list &)> &action) {
 	return iob.get("FRAMES", [&](const char *arguments) {
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
-				frame_list list;
+				frame_list list = {};
 				if(1==fscanf(file, "buffer:%d", &list.buffer_key)) {
 					while(list.count<MAX_FRAMES_COUNT
 						&& 2==fscanf(file, "%d=>%" PRId64, &list.frames[list.count].index, &list.frames[list.count].timestamp))
@@ -105,7 +105,7 @@ int samples_event(iobus &iob, const std::function<int(sample_list &)> &action) {
 	return iob.get("SAMPLES", [&](const char *arguments) {
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
-				sample_list list;
+				sample_list list = {};
 				if(1==fscanf(file, "buffer:%d", &list.buffer_key)) {
 					while(list.count<MAX_SAMPLES_COUNT
 						&& 3==fscanf(file, "%d=>%" PRId64 ",%d", &list.samples[list.count].index, &list.samples[list.count].timestamp, &list.samples[list.count].nb_samples))
@@ -301,8 +301,8 @@ int layer_event(iobus &iob, const std::function<int(const layer_list &)> &action
 	return iob.get("LAYER", [&](const char *arguments) {
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
-				layer_list list;
-				if(1==fscanf(file, "buffer:%d", &list.buffer_key)) {
+				layer_list list = {};
+				if(2==fscanf(file, "buffer:%d id:%d", &list.buffer_key, &list.id)) {
 					while(list.count<MAX_SUB_LAYER_COUNT
 						&& 5==fscanf(file, "%d=>%d,%d,%d,%d",
 							&list.sub_layers[list.count].offset,

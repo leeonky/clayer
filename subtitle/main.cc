@@ -6,6 +6,9 @@
 
 int main(int argc, char **argv) {
 	int w=-1, h=-1;
+	int new_key = 2;
+	int new_count = 16;
+	circular_shm *shms[MAX_LAYER_COUNT];
 	command_argument().require_full_argument("size", 's', [&](const char *arg){
 			sscanf(arg, "%dx%d", &w, &h);
 			}).parse(argc, argv);
@@ -17,27 +20,27 @@ int main(int argc, char **argv) {
 	return fopen(argv[1], "rb", [&](FILE *sub_file){
 		iobus iob(stdin, stdout, stderr);
 
-		return video_event(iob, [&](int fw, int fh, enum AVPixelFormat av_format){
+		return ignore_untill(iob, video_event, [&](int fw, int fh, enum AVPixelFormat av_format){
 				w = w==-1 ? fw : w;
 				h = h==-1 ? fh : h;
 				iob.recaption_and_post();
-				return buffer_event(iob, [&](int shmid, size_t size, int count, int semid, int video_buffer_key) {
-						iob.recaption_and_post();
-						return circular_shm::create(w*h*4, count/2,
-								[&](circular_shm &out_shm){
-								iob.post("%s", out_shm.serialize_to_string());
+				return NewMagickWand(w, h, "xc:black", [&](MagickWand *magic_wand){
+						return NewDrawingWand([&](DrawingWand *drawing_wand) {
+								DrawSetFillColor(drawing_wand, "white");
 
-								//while((!frames_event(iob, [&](frame_list &frames){
-										//for(int i=0; i<frames.count; i++){
-											//frames.frames[i].timestamp
-										//}
-										//return 0;
-										//})) || (!clock_event(iob, [&](int64_t base, int64_t offset){
-											//clock.sync(base, offset);
-											//return 0;
-											//})))
-								//;
-								return 0;
+								return circular_shm::create(w*h*4, new_count,
+										[&](circular_shm &shm){
+										iob.post("%s", shm.serialize_to_string(new_key));
+
+										return main_transform(iob, shms, frame_event, [&](int, int, int64_t pts) {
+												iob.recaption_and_post();
+												DrawAnnotation(drawing_wand, 0, 0, (unsigned char *)"Hello world");
+												MagickDrawImage(magic_wand, drawing_wand);
+												MagickExportImagePixels(magic_wand, 0, 0, 200, 100, "RBGA", CharPixel, shm.allocate());
+												iob.post("LAYER buffer:%d 0=>0,0,200,100", new_key);
+												return 0;
+												});
+										});
 								});
 						});
 				});

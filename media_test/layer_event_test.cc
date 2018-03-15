@@ -37,6 +37,7 @@ SUBJECT(int) {
 static int layer_event_action_assert(const layer_list *list) {
 	CUE_ASSERT_EQ(list->buffer_key, 5);
 	CUE_ASSERT_EQ(list->count, 1);
+	CUE_ASSERT_EQ(list->id, 8);
 	CUE_ASSERT_EQ(list->sub_layers[0].offset, 0);
 	CUE_ASSERT_EQ(list->sub_layers[0].x, 10);
 	CUE_ASSERT_EQ(list->sub_layers[0].y, 20);
@@ -47,7 +48,7 @@ static int layer_event_action_assert(const layer_list *list) {
 
 SUITE_CASE("get layer list") {
 	init_mock_function_with_function(layer_event_action, layer_event_action_assert);
-	init_subject("LAYER buffer:5 0=>10,20,400,300");
+	init_subject("LAYER buffer:5 id:8 0=>10,20,400,300");
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
@@ -57,6 +58,7 @@ SUITE_CASE("get layer list") {
 static int layer_event_action_assert2(const layer_list *list) {
 	CUE_ASSERT_EQ(list->buffer_key, 5);
 	CUE_ASSERT_EQ(list->count, 2);
+	CUE_ASSERT_EQ(list->id, 3);
 	CUE_ASSERT_EQ(list->sub_layers[0].offset, 0);
 	CUE_ASSERT_EQ(list->sub_layers[0].x, 10);
 	CUE_ASSERT_EQ(list->sub_layers[0].y, 20);
@@ -72,7 +74,7 @@ static int layer_event_action_assert2(const layer_list *list) {
 
 SUITE_CASE("get layer list with two sub_layers") {
 	init_mock_function_with_function(layer_event_action, layer_event_action_assert2);
-	init_subject("LAYER buffer:5 0=>10,20,400,300 1=>11,21,401,301");
+	init_subject("LAYER buffer:5 id:3 0=>10,20,400,300 1=>11,21,401,301");
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
