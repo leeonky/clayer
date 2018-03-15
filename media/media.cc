@@ -198,12 +198,12 @@ enum AVSampleFormat analyze_sample_format(enum AVSampleFormat format, const char
 	std::string str_arg(arg);
 	return std::accumulate(std::sregex_iterator(str_arg.begin(), str_arg.end(), reg), std::sregex_iterator(), format,
 			[](enum AVSampleFormat new_format, const std::smatch &matched) {
-				const char *command = matched.str().c_str();
-				if(!strcmp(command, "pack"))
+				std::string command = matched.str();
+				if(command == "pack")
 					new_format = av_get_packed_sample_fmt(new_format);
-				else if(!strcmp(command, "plan"))
+				else if(command == "plan")
 					new_format = av_get_planar_sample_fmt(new_format);
-				else if(!strcmp(command, "int"))
+				else if(command == "int")
 					switch(new_format) {
 						case AV_SAMPLE_FMT_DBLP:
 						case AV_SAMPLE_FMT_FLTP:
@@ -216,7 +216,7 @@ enum AVSampleFormat analyze_sample_format(enum AVSampleFormat format, const char
 						default:
 							break;
 					}
-				else if(!strcmp(command, "flt32")) {
+				else if(command == "flt32") {
 					switch(new_format) {
 						case AV_SAMPLE_FMT_DBLP:
 							new_format = AV_SAMPLE_FMT_FLTP;
@@ -228,7 +228,7 @@ enum AVSampleFormat analyze_sample_format(enum AVSampleFormat format, const char
 							break;
 					}
 				}
-				else if(!strcmp(command, "flt64")) {
+				else if(command == "flt64") {
 					switch(new_format) {
 						case AV_SAMPLE_FMT_FLTP:
 							new_format = AV_SAMPLE_FMT_DBLP;
@@ -240,9 +240,9 @@ enum AVSampleFormat analyze_sample_format(enum AVSampleFormat format, const char
 							break;
 					}
 				}
-				else if (strstr(command, "maxbit")) {
+				else if (strstr(command.c_str(), "maxbit")) {
 					int maxbit = 32;
-					sscanf(command, "maxbit%d", &maxbit);
+					sscanf(command.c_str(), "maxbit%d", &maxbit);
 					if(maxbit>=32 && maxbit<64) {
 						switch(new_format){
 							case AV_SAMPLE_FMT_S64:
@@ -284,7 +284,7 @@ enum AVSampleFormat analyze_sample_format(enum AVSampleFormat format, const char
 						}
 					}
 				} else
-					new_format = av_get_sample_fmt(command);
+					new_format = av_get_sample_fmt(command.c_str());
 				return new_format;
 				});
 }
