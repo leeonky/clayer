@@ -9,15 +9,15 @@ int main(int argc, char **argv) {
 	int new_key = 2;
 	int new_count = 16;
 	circular_shm *shms[MAX_LAYER_COUNT];
-	command_argument().require_full_argument("size", 's', [&](const char *arg){
+	const char *file_name = command_argument().require_full_argument("size", 's', [&](const char *arg){
 			sscanf(arg, "%dx%d", &w, &h);
 			}).parse(argc, argv);
-	if(!argv[1]) {
+	if(!file_name) {
 		fprintf(app_stderr, "Error[subtitle]: require subtitle file\n");
 		return -1;
 	}
 
-	return fopen(argv[1], "rb", [&](FILE *sub_file){
+	return fopen(file_name, "rb", [&](FILE *sub_file){
 		iobus iob(stdin, stdout, stderr);
 
 		return ignore_untill(iob, video_event, [&](int fw, int fh, enum AVPixelFormat av_format){

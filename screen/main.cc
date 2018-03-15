@@ -45,6 +45,9 @@ int main(int argc, char **argv) {
 									if(clock_event(iob, [&](int64_t base, int64_t offset){
 										clock.sync(base, offset);
 										return 0;
+										}) && layer_event(iob, [&](const layer_list &layer){
+											shms[layer.buffer_key]->free(layer.index, [&](void *layer_buffer){});
+										return 0;
 										})
 										&& iob.ignore_last())
 										break;
