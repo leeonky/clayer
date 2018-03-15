@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 			arg_format = arg;
 			}).parse(argc, argv);
 
-	return audio_event(iob, [&](int sample_rate, int /*channels*/, int64_t layout, enum AVSampleFormat format){
+	return ignore_untill(iob, audio_event, [&](int sample_rate, int /*channels*/, int64_t layout, enum AVSampleFormat format){
 			int out_rate = analyze_sample_rate(sample_rate, arg_rate);
 			int64_t out_layout  = analyze_channel_layout(layout, arg_layout);
 			enum AVSampleFormat out_format = analyze_sample_format(format, arg_format);
@@ -37,15 +37,13 @@ int main(int argc, char **argv) {
 									return circular_shm::create(rs_context.resample_size(size), count,
 											[&](circular_shm &out_shm){
 											iob.post("%s", out_shm.serialize_to_string());
-											while (!samples_event(iob, [&](sample_list &samples) {
-														for(int i=0; i<samples.count; i++){
-														shm.free(samples.samples[i].index, [&](void *buffer){
-																int ret = swr_convert(rs_context, buffer, samples.samples[i].nb_samples, out_shm.allocate());
+											while (!sample_event(iob, [&](int buffer_key, int index, int64_t pts, int samples) {
+														shm.free(index, [&](void *buffer){
+																int ret = swr_convert(rs_context, buffer, samples, out_shm.allocate());
 																if(ret>=0) {
-																	iob.post("SAMPLES buffer:%d %d=>%" PRId64 ",%d", audio_buffer_key, out_shm.index, samples.samples[i].timestamp, ret);
+																	iob.post("SAMPLE buffer:%d %d=>%" PRId64 ",%d", audio_buffer_key, out_shm.index, pts, ret);
 																}
 																});
-														}
 														return 0;
 														}));
 

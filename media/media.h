@@ -41,6 +41,7 @@ struct sample_list {
 	int count = 0;
 };
 int samples_event(iobus &, const std::function<int(sample_list &)> &);
+int sample_event(iobus &, const std::function<int(int, int, int64_t, int)> &);
 
 class media_clock {
 public:

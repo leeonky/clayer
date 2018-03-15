@@ -317,7 +317,7 @@ const char *av_frame_info(int index, const AVFrame &frame, int buffer_key) {
 			sprintf(buffer, "FRAME buffer:%d %d=>%" PRId64, buffer_key, index, av_frame_pts(frame));
 			break;
 		case AVMEDIA_TYPE_AUDIO:
-			sprintf(buffer, "SAMPLES buffer:%d %d=>%" PRId64 ",%d", buffer_key, index, av_frame_pts(frame), frame.nb_samples);
+			sprintf(buffer, "SAMPLE buffer:%d %d=>%" PRId64 ",%d", buffer_key, index, av_frame_pts(frame), frame.nb_samples);
 			break;
 		default:
 			not_support_media_type(context->av_stream->codecpar->codec_type);

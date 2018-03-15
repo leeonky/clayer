@@ -14,6 +14,7 @@ int main() {
 	ADD_SUITE(sub_srt_test);
 	ADD_SUITE(frame_event_test);
 	ADD_SUITE(layer_event_test);
+	ADD_SUITE(sample_event_test);
 	return run_test();
 }
 

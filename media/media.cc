@@ -116,6 +116,14 @@ int samples_event(iobus &iob, const std::function<int(sample_list &)> &action) {
 			});
 }
 
+int sample_event(iobus &iob, const std::function<int(int, int, int64_t, int)> &action) {
+	int buffer_key, index, samples;
+	int64_t pts;
+	return iob.get("SAMPLE", [&] {
+			return action(buffer_key, index, pts, samples);
+			}, 4, "buffer:%d %d=>%" PRId64 ",%d", &buffer_key, &index, &pts, &samples);
+}
+
 int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSampleFormat)> &action) {
 	int rate, channels;
 	char layout[128], format[128];
