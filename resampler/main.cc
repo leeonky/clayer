@@ -8,6 +8,10 @@
 int main(int argc, char **argv) {
 	iobus iob(stdin, stdout, stderr);
 	const char *arg_rate="", *arg_layout="", *arg_format="";
+	circular_shm *shms[MAX_LAYER_COUNT];
+	int new_key = 1;
+	int new_count = 16;
+
 	command_argument().require_full_argument("rate", 'r', [&](const char *arg){
 			arg_rate = arg;
 			})
@@ -31,26 +35,19 @@ int main(int argc, char **argv) {
 					char layout_string_buffer[1024];
 					av_get_channel_layout_string(layout_string_buffer, sizeof(layout_string_buffer), rs_context.out_channels, rs_context.out_layout);
 					iob.post("AUDIO sample_rate:%d channels:%d layout:%s format:%s", out_rate, rs_context.out_channels, layout_string_buffer, av_get_sample_fmt_name(out_format));
-					return buffer_event(iob, [&](int shmid, size_t size, int count, int semid, int audio_buffer_key) {
-							return circular_shm::load(shmid, size, count, semid,
-									[&](circular_shm &shm){
-									return circular_shm::create(rs_context.resample_size(size), count,
-											[&](circular_shm &out_shm){
-											iob.post("%s", out_shm.serialize_to_string());
-											while (!sample_event(iob, [&](int buffer_key, int index, int64_t pts, int samples) {
-														shm.free(index, [&](void *buffer){
-																int ret = swr_convert(rs_context, buffer, samples, out_shm.allocate());
-																if(ret>=0) {
-																	iob.post("SAMPLE buffer:%d %d=>%" PRId64 ",%d", audio_buffer_key, out_shm.index, pts, ret);
-																}
-																});
-														return 0;
-														}));
 
-											return 0;
+					return circular_shm::create(rs_context.resample_size(), new_count,
+						[&](circular_shm &shm){
+							iob.post("%s", shm.serialize_to_string(new_key));
+							return main_transform(iob, shms, sample_event, [&](int buffer_key, int index, int64_t pts, int samples) {
+									shms[buffer_key]->free(index, [&](void *buffer){
+											int ret = swr_convert(rs_context, buffer, samples, shm.allocate());
+											if(ret>=0)
+												iob.post("SAMPLE buffer:%d %d=>%" PRId64 ",%d", new_key, shm.index, pts, ret);
 											});
+									return 0;
 									});
-					});
+							});
 			});
 	});
 }

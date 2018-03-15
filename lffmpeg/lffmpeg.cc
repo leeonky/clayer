@@ -385,3 +385,8 @@ int swr_convert(resample_context &context, void *in_buf, size_t size, void *out_
 	return ret;
 }
 
+size_t resample_context::resample_size() const {
+	return av_samples_get_buffer_size(nullptr, out_channels,
+			out_rate/10, out_format, 1);
+}
+

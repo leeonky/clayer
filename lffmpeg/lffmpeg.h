@@ -45,11 +45,7 @@ struct resample_context {
        	int in_channels, out_channels;
 	SwrContext *swr_context;
 
-	size_t resample_size(size_t size) const {
-		size_t out_unit_size = out_sample_bytes*out_channels*out_rate;
-		size_t in_unit_size = in_sample_bytes*in_channels*in_rate;
-		return (size*out_unit_size+in_unit_size-1)/in_unit_size;
-	}
+	size_t resample_size() const;
 };
 
 extern int swr_alloc_set_opts_and_init(int64_t, enum AVSampleFormat, int, int64_t, enum AVSampleFormat, int, const std::function<int(resample_context &)> &);

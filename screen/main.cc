@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 					[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
 					SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 					media_clock clock;
-					return main_consumer(iob, shms, frame_event, [&](int buffer_key, int index, int64_t pts){
+					return main_reducer(iob, shms, frame_event, [&](int buffer_key, int index, int64_t pts){
 						shms[buffer_key]->free(index, [&](void *buffer){
 							return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
 								SDL_RenderClear(renderer);
