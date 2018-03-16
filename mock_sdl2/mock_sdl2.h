@@ -7,6 +7,7 @@ extern "C" {
 
 #include <cunitexd.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 extern_mock_function_1(int, SDL_InitSubSystem, Uint32);
 extern_mock_void_function_1(SDL_QuitSubSystem, Uint32);
@@ -38,6 +39,12 @@ extern_mock_function_1(Uint32, SDL_GetQueuedAudioSize, SDL_AudioDeviceID);
 
 extern_mock_function_3(int, SDL_GetRendererOutputSize, SDL_Renderer *, int *, int *);
 extern_mock_function_5(int, SDL_QueryTexture, SDL_Texture *, Uint32 *, int *, int *, int *);
+
+extern_mock_function_0(int, TTF_Init);
+extern_mock_void_function_0(TTF_Quit);
+extern_mock_function_2(TTF_Font *, TTF_OpenFont, const char *, int);
+extern_mock_void_function_1(TTF_CloseFont, TTF_Font *);
+extern_mock_function_3(SDL_Surface *, TTF_RenderUTF8_Blended, TTF_Font *, const char *, SDL_Color);
 
 #ifdef __cplusplus
 }

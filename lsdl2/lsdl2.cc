@@ -116,3 +116,26 @@ int SDL_AudioLast(SDL_AudioDeviceID device_id, const SDL_AudioSpec &spec) {
 	return left*1000000/(spec.channels*(SDL_AUDIO_BITSIZE(spec.format)>>3))/spec.freq;
 }
 
+int TTF_OpenFont(const char *file, int size, const std::function<int(TTF_Font *)> &action) {
+	int ret = 0;
+	if(!TTF_Init()) {
+		if(TTF_Font *font = TTF_OpenFont(file, size)) {
+			ret = action(font);
+			TTF_CloseFont(font);
+		} else
+			ret = log_sdl_error();
+		TTF_Quit();
+	} else
+		ret = log_sdl_error();
+	return ret;
+}
+
+int TTF_RenderUTF8_Blended(TTF_Font *font, const char *text, SDL_Color fg, const std::function<int(SDL_Surface *)> &action) {
+	int ret = 0;
+	if(SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, fg))
+		ret = action(surface);
+	else
+		ret = log_sdl_error();
+	return ret;
+}
+

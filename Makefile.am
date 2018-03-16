@@ -15,7 +15,6 @@ SUBDIRS += decoder
 SUBDIRS += screen
 SUBDIRS += speaker
 SUBDIRS += resampler
-SUBDIRS += lmagic_wand
 SUBDIRS += subtitle
 endif
 
@@ -25,7 +24,6 @@ SUBDIRS += mock_std
 SUBDIRS += mock_sdl2
 SUBDIRS += mock_port_audio
 SUBDIRS += mock_ffmpeg
-SUBDIRS += mock_magic_wand
 SUBDIRS += stdport_test
 SUBDIRS += sysexd_test
 SUBDIRS += stdexd_test
@@ -35,7 +33,6 @@ SUBDIRS += lsdl2_test
 SUBDIRS += lport_audio_test
 SUBDIRS += iobus_test
 SUBDIRS += media_test
-SUBDIRS += lmagic_wand_test
 endif
 
 EXTRA_DIST = test.sh

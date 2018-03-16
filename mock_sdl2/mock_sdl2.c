@@ -31,6 +31,12 @@ mock_function_1(Uint32, SDL_GetQueuedAudioSize, SDL_AudioDeviceID);
 mock_function_3(int, SDL_GetRendererOutputSize, SDL_Renderer *, int *, int *);
 mock_function_5(int, SDL_QueryTexture, SDL_Texture *, Uint32 *, int *, int *, int *);
 
+mock_function_0(int, TTF_Init);
+mock_void_function_0(TTF_Quit);
+mock_function_2(TTF_Font *, TTF_OpenFont, const char *, int);
+mock_void_function_1(TTF_CloseFont, TTF_Font *);
+mock_function_3(SDL_Surface *, TTF_RenderUTF8_Blended, TTF_Font *, const char *, SDL_Color);
+
 const char *SDL_GetError() {
 	return "sdl error";
 }
