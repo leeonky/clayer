@@ -304,12 +304,13 @@ int layer_event(iobus &iob, const std::function<int(const layer_list &)> &action
 				layer_list list = {};
 				if(3==fscanf(file, "buffer:%d index:%d id:%d", &list.buffer_key, &list.index, &list.id)) {
 					while(list.count<MAX_SUB_LAYER_COUNT
-						&& 5==fscanf(file, "%d=>%d,%d,%d,%d",
+						&& 6==fscanf(file, "%d=>%d,%d,%d,%d,%d",
 							&list.sub_layers[list.count].offset,
 							&list.sub_layers[list.count].x,
 							&list.sub_layers[list.count].y,
 							&list.sub_layers[list.count].w,
-							&list.sub_layers[list.count].h))
+							&list.sub_layers[list.count].h,
+							&list.sub_layers[list.count].pitch))
 						list.count++;
 				}
 				return action(list);

@@ -34,7 +34,8 @@ int main(int argc, char **argv) {
 				[&](SDL_Window *window){
 				return SDL_CreateTexture(window, fw, fh, AVPixelFormat_to_SDL(av_format),
 					[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
-					SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+					SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+					SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 					media_clock clock;
 					return main_reducer(iob, shms, frame_event, [&](int buffer_key, int index, int64_t pts){
 						shms[buffer_key]->free(index, [&](void *buffer){
@@ -46,7 +47,17 @@ int main(int argc, char **argv) {
 										clock.sync(base, offset);
 										return 0;
 										}) && layer_event(iob, [&](const layer_list &layer){
-											shms[layer.buffer_key]->free(layer.index, [&](void *layer_buffer){});
+											shms[layer.buffer_key]->free(layer.index, [&](void *layer_buffer){
+													SDL_Texture *t = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, fw, fh);
+													SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
+													for(int i=0; i<layer.count; ++i) {
+
+														SDL_Rect rect = {layer.sub_layers[i].x, layer.sub_layers[i].y, layer.sub_layers[i].w, layer.sub_layers[i].h};
+														SDL_UpdateTexture(t, &rect, ((char *)layer_buffer)+layer.sub_layers[i].offset, layer.sub_layers[i].pitch);
+													}
+													SDL_RenderCopy(renderer, t,  NULL, NULL);
+													SDL_DestroyTexture(t);
+												});
 										return 0;
 										})
 										&& iob.ignore_last())

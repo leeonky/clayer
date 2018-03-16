@@ -45,6 +45,7 @@ extern_mock_void_function_0(TTF_Quit);
 extern_mock_function_2(TTF_Font *, TTF_OpenFont, const char *, int);
 extern_mock_void_function_1(TTF_CloseFont, TTF_Font *);
 extern_mock_function_3(SDL_Surface *, TTF_RenderUTF8_Blended, TTF_Font *, const char *, SDL_Color);
+extern_mock_void_function_1(SDL_FreeSurface, SDL_Surface *);
 
 #ifdef __cplusplus
 }

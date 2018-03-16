@@ -132,9 +132,10 @@ int TTF_OpenFont(const char *file, int size, const std::function<int(TTF_Font *)
 
 int TTF_RenderUTF8_Blended(TTF_Font *font, const char *text, SDL_Color fg, const std::function<int(SDL_Surface *)> &action) {
 	int ret = 0;
-	if(SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, fg))
+	if(SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, fg)) {
 		ret = action(surface);
-	else
+		SDL_FreeSurface(surface);
+	} else
 		ret = log_sdl_error();
 	return ret;
 }

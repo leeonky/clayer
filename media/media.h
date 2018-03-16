@@ -71,7 +71,7 @@ struct layer_list {
 	int index;
 	int id;
 	struct sub_layer {
-		int x, y, w, h, offset;
+		int x, y, w, h, offset, pitch;
 	} sub_layers[MAX_SUB_LAYER_COUNT];
 	int count;
 };

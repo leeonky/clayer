@@ -27,6 +27,7 @@ BEFORE_EACH() {
 
 	init_mock_function_with_return(TTF_RenderUTF8_Blended, ret_surface);
 	init_mock_function(TTF_RenderUTF8_Blended_action);
+	init_mock_function(SDL_FreeSurface);
 	return 0;
 }
 
@@ -47,6 +48,9 @@ SUITE_CASE("open ttf font") {
 
 	CUE_EXPECT_CALLED_ONCE(TTF_RenderUTF8_Blended_action);
 	CUE_EXPECT_CALLED_WITH_PTR(TTF_RenderUTF8_Blended_action, 1, ret_surface);
+
+	CUE_EXPECT_CALLED_ONCE(SDL_FreeSurface);
+	CUE_EXPECT_CALLED_WITH_PTR(SDL_FreeSurface, 1, ret_surface);
 }
 
 SUITE_CASE("Render failed") {
@@ -57,6 +61,8 @@ SUITE_CASE("Render failed") {
 	CUE_ASSERT_STDERR_EQ("Error[liblsdl2]: sdl error\n");
 
 	CUE_EXPECT_NEVER_CALLED(TTF_RenderUTF8_Blended_action);
+
+	CUE_EXPECT_NEVER_CALLED(SDL_FreeSurface);
 }
 
 SUITE_END(TTF_RenderUTF8_Blended_test);

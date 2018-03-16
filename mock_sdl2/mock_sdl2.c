@@ -36,6 +36,7 @@ mock_void_function_0(TTF_Quit);
 mock_function_2(TTF_Font *, TTF_OpenFont, const char *, int);
 mock_void_function_1(TTF_CloseFont, TTF_Font *);
 mock_function_3(SDL_Surface *, TTF_RenderUTF8_Blended, TTF_Font *, const char *, SDL_Color);
+mock_void_function_1(SDL_FreeSurface, SDL_Surface *);
 
 const char *SDL_GetError() {
 	return "sdl error";

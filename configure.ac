@@ -32,6 +32,9 @@ AC_SUBST(AM_CXXFLAGS, "-std=c++11 -fno-exceptions -fno-rtti -Wall -Wextra")
 #MAGICKWAND_CFLAGS=`pkg-config --cflags MagickWand`
 #MAGICKWAND_LIBS=`pkg-config --libs MagickWand`
 
+#SDL2TTF_CFLAGS=`sdl2-config --cflags`
+#SDL2TTF_LIBS=`sdl2-config --libs`
+
 AC_SUBST(MAGICKWAND_CFLAGS)
 AC_SUBST(MAGICKWAND_LIBS)
 
