@@ -2,6 +2,7 @@
 #include "mem/circular_shm.h"
 #include "iobus/iobus.h"
 #include "media/media.h"
+#include "media/sub_srt.h"
 
 int main(int argc, char **argv) {
 	int w=-1, h=-1;
@@ -26,8 +27,8 @@ int main(int argc, char **argv) {
 	}
 
 	return fopen(file_name, "rb", [&](FILE *sub_file){
+		subtitle_srt srt(sub_file);
 		iobus iob(stdin, stdout, stderr);
-
 		return ignore_untill(iob, video_event, [&](int fw, int fh, enum AVPixelFormat /*av_format*/){
 				w = w==-1 ? fw : w;
 				h = h==-1 ? fh : h;
@@ -39,24 +40,37 @@ int main(int argc, char **argv) {
 								SDL_Color subtitle_color = {255, 255, 255, 0};
 								return main_transform(iob, shms, frame_event, [&](int, int, int64_t pts) {
 										iob.recaption_and_post();
-										char *buffer = (char *)shm.allocate();
-										TTF_RenderUTF8_Blended(font, "你好中国", subtitle_color, [&](SDL_Surface *surface) {
-												SDL_LockSurface(surface);
+										srt.query_item(pts, [&](const std::string &title) {
+												if(!title.empty())
+													TTF_RenderUTF8_Blended(font, title.c_str(), subtitle_color, [&](SDL_Surface *surface) {
+															SDL_LockSurface(surface);
 
-												memcpy(buffer, surface->pixels, surface->pitch*surface->h);
-												iob.post("LAYER buffer:%d index:%d id:%d 0=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 0, 0, surface->w, surface->h, surface->pitch);
-												SDL_UnlockSurface(surface);
-												return 0;
+															memcpy(shm.allocate(), surface->pixels, surface->pitch*surface->h);
+															iob.post("LAYER buffer:%d index:%d id:%d 0=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 0, 0, surface->w, surface->h, surface->pitch);
+															SDL_UnlockSurface(surface);
+															return 0;
+															});
+
 												});
 
-										TTF_RenderUTF8_Blended(font, "测试字母", subtitle_color, [&](SDL_Surface *surface) {
-												SDL_LockSurface(surface);
+										//char *buffer = (char *);
+										//TTF_RenderUTF8_Blended(font, "你好中国", subtitle_color, [&](SDL_Surface *surface) {
+												//SDL_LockSurface(surface);
 
-												memcpy(buffer+1024000, surface->pixels, surface->pitch*surface->h);
-												iob.post("LAYER buffer:%d index:%d id:%d 1024000=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 200, 200, surface->w, surface->h, surface->pitch);
-												SDL_UnlockSurface(surface);
-												return 0;
-												});
+												//memcpy(buffer, surface->pixels, surface->pitch*surface->h);
+												//iob.post("LAYER buffer:%d index:%d id:%d 0=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 0, 0, surface->w, surface->h, surface->pitch);
+												//SDL_UnlockSurface(surface);
+												//return 0;
+												//});
+
+										//TTF_RenderUTF8_Blended(font, "测试字母", subtitle_color, [&](SDL_Surface *surface) {
+												//SDL_LockSurface(surface);
+
+												//memcpy(buffer+1024000, surface->pixels, surface->pitch*surface->h);
+												//iob.post("LAYER buffer:%d index:%d id:%d 1024000=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 200, 200, surface->w, surface->h, surface->pitch);
+												//SDL_UnlockSurface(surface);
+												//return 0;
+												//});
 										return 0;
 										});
 

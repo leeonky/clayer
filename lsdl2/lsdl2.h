@@ -25,4 +25,6 @@ int SDL_AudioLast(SDL_AudioDeviceID, const SDL_AudioSpec &);
 int TTF_OpenFont(const char *, int, const std::function<int(TTF_Font *)> &);
 
 int TTF_RenderUTF8_Blended(TTF_Font *, const char *, SDL_Color, const std::function<int(SDL_Surface *)> &);
+
+int SDL_CreateTexture(SDL_Renderer *, Uint32, int, int, int, const std::function<int(SDL_Texture *)> &);
 #endif

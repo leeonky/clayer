@@ -14,7 +14,9 @@ static int ret_width, ret_height;
 static int arg_width, arg_height;
 static Uint32 arg_format;
 
+namespace {
 mock_function_4(int, sdl_texture_action, int, int, SDL_Renderer *, SDL_Texture *);
+}
 
 //static void stub_SDL_GL_GetDrawableSize(SDL_Window *window, int *w, int *h) {
 	//*w = ret_width;

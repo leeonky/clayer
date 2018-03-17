@@ -140,3 +140,13 @@ int TTF_RenderUTF8_Blended(TTF_Font *font, const char *text, SDL_Color fg, const
 	return ret;
 }
 
+int SDL_CreateTexture(SDL_Renderer *renderer, Uint32 format, int access, int w, int h, const std::function<int(SDL_Texture *)> &action) {
+	int ret = 0;
+	if(SDL_Texture *texture = SDL_CreateTexture(renderer, format, access, w, h)) {
+		ret = action(texture);
+		SDL_DestroyTexture(texture);
+	} else
+		ret = log_sdl_error();
+	return ret;
+}
+
