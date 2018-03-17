@@ -5,8 +5,8 @@
 
 int main(int argc, char **argv) {
 	int w=-1, h=-1;
-	int new_key = 2;
-	int new_count = 16;
+	int subtitle_buffer_key = 2;
+	int subtitle_buffer_count = 16;
 	int layer_id = 0;
 	char font_file[512] = {};
 	circular_shm *shms[MAX_LAYER_COUNT];
@@ -32,29 +32,28 @@ int main(int argc, char **argv) {
 				w = w==-1 ? fw : w;
 				h = h==-1 ? fh : h;
 				iob.recaption_and_post();
-
-				return circular_shm::create(w*h*4, new_count,
+				return circular_shm::create(w*h*4, subtitle_buffer_count,
 						[&](circular_shm &shm){
-						iob.post("%s", shm.serialize_to_string(new_key));
+						iob.post("%s", shm.serialize_to_string(subtitle_buffer_key));
 						return TTF_OpenFont(font_file, 60, [&](TTF_Font *font) {
+								SDL_Color subtitle_color = {255, 255, 255, 0};
 								return main_transform(iob, shms, frame_event, [&](int, int, int64_t pts) {
 										iob.recaption_and_post();
-										SDL_Color color = {255, 255, 255, 0};
 										char *buffer = (char *)shm.allocate();
-										TTF_RenderUTF8_Blended(font, "你好中国", color, [&](SDL_Surface *surface) {
+										TTF_RenderUTF8_Blended(font, "你好中国", subtitle_color, [&](SDL_Surface *surface) {
 												SDL_LockSurface(surface);
 
 												memcpy(buffer, surface->pixels, surface->pitch*surface->h);
-												iob.post("LAYER buffer:%d index:%d id:%d 0=>%d,%d,%d,%d,%d", new_key, shm.index, layer_id, 0, 0, surface->w, surface->h, surface->pitch);
+												iob.post("LAYER buffer:%d index:%d id:%d 0=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 0, 0, surface->w, surface->h, surface->pitch);
 												SDL_UnlockSurface(surface);
 												return 0;
 												});
 
-										TTF_RenderUTF8_Blended(font, "测试字母", color, [&](SDL_Surface *surface) {
+										TTF_RenderUTF8_Blended(font, "测试字母", subtitle_color, [&](SDL_Surface *surface) {
 												SDL_LockSurface(surface);
 
 												memcpy(buffer+1024000, surface->pixels, surface->pitch*surface->h);
-												iob.post("LAYER buffer:%d index:%d id:%d 1024000=>%d,%d,%d,%d,%d", new_key, shm.index, layer_id, 200, 200, surface->w, surface->h, surface->pitch);
+												iob.post("LAYER buffer:%d index:%d id:%d 1024000=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 200, 200, surface->w, surface->h, surface->pitch);
 												SDL_UnlockSurface(surface);
 												return 0;
 												});
