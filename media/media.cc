@@ -318,3 +318,8 @@ int layer_event(iobus &iob, const std::function<int(const layer_list &)> &action
 			});
 }
 
+int nolayer_event(iobus &iob, const std::function<int(int)> &action) {
+	int id;
+	return iob.get("NOLAYER", [&] { return action(id); }, 1, "id:%d", &id);
+}
+

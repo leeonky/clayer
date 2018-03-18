@@ -50,27 +50,11 @@ int main(int argc, char **argv) {
 															SDL_UnlockSurface(surface);
 															return 0;
 															});
+												else
+													iob.post("NOLAYER id:%d", layer_id);
 
 												});
 
-										//char *buffer = (char *);
-										//TTF_RenderUTF8_Blended(font, "你好中国", subtitle_color, [&](SDL_Surface *surface) {
-												//SDL_LockSurface(surface);
-
-												//memcpy(buffer, surface->pixels, surface->pitch*surface->h);
-												//iob.post("LAYER buffer:%d index:%d id:%d 0=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 0, 0, surface->w, surface->h, surface->pitch);
-												//SDL_UnlockSurface(surface);
-												//return 0;
-												//});
-
-										//TTF_RenderUTF8_Blended(font, "测试字母", subtitle_color, [&](SDL_Surface *surface) {
-												//SDL_LockSurface(surface);
-
-												//memcpy(buffer+1024000, surface->pixels, surface->pitch*surface->h);
-												//iob.post("LAYER buffer:%d index:%d id:%d 1024000=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 200, 200, surface->w, surface->h, surface->pitch);
-												//SDL_UnlockSurface(surface);
-												//return 0;
-												//});
 										return 0;
 										});
 

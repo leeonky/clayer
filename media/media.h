@@ -77,6 +77,7 @@ struct layer_list {
 };
 
 extern int layer_event(iobus &iob, const std::function<int(const layer_list &)> &);
+extern int nolayer_event(iobus &iob, const std::function<int(int)> &);
 
 template<typename Processor, typename Action>
 int main_reducer(iobus &iob, circular_shm **shms, const Processor &main_processor, const Action &action) {

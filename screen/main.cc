@@ -71,6 +71,9 @@ int main(int argc, char **argv) {
 												}
 											});
 										return 0;
+										}) && nolayer_event(iob, [&](int id) {
+											layer_textures.erase(id);
+											return 0;
 										})
 										&& iob.ignore_last())
 										break;
