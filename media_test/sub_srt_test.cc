@@ -68,15 +68,20 @@ t3
 	CUE_ASSERT_STRING_EQ(ret_title.c_str(), "t2\n");
 }
 
-SUITE_CASE("no subtitle in time") {
+SUITE_CASE("no subtitle hited") {
 	init_subject(R"(1
-00:00:00,001 --> 00:00:00,002
+00:00:00,000 --> 00:00:00,001
 t1)");
 	subtitle_srt ins(actxt.input_stream);
 
-	ins.query_item(0, subtitle_action_ref);
+	ins.query_item(1000, subtitle_action_ref);
+	ins.query_item(2000, subtitle_action_ref);
 
 	CUE_ASSERT_STRING_EQ(ret_title.c_str(), "");
+
+	init_mock_function(subtitle_action);
+	ins.query_item(2000, subtitle_action_ref);
+	CUE_EXPECT_NEVER_CALLED(subtitle_action);
 }
 
 SUITE_CASE("query same subtitle") {

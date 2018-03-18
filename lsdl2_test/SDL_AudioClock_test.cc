@@ -9,7 +9,6 @@ SUITE_START("SDL_AudioClock_test");
 
 static SDL_AudioDeviceID arg_device_id;
 static SDL_AudioSpec arg_audio_spec;
-static int64_t arg_pts;
 
 BEFORE_EACH() {
 	init_subject("");

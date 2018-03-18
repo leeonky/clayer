@@ -30,15 +30,6 @@ SUBJECT(int) {
 	return sample_event(iob, sample_event_action);
 }
 
-static int assert_sample_list_1(sample_list *list) {
-	CUE_ASSERT_EQ(list->count, 1);
-	CUE_ASSERT_EQ(list->buffer_key, 5);
-	CUE_ASSERT_EQ(list->samples[0].index, 1);
-	CUE_ASSERT_EQ(list->samples[0].timestamp, 0);
-	CUE_ASSERT_EQ(list->samples[0].nb_samples, 480);
-	return 0;
-}
-
 SUITE_CASE("one sample") {
 	init_subject("SAMPLE buffer:5 1=>0,480");
 

@@ -23,6 +23,7 @@ public:
 private:
 	std::vector<subtitle_srt_item> items;
 	std::vector<subtitle_srt_item>::const_iterator last_searched, last_shown;
+	bool time_hited;
 };
 
 #endif

@@ -22,7 +22,7 @@ namespace {
 	}
 }
 
-subtitle_srt::subtitle_srt(FILE *input) {
+subtitle_srt::subtitle_srt(FILE *input) :time_hited(false) {
 	subtitle_srt_item item;
 	while(0==get_line(input, [&](const char *line) { return 1 == sscanf(line, "%d", &item.index); }) 
 		&& 0==get_line(input, [&](const char *line) {
@@ -55,6 +55,7 @@ void subtitle_srt::query_item(int64_t time, const std::function<void(const std::
 				if(time >= last_searched->from && time <= last_searched->to) {
 					if(last_searched != last_shown) {
 						last_shown = last_searched;
+						time_hited = true;
 						action(last_searched->content);
 					}
 					return;
@@ -62,7 +63,11 @@ void subtitle_srt::query_item(int64_t time, const std::function<void(const std::
 				else if(time <= last_searched->from)
 					break;
 			}
-			return action("");
+			if(time_hited) {
+				time_hited = false;
+				action("");
+			}
+			return;
 		} else {
 			last_searched = items.begin();
 			return query_item(time, action);
