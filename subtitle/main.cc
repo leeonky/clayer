@@ -4,10 +4,18 @@
 #include "media/media.h"
 #include "media/sub_srt.h"
 
+namespace {
+	int subtitle_bottom_pos = -5;
+
+	inline int h_pos(int height, int sub_height) {
+		return ((100+subtitle_bottom_pos)%100)*height/100-sub_height;
+	}
+}
+
 int main(int argc, char **argv) {
 	int w=-1, h=-1;
 	int subtitle_buffer_key = 2;
-	int subtitle_buffer_count = 16;
+	int subtitle_buffer_count = 4;
 	int layer_id = 0;
 	char font_file[512] = {};
 	circular_shm *shms[MAX_LAYER_COUNT];
@@ -46,7 +54,7 @@ int main(int argc, char **argv) {
 															SDL_LockSurface(surface);
 
 															memcpy(shm.allocate(), surface->pixels, surface->pitch*surface->h);
-															iob.post("LAYER buffer:%d index:%d id:%d 0=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, 0, 0, surface->w, surface->h, surface->pitch);
+															iob.post("LAYER buffer:%d index:%d id:%d 0=>%d,%d,%d,%d,%d", subtitle_buffer_key, shm.index, layer_id, (w-surface->w)/2, h_pos(h, surface->h), surface->w, surface->h, surface->pitch);
 															SDL_UnlockSurface(surface);
 															return 0;
 															});

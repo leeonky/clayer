@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
 
 			return SDL_CreateWindow(title, x, y, w, h, window_flag,
 				[&](SDL_Window *window){
+				SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 				return SDL_CreateTexture(window, fw, fh, AVPixelFormat_to_SDL(av_format),
 					[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
 					SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);

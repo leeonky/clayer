@@ -29,8 +29,7 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	return avformat_open_input(file_name,
-			[=](AVFormatContext &format_context){
+	return avformat_open_input(file_name, [=](AVFormatContext &format_context){
 			return avformat_find_stream(format_context, track_type, track_index,
 				[&](AVStream &stream){
 				iobus iob(app_stdin, app_stdout, app_stderr);
