@@ -44,6 +44,9 @@ subtitle_srt::subtitle_srt(FILE *input) :time_hited(false) {
 		items.push_back(item);
 		item.content = "";
 	}
+	std::sort(items.begin(), items.end(), [](const subtitle_srt_item &item1, const subtitle_srt_item &item2) {
+			return item1.from < item2.from;
+			});
 	last_searched = items.begin();
 	last_shown = items.end();
 }

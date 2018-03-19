@@ -10,6 +10,8 @@ public:
 
 	void post(const char *format, ...);
 
+	void post_some(const char *format, ...);
+
 	int get(const std::function<int(const char *, const char *)> &);
 	int get(const char *, const std::function<int(void)> &, int, const char *, ...);
 	int get(const char *event, const std::function<int(const char *)> &action);

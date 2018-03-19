@@ -15,6 +15,13 @@ void iobus::post(const char *format, ...) {
 	va_end(args);
 }
 
+void iobus::post_some(const char *format, ...) {
+	va_list args;
+	va_start(args, format);
+	vfprintf(file_out, format, args);
+	va_end(args);
+}
+
 int iobus::get(const std::function<int(const char *, const char *)> &action) {
 	size_t len = 0;
 	if(processed) {

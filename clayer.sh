@@ -29,9 +29,26 @@ if [ "$video_flag" != "" ]; then
 	video_flag="-f $video_flag"
 fi
 
+function play_video() {
+	if [ "$subtitle" == "" ]; then
+		"$project_path/decoder/decoder" "$media_file" -v $video
+	else
+		encoding=$(file -b --mime-encoding "$subtitle")
+		if [ $encoding != 'utf-8' ]; then
+			encoding=${encoding/%le/}
+			encoding=${encoding/%be/}
+			new_file=$(mktemp /tmp/sub.srt.XXXXXX)
+			iconv -f $encoding -t utf-8 "$subtitle" > "$new_file"
+			sed -i '1s/^\xEF\xBB\xBF//' "$new_file"
+			subtitle="$new_file"
+		fi
+		"$project_path/decoder/decoder" "$media_file" -v $video | "$project_path/subtitle/subtitle" -f "$project_path/wqy-zenhei.ttc" "$subtitle"
+	fi
+}
+
 set -x
 (
-	"$project_path/decoder/decoder" "$media_file" -v $video &
+	play_video &
 	"$project_path/decoder/decoder" "$media_file" -a $audio | "$project_path/resampler/resampler" -f pack:flt32:maxbit32 -l stereo | "$project_path/speaker/speaker" -d 1
 ) | "$project_path/screen/screen" $position $size $video_flag
 
