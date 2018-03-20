@@ -1,6 +1,7 @@
 #include <map>
 #include <memory>
 #include "stdexd/stdexd.h"
+#include "sysexd/sysexd.h"
 #include "lffmpeg/lffmpeg.h"
 #include "mem/circular_shm.h"
 #include "iobus/iobus.h"
@@ -101,6 +102,8 @@ int main(int argc, char **argv) {
 					});
 				});
 			};
-
-	return ignore_untill(iob, video_event, video_action);
+	return msgget([&](int msgid) {
+			iob.post("CONTROL id:%d", msgid);
+			return forward_untill(iob, video_event, video_action);
+			});
 }

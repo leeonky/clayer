@@ -13,24 +13,6 @@ namespace {
 		size_t page_size = getpagesize();
 		return (size+page_size-1)/page_size*page_size;
 	}
-
-	int last_shm_id = -1, last_sem_id = -1;
-	static void clean_last_cbuf(int s) {
-		if(-1 != last_shm_id)
-			shmctl(last_shm_id, IPC_RMID, NULL);
-		if(-1 != last_sem_id)
-			sem_unlink_with_id(last_sem_id);
-		fprintf(stderr, "abort(%d)\n", s);
-		exit(-1);
-	}
-
-	void register_cbuf_clean() {
-		signal(SIGINT, clean_last_cbuf);
-		signal(SIGHUP, clean_last_cbuf);
-		signal(SIGKILL, clean_last_cbuf);
-		signal(SIGPIPE, clean_last_cbuf);
-		signal(SIGTERM, clean_last_cbuf);
-	}
 }
 
 int circular_shm::create(size_t size, int count, const std::function<int(circular_shm &)> &action) {
@@ -42,7 +24,7 @@ int circular_shm::create(size_t size, int count, const std::function<int(circula
 				last_sem_id = sem_id;
 				return sem_new_with_id(sem_id, count, [&](sem_t *s){
 					circular_shm shm(id, element_size, count, sem_id, static_cast<int8_t *>(buf), s);
-					register_cbuf_clean();
+					register_ipc_clear_job();
 					return action(shm);
 					});
 				});

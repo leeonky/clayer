@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
 	return fopen(file_name, "rb", [&](FILE *sub_file){
 			subtitle_srt srt(sub_file);
 			iobus iob(stdin, stdout, stderr);
-			return ignore_untill(iob, video_event, [&](int fw, int fh, enum AVPixelFormat /*av_format*/){
+			return forward_untill(iob, video_event, [&](int fw, int fh, enum AVPixelFormat /*av_format*/){
 					w = w==-1 ? fw : w;
 					h = h==-1 ? fh : h;
 					iob.recaption_and_post();

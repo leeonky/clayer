@@ -1,7 +1,7 @@
 #include <sys/shm.h>
 #include <sys/types.h>
-#include <sys/ipc.h>
 #include <sys/msg.h>
+#include <signal.h>
 #include <cstdio>
 #include <cstring>
 #include "stdexd/stdexd.h"
@@ -64,6 +64,8 @@ int msgget(const std::function<int(int)> &action) {
 	int res = 0;
 	int id = msgget(IPC_PRIVATE, 0666 | IPC_CREAT);
 	if(id != -1) {
+		last_msg_id = id;
+		register_ipc_clear_job();
 		res = action(id);
 		msgctl(id, IPC_RMID, nullptr);
 	} else
@@ -96,3 +98,24 @@ int msgrcv(int msgid, const std::function<int(const char *)> &action) {
 	return res;
 }
 
+int last_shm_id=-1, last_sem_id=-1, last_msg_id=-1;
+
+namespace {
+	void clean_last_cbuf(int) {
+		if(-1 != last_shm_id)
+			shmctl(last_shm_id, IPC_RMID, NULL);
+		if(-1 != last_sem_id)
+			sem_unlink_with_id(last_sem_id);
+		if(-1 != last_msg_id)
+			msgctl(last_msg_id, IPC_RMID, nullptr);
+		exit(-1);
+	}
+}
+
+void register_ipc_clear_job() {
+	signal(SIGINT, clean_last_cbuf);
+	signal(SIGHUP, clean_last_cbuf);
+	signal(SIGKILL, clean_last_cbuf);
+	signal(SIGPIPE, clean_last_cbuf);
+	signal(SIGTERM, clean_last_cbuf);
+}

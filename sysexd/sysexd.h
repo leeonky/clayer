@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <semaphore.h>
+#include <sys/ipc.h>
 #include <cerrno>
 
 int shmget(size_t, const std::function<int(int)> &);
@@ -28,6 +29,9 @@ int msgsnd(int msgid, const Arg &arg, const std::function<int(void)> &action) {
 int msgsnd(int, const char *, const std::function<int(void)> &);
 
 int msgrcv(int, const std::function<int(const char *)> &);
+
+extern int last_shm_id, last_sem_id, last_msg_id;
+extern void register_ipc_clear_job();
 
 #endif
 

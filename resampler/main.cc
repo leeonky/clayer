@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 			arg_format = arg;
 			}).parse(argc, argv);
 
-	return ignore_untill(iob, audio_event, [&](int sample_rate, int /*channels*/, int64_t layout, enum AVSampleFormat format){
+	return forward_untill(iob, audio_event, [&](int sample_rate, int /*channels*/, int64_t layout, enum AVSampleFormat format){
 			int out_rate = analyze_sample_rate(sample_rate, arg_rate);
 			int64_t out_layout  = analyze_channel_layout(layout, arg_layout);
 			enum AVSampleFormat out_format = analyze_sample_format(format, arg_format);
