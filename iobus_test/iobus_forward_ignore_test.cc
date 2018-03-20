@@ -26,7 +26,7 @@ SUITE_CASE("forward_last") {
 	iob.get([](const char *, const char *){return 0;});
 
 	CUE_ASSERT_EQ(iob.forward_last(), 0);
-	CUE_ASSERT_STDOUT_EQ("TEST a:1");
+	CUE_ASSERT_STDOUT_EQ("TEST a:1\n");
 
 	CUE_ASSERT_EQ(iob.forward_last(), -1);
 }

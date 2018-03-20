@@ -50,9 +50,6 @@ int main(int argc, char **argv) {
 			sscanf(arg, "%d", &device);
 			}).parse(argc, argv);
 	iobus iob(stdin, stdout, stderr);
-	return msgget([&](int msgid) {
-			iob.post("CONTROL id:%d", msgid);
-			return play_with_portaudio(iob, device);
-			});
+	return play_with_portaudio(iob, device);
 }
 

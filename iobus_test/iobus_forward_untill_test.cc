@@ -52,7 +52,7 @@ SUITE_CASE("no matched event") {
 	CUE_ASSERT_EQ(forward_untill(iob, do_event, mock_forward_action), -1);
 
 	CUE_EXPECT_NEVER_CALLED(mock_forward_action);
-	CUE_ASSERT_STDOUT_EQ("TEST a:1");
+	CUE_ASSERT_STDOUT_EQ("TEST a:1\n");
 }
 
 SUITE_END(iobus_forward_untill_test);

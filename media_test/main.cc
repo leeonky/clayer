@@ -16,6 +16,7 @@ int main() {
 	ADD_SUITE(layer_event_test);
 	ADD_SUITE(sample_event_test);
 	ADD_SUITE(no_layer_event_test);
+	ADD_SUITE(control_event_test);
 	return run_test();
 }
 

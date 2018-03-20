@@ -89,12 +89,10 @@ int msgsnd(int msgid, const char *message, const std::function<int(void)> &actio
 
 int msgrcv(int msgid, const std::function<int(const char *)> &action) {
 	char buffer[1024];
-	int res = 0;
+	int res = -1;
 	ssize_t ret = msgrcv(msgid, buffer, sizeof(buffer), 1, IPC_NOWAIT);
 	if(ret != -1)
 		res = action(buffer+sizeof(long));
-	else
-		res = log_errno();
 	return res;
 }
 

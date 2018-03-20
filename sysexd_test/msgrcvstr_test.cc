@@ -64,8 +64,6 @@ SUITE_CASE("msgrcv failed") {
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
 	CUE_EXPECT_NEVER_CALLED(msgrcvstr_action);
-
-	CUE_ASSERT_STDERR_EQ("Error[libsysexd]: 100\n");
 }
 
 SUITE_END(msgrcvstr_test);

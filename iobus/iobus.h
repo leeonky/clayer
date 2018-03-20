@@ -19,7 +19,7 @@ public:
 	int forward_last() {
 		if(processed)
 			return -1;
-		fprintf(file_out, "%s", line);
+		fprintf(file_out, "%s\n", line);
 		fflush(file_out);
 		accept_processed();
 		return 0;
@@ -36,7 +36,7 @@ public:
 	int except(const char *);
 	void recaption_and_post() {
 		if(line) {
-			fprintf(file_out, "%s", line);
+			fprintf(file_out, "%s\n", line);
 			fflush(file_out);
 		}
 	}

@@ -1,5 +1,7 @@
 #include <cstring>
 #include <cstdarg>
+#include <algorithm>
+#include <cctype>
 #include "stdexd/stdexd.h"
 #include "iobus.h"
 
@@ -27,7 +29,14 @@ int iobus::get(const std::function<int(const char *, const char *)> &action) {
 	if(processed) {
 		if(-1 != getline(&line, &len, file_in) && 1 == sscanf(line, "%s", command)) {
 			const char *p = index(line, ' ');
-			arguments = p ? p+1 : "";
+			if(p) {
+				arguments = p+1;
+				*(std::find_if(std::reverse_iterator<char*>{(char *)arguments+strlen(arguments)},
+							std::reverse_iterator<char*>{(char *)arguments}, [](int ch) {
+						return !std::isspace(ch);
+						})-1) = '\0';
+			} else
+				arguments = "";
 			processed = false;
 		} else
 			return -1;

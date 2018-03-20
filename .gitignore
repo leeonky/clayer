@@ -44,5 +44,6 @@ screen/screen
 speaker/speaker
 resampler/resampler
 subtitle/subtitle
+controller/controller
 
 .dev

@@ -58,6 +58,7 @@ AM_COND_IF([ENV_TEST], [],
 	   speaker/Makefile
 	   resampler/Makefile
 	   subtitle/Makefile
+	   controller/Makefile
 	   ])])
 
 # Testing Makefile

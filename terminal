@@ -1,0 +1,8 @@
+#!/bin/bash
+
+while true
+do
+	echo -n "clayer:> " >&2
+	read line
+	echo "COMMAND $line"
+done

@@ -38,7 +38,7 @@ SUITE_CASE("get from stdin") {
 }
 
 SUITE_CASE("should cache last result when action return non zero") {
-	init_subject("TEST a:1");
+	init_subject("TEST a:1\n");
 	app_stdin = actxt.input_stream;
 	init_mock_function_with_return(get_message_action, 100);
 	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};

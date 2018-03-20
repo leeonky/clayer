@@ -16,6 +16,7 @@ SUBDIRS += screen
 SUBDIRS += speaker
 SUBDIRS += resampler
 SUBDIRS += subtitle
+SUBDIRS += controller
 endif
 
 if !ENV_PRD

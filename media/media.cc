@@ -323,3 +323,8 @@ int nolayer_event(iobus &iob, const std::function<int(int)> &action) {
 	return iob.get("NOLAYER", [&] { return action(id); }, 1, "id:%d", &id);
 }
 
+int control_event(iobus &iob, const std::function<int(int)> &action) {
+	int id;
+	return iob.get("CONTROL", [&] { return action(id); }, 1, "id:%d", &id);
+}
+
