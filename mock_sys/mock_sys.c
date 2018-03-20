@@ -15,3 +15,8 @@ mock_function_1(int, sem_unlink_with_id, int);
 
 mock_function_0(int64_t, usectime);
 mock_function_1(int, usleep, useconds_t);
+
+mock_function_2(int, msgget, key_t, int);
+mock_function_3(int, msgctl, int, int, struct msqid_ds *);
+mock_function_4(int, msgsnd, int, const void *, size_t, int);
+mock_function_5(ssize_t, msgrcv, int, void *, size_t, long, int);

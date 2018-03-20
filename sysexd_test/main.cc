@@ -18,6 +18,10 @@ int main() {
 	ADD_SUITE(shmat_test);
 	ADD_SUITE(sem_new_with_id_test);
 	ADD_SUITE(sem_load_with_id_test);
+	ADD_SUITE(msgget_test);
+	ADD_SUITE(msgsnd_test);
+	ADD_SUITE(msgsndstr_test);
+	ADD_SUITE(msgrcvstr_test);
 	return run_test();
 }
 

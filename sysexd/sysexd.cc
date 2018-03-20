@@ -1,7 +1,9 @@
 #include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <cstdio>
 #include <cstring>
-#include <cerrno>
 #include "stdexd/stdexd.h"
 #include "sysexd.h"
 #include "sysport/sysport.h"
@@ -57,3 +59,40 @@ int sem_load_with_id(int id, const std::function<int(sem_t *)> &action) {
 		res = log_errno();
 	return res;
 }
+
+int msgget(const std::function<int(int)> &action) {
+	int res = 0;
+	int id = msgget(IPC_PRIVATE, 0666 | IPC_CREAT);
+	if(id != -1) {
+		res = action(id);
+		msgctl(id, IPC_RMID, nullptr);
+	} else
+		res = log_errno();
+	return res;
+}
+
+int msgsnd(int msgid, const char *message, const std::function<int(void)> &action) {
+	int res = 0;
+	size_t msg_len = strlen(message)+1;
+	char *buffer = new char[msg_len+sizeof(long)];
+	*(long *)buffer = 1;
+	strcpy(buffer+sizeof(long), message);
+	if(!(res = msgsnd(msgid, buffer, msg_len, IPC_NOWAIT)))
+		res = action();
+	else
+		res = log_errno();
+	delete[] buffer;
+	return res;
+}
+
+int msgrcv(int msgid, const std::function<int(const char *)> &action) {
+	char buffer[1024];
+	int res = 0;
+	ssize_t ret = msgrcv(msgid, buffer, sizeof(buffer), 1, IPC_NOWAIT);
+	if(ret != -1)
+		res = action(buffer+sizeof(long));
+	else
+		res = log_errno();
+	return res;
+}
+
