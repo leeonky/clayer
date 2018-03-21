@@ -7,7 +7,10 @@
 #include "lport_audio/lport_audio.h"
 #include "media/media.h"
 
-static circular_shm *shms[MAX_LAYER_COUNT];
+namespace {
+	circular_shm *shms[MAX_LAYER_COUNT];
+	std::vector<int> receivers;
+}
 
 static int play_with_sdl2(iobus &iob, int device) {
 	return forward_untill(iob, audio_event, [&](int sample_rate, int channels, int64_t /*layout*/, enum AVSampleFormat format){
@@ -32,16 +35,20 @@ static int play_with_portaudio(iobus &iob, int device) {
 	return forward_untill(iob, audio_event, [&](int sample_rate, int channels, int64_t /*layout*/, enum AVSampleFormat format){
 			return Pa_Init_OpenOutputStream(device, sample_rate, channels, AVSampleFormat_to_PortAudio(format), [&](PaStream *stream){
 					long buffer_len = Pa_GetStreamWriteAvailable(stream);
-					return main_reducer(iob, shms, sample_event, [&](int buffer_key, int index, int64_t pts, int samples) {
-						if(samples)
-							iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, usectime(), pts-Pa_GetStreamLast(stream, buffer_len, sample_rate));
-						shms[buffer_key]->free(index, [&](void *buffer){
-							Pa_WriteStream(stream, buffer, samples);
-							});
-						return 0;
+					return msgget([&](int msgid) {
+							iob.post("CONTROL id:%d", msgid);
+							return main_reducer(iob, shms, sample_event, [&](int buffer_key, int index, int64_t pts, int samples) {
+								event_process(msgid, receivers, [&] (const char *) { return 0; });
+								if(samples)
+									iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, usectime(), pts-Pa_GetStreamLast(stream, buffer_len, sample_rate));
+								shms[buffer_key]->free(index, [&](void *buffer){
+									Pa_WriteStream(stream, buffer, samples);
+									});
+								return 0;
+								});
 						});
-					});
-			});
+				});
+		});
 }
 
 int main(int argc, char **argv) {

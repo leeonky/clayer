@@ -23,8 +23,7 @@ namespace {
 	circular_shm *shms[MAX_LAYER_COUNT];
 	using SDL_TexturePtr =  std::unique_ptr<SDL_Texture, TextureDeleter>;
 	std::map<int, SDL_TexturePtr> layer_textures;
-
-	bool paused = false;
+	std::vector<int> receivers;
 
 	void process_args(int argc, char **argv) {
 		command_argument().require_full_argument("position", 'p', [&](const char *arg){
@@ -60,17 +59,8 @@ int main(int argc, char **argv) {
 							SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 							media_clock clock;
 							return main_reducer(iob, shms, frame_event, [&](int buffer_key, int index, int64_t pts){
+								event_process(msgid, receivers, [&] (const char *) { return 0; });
 								shms[buffer_key]->free(index, [&](void *buffer){
-									do {
-										msgrcv(msgid, [&](const char *command) {
-												if(!strcmp(command, "p"))
-													paused = true;
-												else if(!strcmp(command, "r"))
-													paused = false;
-												return 0;
-												});
-									} while(paused && !usleep(10));
-
 									return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
 										SDL_RenderClear(renderer);
 										SDL_UpdateAndCopyYUV(renderer, texture, datas, lines);
@@ -100,6 +90,10 @@ int main(int argc, char **argv) {
 												})
 												&& nolayer_event(iob, [&](int id) {
 													layer_textures.erase(id);
+													return 0;
+												})
+												&& control_event(iob, [&](int id) {
+													receivers.push_back(id);
 													return 0;
 												})
 												&& iob.ignore_last())

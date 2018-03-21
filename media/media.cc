@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "media.h"
 #include "stdexd/stdexd.h"
+#include "sysexd/sysexd.h"
 #include "lffmpeg/lffmpeg.h"
 
 #undef log_error
@@ -326,5 +327,24 @@ int nolayer_event(iobus &iob, const std::function<int(int)> &action) {
 int control_event(iobus &iob, const std::function<int(int)> &action) {
 	int id;
 	return iob.get("CONTROL", [&] { return action(id); }, 1, "id:%d", &id);
+}
+
+void event_process(int msgid, const std::vector<int> &receivers, const std::function<int(const char *)> &action) {
+	bool paused = false;
+	do {
+		msgrcv(msgid, [&](const char *command) {
+				if(!strcmp(command, "p"))
+					paused = true;
+				else if(!strcmp(command, "r"))
+					paused = false;
+				else if(!strcmp(command, "x"))
+					exit(0);
+				if(!action(command))
+					std::for_each(receivers.begin(), receivers.end(), [&](int id) {
+							msgsnd(id, command, []{return 0;});
+							});
+				return 0;
+			});
+	} while(paused && !usleep(10));
 }
 
