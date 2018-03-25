@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 							SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 							media_clock clock;
 							return main_reducer(iob, shms, frame_event, [&](int buffer_key, int index, int64_t pts){
-								event_process(msgid, receivers, [&] (const char *) { return 0; });
+								command_process(msgid, receivers, [&] (const char *) { return 0; });
 								shms[buffer_key]->free(index, [&](void *buffer){
 									return av_image_fill_arrays(fw, fh, av_format, buffer, [&](uint8_t **datas, int *lines){
 										SDL_RenderClear(renderer);

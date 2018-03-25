@@ -329,7 +329,7 @@ int control_event(iobus &iob, const std::function<int(int)> &action) {
 	return iob.get("CONTROL", [&] { return action(id); }, 1, "id:%d", &id);
 }
 
-void event_process(int msgid, const std::vector<int> &receivers, const std::function<int(const char *)> &action) {
+void command_process(int msgid, const std::vector<int> &receivers, const std::function<int(const char *)> &action) {
 	bool paused = false;
 	do {
 		msgrcv(msgid, [&](const char *command) {
