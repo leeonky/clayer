@@ -8,17 +8,13 @@
 
 int main() {
 	iobus iob(stdin, stdout, stderr);
-	std::vector<int> receivers;
 
-	std::function<int(int)> control_action = [&](int i) {
-		receivers.push_back(i);
+	std::function<int(int)> control_action = [&](int receiver) {
 		while(control_event(iob, control_action)) {
 			while(!iob.get("COMMAND", [&](const char *args) {
-					std::for_each(receivers.begin(), receivers.end(), [&](int id) {
-							msgsnd(id, args, []{return 0;});
-							});
-					return 0;
-					}))
+				msgsnd(receiver, args, []{return 0;});
+				return 0;
+				}))
 			;
 		}
 		return 0;

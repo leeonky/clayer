@@ -36,7 +36,7 @@ namespace {
 		}
 	}
 
-	std::function<int(const AVFrame &)> copy_frame_to_buffer_and_post(circular_shm &buffer) {
+	inline std::function<int(const AVFrame &)> copy_frame_to_buffer_and_post(circular_shm &buffer) {
 		return [&](const AVFrame &frame){
 			if(!av_copy_frame_to_buffer(frame, buffer.allocate(), buffer.element_size))
 				iob.post(av_frame_info(buffer.index, frame, buffer_key));
@@ -44,7 +44,7 @@ namespace {
 		};
 	}
 
-	std::function<int(circular_shm &)> decoding_loop(iobus &iob, AVFormatContext &format_context, AVCodecContext &codec_context) {
+	inline std::function<int(circular_shm &)> decoding_loop(iobus &iob, AVFormatContext &format_context, AVCodecContext &codec_context) {
 		return [&](circular_shm &buffer){
 			iob.post(buffer.serialize_to_string(buffer_key));
 			auto copy_and_post = copy_frame_to_buffer_and_post(buffer);
@@ -56,7 +56,7 @@ namespace {
 		};
 	}
 
-	std::function<int(AVStream &)> open_and_decoding(iobus &iob, AVFormatContext &format_context) {
+	inline std::function<int(AVStream &)> open_and_decoding(iobus &iob, AVFormatContext &format_context) {
 		return [&](AVStream &stream){
 			return avcodec_open(stream, [&](AVCodecContext &codec_context){
 					iob.post(avstream_info(stream));

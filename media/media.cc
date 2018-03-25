@@ -329,7 +329,7 @@ int control_event(iobus &iob, const std::function<int(int)> &action) {
 	return iob.get("CONTROL", [&] { return action(id); }, 1, "id:%d", &id);
 }
 
-void command_process(int msgid, const std::vector<int> &receivers, const std::function<int(const char *)> &action) {
+void command_process(int msgid, int receiver, const std::function<int(const char *)> &action) {
 	bool paused = false;
 	do {
 		msgrcv(msgid, [&](const char *command) {
@@ -339,10 +339,8 @@ void command_process(int msgid, const std::vector<int> &receivers, const std::fu
 					paused = false;
 				else if(!strcmp(command, "x"))
 					exit(0);
-				if(!action(command))
-					std::for_each(receivers.begin(), receivers.end(), [&](int id) {
-							msgsnd(id, command, []{return 0;});
-							});
+				if(!action(command) && receiver>0)
+					msgsnd(receiver, command, []{return 0;});
 				return 0;
 			});
 	} while(paused && !usleep(10));

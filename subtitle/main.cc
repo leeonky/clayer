@@ -19,10 +19,6 @@ namespace {
 	const char *file_name;
 	SDL_Color srt_subtitle_color = {255, 255, 255, 0};
 
-	inline int h_pos(int height, int sub_height, int line_num, int line_count) {
-		return ((100+subtitle_bottom_pos)%100)*height/100-sub_height*1.1*(line_count-line_num);
-	}
-
 	void process_args(int argc, char **argv) {
 		file_name = command_argument().require_full_argument("size", 's', [&](const char *arg){
 				sscanf(arg, "%dx%d", &w, &h);
@@ -40,7 +36,7 @@ namespace {
 		}
 	}
 
-	inline size_t render_lines(iobus &iob, std::istringstream &lines, uint8_t *buffer, TTF_Font *font, const SDL_Color &color, int &h) {
+	size_t render_lines(iobus &iob, std::istringstream &lines, uint8_t *buffer, TTF_Font *font, const SDL_Color &color, int &h) {
 		std::string line;
 		if(!std::getline(lines, line))
 			return 0;
@@ -61,7 +57,7 @@ namespace {
 		return offset;
 	}
 
-	std::function<void(const std::string &)> subtitle_action(iobus &iob, circular_shm &shm, TTF_Font *font, const SDL_Color &color) {
+	inline std::function<void(const std::string &)> subtitle_action(iobus &iob, circular_shm &shm, TTF_Font *font, const SDL_Color &color) {
 		return [&, font](const std::string &title) {
 			if(!title.empty()) {
 				std::istringstream f(title);
@@ -75,7 +71,7 @@ namespace {
 		}; 
 	}
 
-	std::function<int(FILE *)> process_srt(iobus &iob, circular_shm &shm) {
+	inline std::function<int(FILE *)> process_srt(iobus &iob, circular_shm &shm) {
 		return [&](FILE *sub_file){
 			subtitle_srt srt(sub_file);
 			return TTF_OpenFont(font_file, w/font_size_k, [&](TTF_Font *font) {

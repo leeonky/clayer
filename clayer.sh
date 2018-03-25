@@ -35,8 +35,8 @@ function play_video() {
 	else
 		encoding=$(file -b --mime-encoding "$subtitle")
 		if [ $encoding != 'utf-8' ]; then
-			encoding=${encoding/%le/}
-			encoding=${encoding/%be/}
+			#encoding=${encoding/%le/}
+			#encoding=${encoding/%be/}
 			new_file=$(mktemp /tmp/sub.srt.XXXXXX)
 			iconv -f $encoding -t utf-8 "$subtitle" > "$new_file"
 			sed -i '1s/^\xEF\xBB\xBF//' "$new_file"

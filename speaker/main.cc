@@ -9,7 +9,6 @@
 
 namespace {
 	circular_shm *shms[MAX_LAYER_COUNT];
-	std::vector<int> receivers;
 }
 
 static int play_with_sdl2(iobus &iob, int device) {
@@ -38,7 +37,7 @@ static int play_with_portaudio(iobus &iob, int device) {
 					return msgget([&](int msgid) {
 							iob.post("CONTROL id:%d", msgid);
 							return main_reducer(iob, shms, sample_event, [&](int buffer_key, int index, int64_t pts, int samples) {
-								command_process(msgid, receivers, [&] (const char *) { return 0; });
+								command_process(msgid, 0, [&] (const char *) { return 0; });
 								if(samples)
 									iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, usectime(), pts-Pa_GetStreamLast(stream, buffer_len, sample_rate));
 								shms[buffer_key]->free(index, [&](void *buffer){

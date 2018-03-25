@@ -120,7 +120,7 @@ int main_transform(iobus &iob, circular_shm **shms, const Processor &main_proces
 	return forward_untill(iob, buffer_event, buffer_action);
 }
 
-void command_process(int, const std::vector<int> &, const std::function<int(const char *)> &);
+void command_process(int, int, const std::function<int(const char *)> &);
 
 int seek_command_process(int64_t currentus, const std::vector<int> &, const std::function<int(const char *)> &);
 
