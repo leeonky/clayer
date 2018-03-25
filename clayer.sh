@@ -49,8 +49,8 @@ function play_video() {
 set -x
 (
 (
-	play_video &
-	"$project_path/decoder/decoder" "$media_file" -a $audio | "$project_path/resampler/resampler" -f pack:flt32:maxbit32 -l stereo | "$project_path/speaker/speaker" -d 1
+	play_video
+	# "$project_path/decoder/decoder" "$media_file" -a $audio | "$project_path/resampler/resampler" -f pack:flt32:maxbit32 -l stereo | "$project_path/speaker/speaker" -d 1
 ) | "$project_path/screen/screen" $position $size $video_flag &
 "$project_path/terminal"
 ) | "$project_path/controller/controller"
