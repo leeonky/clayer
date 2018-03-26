@@ -319,6 +319,12 @@ int layer_event(iobus &iob, const std::function<int(const layer_list &)> &action
 			});
 }
 
+int reset_event(iobus &iob, const std::function<int(void)> &action) {
+	return iob.get("RESET", [&] {
+			return action();
+			}, 0, "");
+}
+
 int nolayer_event(iobus &iob, const std::function<int(int)> &action) {
 	int id;
 	return iob.get("NOLAYER", [&] { return action(id); }, 1, "id:%d", &id);
@@ -329,7 +335,7 @@ int control_event(iobus &iob, const std::function<int(int)> &action) {
 	return iob.get("CONTROL", [&] { return action(id); }, 1, "id:%d", &id);
 }
 
-void command_process(int msgid, int receiver, const std::function<int(const char *)> &action) {
+void player_command_process(int msgid, int receiver, const std::function<int(const char *)> &action) {
 	bool paused = false;
 	do {
 		msgrcv(msgid, [&](const char *command) {
@@ -339,8 +345,42 @@ void command_process(int msgid, int receiver, const std::function<int(const char
 					paused = false;
 				else if(!strcmp(command, "x"))
 					exit(0);
+				//else if(strstr(command, "f ")) {
+				//}
+				//else if(strstr(command, "b ")) {
+				//}
 				if(!action(command) && receiver>0)
 					msgsnd(receiver, command, []{return 0;});
+				return 0;
+			});
+	} while(paused && !usleep(10));
+}
+
+int player_context::start(iobus &iob, const std::function<int(player_context &)> &action) {
+	return forward_untill(iob, control_event, [&](int receiver) {
+			return msgget([&](int msgid) {
+					iob.post("CONTROL id:%d", msgid);
+					player_context context(msgid, receiver);
+					return action(context);
+					});
+			});
+}
+
+void player_context::process_command() {
+	bool paused = false;
+	do {
+		msgrcv(_msgid, [&](const char *command) {
+				if(!strcmp(command, "p"))
+					paused = true;
+				else if(!strcmp(command, "r"))
+					paused = false;
+				else if(!strcmp(command, "x"))
+					exit(0);
+				//else if(strstr(command, "f ")) {
+				//}
+				//else if(strstr(command, "b ")) {
+				//}
+				msgsnd(_receiver, command, []{return 0;});
 				return 0;
 			});
 	} while(paused && !usleep(10));

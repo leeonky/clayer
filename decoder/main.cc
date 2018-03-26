@@ -48,8 +48,19 @@ namespace {
 		return [&](circular_shm &buffer){
 			iob.post(buffer.serialize_to_string(buffer_key));
 			auto copy_and_post = copy_frame_to_buffer_and_post(buffer);
-			while(!av_read_and_send_to_avcodec(format_context, codec_context))
+			while(!av_read_and_send_to_avcodec(format_context, codec_context)) {
 				avcodec_receive_frame(codec_context, copy_and_post);
+				msgrcv(msgid, [&](const char *command) {
+						int64_t value;
+						if(1==sscanf(command, "s %" PRId64, &value)) {
+							av_seek_frame(format_context, codec_context, value, [&]() {
+									iob.post("RESET");
+									return 0;
+									});
+						}
+						return 0;
+					});
+			}
 			while(!avcodec_receive_frame(codec_context, copy_and_post))
 				;
 			return 0;

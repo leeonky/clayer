@@ -18,6 +18,7 @@ int main() {
 	ADD_SUITE(swr_alloc_set_opts_and_init_test);
 	ADD_SUITE(swr_resample_size_test);
 	ADD_SUITE(swr_convert_test);
+	ADD_SUITE(av_seek_frame_test);
 	return run_test();
 }
 

@@ -1,4 +1,10 @@
 #!/bin/bash
+#p: pause
+#r: resume
+#s: seek
+#sp: seek percentage
+#f: forward
+#b: backward
 
 while true
 do

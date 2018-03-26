@@ -390,3 +390,13 @@ size_t resample_context::resample_size() const {
 			out_rate/10, out_format, 1);
 }
 
+int av_seek_frame(AVFormatContext &format_context, AVCodecContext &codec_context, int64_t time, const std::function<int(void)> &action) {
+	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
+	AVStream *av_stream = context->av_stream;
+	int res = av_seek_frame(&format_context, av_stream->index,
+		       	time*av_stream->time_base.den/av_stream->time_base.num/1000000, AVSEEK_FLAG_BACKWARD);
+	if(!res)
+		res = action();
+	return res;
+}
+

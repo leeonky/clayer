@@ -19,7 +19,7 @@ namespace {
 
 	Uint32 window_flag = 0;
 	char title[128] = "CLAYER";
-	int x = SDL_WINDOWPOS_CENTERED, y = SDL_WINDOWPOS_CENTERED, win_w, win_h, frm_w, frm_h, msgid;
+	int x = SDL_WINDOWPOS_CENTERED, y = SDL_WINDOWPOS_CENTERED, win_w, win_h, frm_w, frm_h;
 	enum AVPixelFormat format;
 	circular_shm *shms[MAX_LAYER_COUNT];
 	using SDL_TexturePtr = std::unique_ptr<SDL_Texture, TextureDeleter>;
@@ -77,29 +77,25 @@ namespace {
 		};
 	}
 
-	inline std::function<int(int, int, int64_t)> play_frame(iobus &iob, SDL_Renderer *renderer, SDL_Texture *texture, media_clock &clock) {
+	inline std::function<int(int, int, int64_t)> play_frame(iobus &iob, player_context &context, SDL_Renderer *renderer, SDL_Texture *texture) {
 		return [&, renderer, texture](int buffer_key, int index, int64_t pts){
-			command_process(msgid, 0, [&] (const char *) { return 0; });
+			context.process_command();
 			shms[buffer_key]->free(index, [&](void *buffer){
 					return av_image_fill_arrays(frm_w, frm_h, format, buffer, [&](uint8_t **datas, int *lines){
 							SDL_RenderClear(renderer);
 							SDL_UpdateAndCopyYUV(renderer, texture, datas, lines);
 
 							while(!iob.except("FRAME"))
-								if(clock_event(iob, clock_action(clock))
+								if(clock_event(iob, clock_action(context.clock()))
 									&& layer_event(iob, layer_action(renderer, frm_w, frm_h, layer_textures))
 									&& nolayer_event(iob, no_layer_action(layer_textures))
-									//&& control_event(iob, [&](int id) {
-										//receivers.push_back(id);
-										//return 0;
-										//})
 									&& iob.ignore_last())
 									break;
 
 							for(const auto &key_layer : layer_textures)
 							SDL_RenderCopy(renderer, key_layer.second.get(),  NULL, NULL);
 
-							clock.wait(pts, 100000);
+							context.clock().wait(pts, 100000);
 							SDL_RenderPresent(renderer);
 							return 0;
 					});
@@ -111,25 +107,22 @@ namespace {
 
 int main(int argc, char **argv) {
 	iobus iob(stdin, stdout, stderr);
-	auto video_action = [&](int fw, int fh, enum AVPixelFormat av_format){
-		win_w = frm_w = fw;
-		win_h = frm_h = fh;
-		format = av_format;
-		process_args(argc, argv);
-		return msgget([&](int id) {
-				iob.post("CONTROL id:%d", msgid = id);
-				return SDL_CreateWindow(title, x, y, win_w, win_h, window_flag,
-						[&](SDL_Window *window){
-						SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "4");
-						return SDL_CreateTexture(window, frm_w, frm_h, AVPixelFormat_to_SDL(av_format),
-								[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
-								SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-								SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-								media_clock clock;
-								return main_reducer(iob, shms, frame_event, play_frame(iob, renderer, texture, clock));
-								});
-						});
-				});
-	};
-	return forward_untill(iob, video_event, video_action);
+	return player_context::start(iob, [&](player_context &context) {
+			return forward_untill(iob, video_event, [&](int fw, int fh, enum AVPixelFormat av_format){
+					win_w = frm_w = fw;
+					win_h = frm_h = fh;
+					format = av_format;
+					process_args(argc, argv);
+					return SDL_CreateWindow(title, x, y, win_w, win_h, window_flag,
+							[&](SDL_Window *window){
+							SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "4");
+							return SDL_CreateTexture(window, frm_w, frm_h, AVPixelFormat_to_SDL(av_format),
+									[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
+									SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+									SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+									return main_reducer(iob, shms, frame_event, play_frame(iob, context, renderer, texture));
+									});
+							});
+					});
+			});
 }

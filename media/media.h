@@ -80,6 +80,7 @@ struct layer_list {
 extern int layer_event(iobus &, const std::function<int(const layer_list &)> &);
 extern int nolayer_event(iobus &, const std::function<int(int)> &);
 extern int control_event(iobus &, const std::function<int(int)> &);
+extern int reset_event(iobus &, const std::function<int(void)> &);
 
 template<typename Processor, typename Action>
 int main_reducer(iobus &iob, circular_shm **shms, const Processor &main_processor, const Action &action) {
@@ -120,8 +121,26 @@ int main_transform(iobus &iob, circular_shm **shms, const Processor &main_proces
 	return forward_untill(iob, buffer_event, buffer_action);
 }
 
-void command_process(int, int, const std::function<int(const char *)> &);
+class player_context {
+public:
+	static int start(iobus &, const std::function<int(player_context &)> &);
+	void process_command();
+
+	media_clock &clock() {
+		return _clock;
+	}
+
+private:
+	media_clock _clock;
+	bool _resetting;
+	int _msgid, _receiver;
+
+	player_context(int msgid, int receiver) :_resetting(false), _msgid(msgid), _receiver(receiver) {}
+};
+
+void player_command_process(int, int, const std::function<int(const char *)> &);
 
 int seek_command_process(int64_t currentus, const std::vector<int> &, const std::function<int(const char *)> &);
 
 #endif
+

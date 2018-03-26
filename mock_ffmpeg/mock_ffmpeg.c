@@ -59,3 +59,6 @@ mock_function_4(int, av_opt_get_int, void *, const char *, int, int64_t *);
 
 mock_function_1(enum AVSampleFormat, av_get_packed_sample_fmt, enum AVSampleFormat)
 mock_function_1(enum AVSampleFormat, av_get_planar_sample_fmt, enum AVSampleFormat)
+
+mock_function_4(int, av_seek_frame, AVFormatContext *, int, int64_t, int);
+
