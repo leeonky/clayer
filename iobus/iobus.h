@@ -41,6 +41,7 @@ public:
 		}
 	}
 
+public:
 private:
 	FILE *file_in, *file_out, *file_err;
 	char *line;

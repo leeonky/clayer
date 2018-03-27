@@ -29,7 +29,7 @@ if [ "$video_flag" != "" ]; then
 	video_flag="-f $video_flag"
 fi
 
-function play_video() {
+function output_video() {
 	if [ "$subtitle" == "" ]; then
 		"$project_path/decoder/decoder" "$media_file" -v $video
 	else
@@ -46,11 +46,22 @@ function play_video() {
 	fi
 }
 
+function output_audio() {
+	 "$project_path/decoder/decoder" "$media_file" -a $audio | "$project_path/resampler/resampler" -f pack:flt32:maxbit32 -l stereo | "$project_path/speaker/speaker" -d 1
+}
+
+(
+	(output_audio | grep -v --line-buffered 'CLOCK') &
+	"$project_path/terminal"
+) | "$project_path/controller/controller"
+
+exit
+
 set -x
 (
 (
-	play_video
-	# "$project_path/decoder/decoder" "$media_file" -a $audio | "$project_path/resampler/resampler" -f pack:flt32:maxbit32 -l stereo | "$project_path/speaker/speaker" -d 1
+	output_video &
+	#output_audio
 ) | "$project_path/screen/screen" $position $size $video_flag &
 "$project_path/terminal"
 ) | "$project_path/controller/controller"

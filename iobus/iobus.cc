@@ -28,13 +28,14 @@ int iobus::get(const std::function<int(const char *, const char *)> &action) {
 	size_t len = 0;
 	if(processed) {
 		if(-1 != getline(&line, &len, file_in) && 1 == sscanf(line, "%s", command)) {
+			*(std::find_if(std::reverse_iterator<char*>{line+strlen(line)},
+						std::reverse_iterator<char*>{line}, [](int ch) {
+							return !std::isspace(ch);
+					})-1) = '\0';
+
 			const char *p = index(line, ' ');
 			if(p) {
 				arguments = p+1;
-				*(std::find_if(std::reverse_iterator<char*>{(char *)arguments+strlen(arguments)},
-							std::reverse_iterator<char*>{(char *)arguments}, [](int ch) {
-						return !std::isspace(ch);
-						})-1) = '\0';
 			} else
 				arguments = "";
 			processed = false;

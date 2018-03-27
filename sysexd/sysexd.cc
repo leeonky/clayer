@@ -100,12 +100,18 @@ int last_shm_id=-1, last_sem_id=-1, last_msg_id=-1;
 
 namespace {
 	void clean_last_cbuf(int) {
-		if(-1 != last_shm_id)
+		if(-1 != last_shm_id) {
 			shmctl(last_shm_id, IPC_RMID, NULL);
-		if(-1 != last_sem_id)
+			last_sem_id = -1;
+		}
+		if(-1 != last_sem_id) {
 			sem_unlink_with_id(last_sem_id);
-		if(-1 != last_msg_id)
+			last_sem_id = -1;
+		}
+		if(-1 != last_msg_id) {
 			msgctl(last_msg_id, IPC_RMID, nullptr);
+			last_msg_id = -1;
+		}
 		exit(-1);
 	}
 }

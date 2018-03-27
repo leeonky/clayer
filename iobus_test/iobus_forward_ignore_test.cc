@@ -19,7 +19,7 @@ AFTER_EACH() {
 SUITE_CASE("forward_last") {
 	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
 
-	init_subject("TEST a:1");
+	init_subject("TEST a:1\n");
 	app_stdin = actxt.input_stream;
 
 	CUE_ASSERT_EQ(iob.forward_last(), -1);
@@ -27,6 +27,21 @@ SUITE_CASE("forward_last") {
 
 	CUE_ASSERT_EQ(iob.forward_last(), 0);
 	CUE_ASSERT_STDOUT_EQ("TEST a:1\n");
+
+	CUE_ASSERT_EQ(iob.forward_last(), -1);
+}
+
+SUITE_CASE("forward_last with no args") {
+	iobus iob{actxt.input_stream, actxt.output_stream, actxt.error_stream};
+
+	init_subject("TEST\n");
+	app_stdin = actxt.input_stream;
+
+	CUE_ASSERT_EQ(iob.forward_last(), -1);
+	iob.get([](const char *, const char *){return 0;});
+
+	CUE_ASSERT_EQ(iob.forward_last(), 0);
+	CUE_ASSERT_STDOUT_EQ("TEST\n");
 
 	CUE_ASSERT_EQ(iob.forward_last(), -1);
 }

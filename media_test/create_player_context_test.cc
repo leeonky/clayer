@@ -36,7 +36,7 @@ SUBJECT(int) {
 	return player_context::start(iob, player_context_action_ref);
 }
 
-static ssize_t stub_msgrcv(int, void *buffer, size_t len, long type, int) {
+static ssize_t stub_msgrcv(int, void *buffer, size_t, long, int) {
 	strcpy((char *)buffer, "s 100");
 	return 6;
 }

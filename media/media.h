@@ -48,9 +48,18 @@ class media_clock {
 public:
 	media_clock(): base(usectime()), offset() {}
 	int wait(int64_t, int64_t);
+
 	void sync(int64_t base, int64_t offset) {
 		this->base = base;
 		this->offset = offset;
+	}
+
+	int64_t now() const {
+		return usectime()-base+offset;
+	}
+
+	void backward(int64_t offset) {
+		base += offset;
 	}
 private:
 	int64_t base, offset;
@@ -89,11 +98,9 @@ int main_reducer(iobus &iob, circular_shm **shms, const Processor &main_processo
 			[&](circular_shm &shm){
 			shms[buffer_key] = &shm;
 
-			while(buffer_event(iob, buffer_action)) {
-				while(!main_processor(iob, action))
+			if(buffer_event(iob, buffer_action)) {
+				while(!ignore_untill(iob, main_processor, action))
 					;
-				if(iob.ignore_last())
-					break;
 			}
 			return 0;
 			});
@@ -109,11 +116,9 @@ int main_transform(iobus &iob, circular_shm **shms, const Processor &main_proces
 			shms[buffer_key] = &shm;
 			iob.recaption_and_post();
 
-			while(buffer_event(iob, buffer_action)) {
-				while(!main_processor(iob, action))
+			if(buffer_event(iob, buffer_action)) {
+				while(!forward_untill(iob, main_processor, action))
 					;
-				if(iob.forward_last())
-					break;
 			}
 			return 0;
 			});
@@ -130,17 +135,28 @@ public:
 		return _clock;
 	}
 
+	void reset() {
+		_resetting = false;
+	}
+
+	bool is_resetting() const {
+		return _resetting;
+	}
+
+	void sync_clock_as_needed(int64_t pts) {
+		if(_need_sync) {
+			_clock.sync(usectime(), pts);
+			_need_sync = false;
+		}
+	}
+
 private:
 	media_clock _clock;
-	bool _resetting;
+	bool _resetting, _need_sync;
 	int _msgid, _receiver;
 
-	player_context(int msgid, int receiver) :_resetting(false), _msgid(msgid), _receiver(receiver) {}
+	player_context(int msgid, int receiver) :_resetting(false), _need_sync(false), _msgid(msgid), _receiver(receiver) {}
 };
-
-void player_command_process(int, int, const std::function<int(const char *)> &);
-
-int seek_command_process(int64_t currentus, const std::vector<int> &, const std::function<int(const char *)> &);
 
 #endif
 

@@ -76,12 +76,20 @@ namespace {
 			return 0;
 		};
 	}
+	inline std::function<int(void)> reset_action(player_context &context) {
+		return [&]() {
+			context.reset();
+			return 0;
+		};
+	}
 
 	inline std::function<int(int, int, int64_t)> play_frame(iobus &iob, player_context &context, SDL_Renderer *renderer, SDL_Texture *texture) {
 		return [&, renderer, texture](int buffer_key, int index, int64_t pts){
 			context.process_command();
 			shms[buffer_key]->free(index, [&](void *buffer){
 					return av_image_fill_arrays(frm_w, frm_h, format, buffer, [&](uint8_t **datas, int *lines){
+							bool show_pic = !context.is_resetting();
+
 							SDL_RenderClear(renderer);
 							SDL_UpdateAndCopyYUV(renderer, texture, datas, lines);
 
@@ -89,14 +97,18 @@ namespace {
 								if(clock_event(iob, clock_action(context.clock()))
 									&& layer_event(iob, layer_action(renderer, frm_w, frm_h, layer_textures))
 									&& nolayer_event(iob, no_layer_action(layer_textures))
+									&& reset_event(iob, reset_action(context))
 									&& iob.ignore_last())
 									break;
 
 							for(const auto &key_layer : layer_textures)
-							SDL_RenderCopy(renderer, key_layer.second.get(),  NULL, NULL);
+								SDL_RenderCopy(renderer, key_layer.second.get(),  NULL, NULL);
 
-							context.clock().wait(pts, 100000);
-							SDL_RenderPresent(renderer);
+							if(show_pic) {
+								context.sync_clock_as_needed(pts);
+								context.clock().wait(pts, 100000);
+								SDL_RenderPresent(renderer);
+							}
 							return 0;
 					});
 			});

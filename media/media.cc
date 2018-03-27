@@ -335,27 +335,6 @@ int control_event(iobus &iob, const std::function<int(int)> &action) {
 	return iob.get("CONTROL", [&] { return action(id); }, 1, "id:%d", &id);
 }
 
-void player_command_process(int msgid, int receiver, const std::function<int(const char *)> &action) {
-	bool paused = false;
-	do {
-		msgrcv(msgid, [&](const char *command) {
-				if(!strcmp(command, "p"))
-					paused = true;
-				else if(!strcmp(command, "r"))
-					paused = false;
-				else if(!strcmp(command, "x"))
-					exit(0);
-				//else if(strstr(command, "f ")) {
-				//}
-				//else if(strstr(command, "b ")) {
-				//}
-				if(!action(command) && receiver>0)
-					msgsnd(receiver, command, []{return 0;});
-				return 0;
-			});
-	} while(paused && !usleep(10));
-}
-
 int player_context::start(iobus &iob, const std::function<int(player_context &)> &action) {
 	return forward_untill(iob, control_event, [&](int receiver) {
 			return msgget([&](int msgid) {
@@ -369,18 +348,47 @@ int player_context::start(iobus &iob, const std::function<int(player_context &)>
 void player_context::process_command() {
 	bool paused = false;
 	do {
+		char buffer[128];
+		bool need_reset = false;
 		msgrcv(_msgid, [&](const char *command) {
-				if(!strcmp(command, "p"))
+				int64_t dumy;
+				if(!strcmp(command, "p")) {
 					paused = true;
-				else if(!strcmp(command, "r"))
+				} else if(!strcmp(command, "r")) {
 					paused = false;
-				else if(!strcmp(command, "x"))
-					exit(0);
-				//else if(strstr(command, "f ")) {
-				//}
-				//else if(strstr(command, "b ")) {
-				//}
-				msgsnd(_receiver, command, []{return 0;});
+					_need_sync = true;
+				} else if(!strcmp(command, "x")) {
+					sprintf(buffer, "%s", command);
+					need_reset = true;
+				}
+				else if(sscanf(command, "s %" PRId64, &dumy)==1) {
+					sprintf(buffer, "%s", command);
+					need_reset = true;
+					_need_sync = true;
+				} else if(!strcmp(command, "f")) {
+					sprintf(buffer, "s %" PRId64, _clock.now()+5000000);
+					need_reset = true;
+					_need_sync = true;
+				} else if(!strcmp(command, "b")) {
+					sprintf(buffer, "s %" PRId64, _clock.now()-5000000);
+					need_reset = true;
+					_need_sync = true;
+				} else if(!strcmp(command, "ff")) {
+					sprintf(buffer, "s %" PRId64, _clock.now()+15000000);
+					need_reset = true;
+					_need_sync = true;
+				} else if(!strcmp(command, "bb")) {
+					sprintf(buffer, "s %" PRId64, _clock.now()-15000000);
+					need_reset = true;
+					_need_sync = true;
+				}
+				if(need_reset)
+					msgsnd(_receiver, (const char *)buffer, [&]{
+							_resetting = true;
+							return 0;
+							});
+				else
+					msgsnd(_receiver, command, []{return 0;});
 				return 0;
 			});
 	} while(paused && !usleep(10));
