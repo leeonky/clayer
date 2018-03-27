@@ -39,11 +39,11 @@ ltmain.sh
 
 ###########
 *.test
-decoder/decoder
-screen/screen
-speaker/speaker
-resampler/resampler
-subtitle/subtitle
-controller/controller
+decoder/cl_decoder
+screen/cl_screen
+speaker/cl_speaker
+resampler/cl_resampler
+subtitle/cl_subtitle
+controller/cl_controller
 
 .dev

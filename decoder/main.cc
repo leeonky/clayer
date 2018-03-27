@@ -48,7 +48,8 @@ namespace {
 		return [&](circular_shm &buffer){
 			iob.post(buffer.serialize_to_string(buffer_key));
 			auto copy_and_post = copy_frame_to_buffer_and_post(buffer);
-			while(!av_read_and_send_to_avcodec(format_context, codec_context)) {
+			bool running = true;
+			while(running && !av_read_and_send_to_avcodec(format_context, codec_context)) {
 				avcodec_receive_frame(codec_context, copy_and_post);
 				msgrcv(msgid, [&](const char *command) {
 						int64_t value;
@@ -57,9 +58,9 @@ namespace {
 									avcodec_flush_buffers(&codec_context);
 									iob.post("RESET");
 									return 0;
-									});
+								});
 						} else if(!strcmp(command, "x"))
-							exit(0);
+							running = false;
 						return 0;
 					});
 			}

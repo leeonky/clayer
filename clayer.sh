@@ -29,31 +29,34 @@ if [ "$video_flag" != "" ]; then
 	video_flag="-f $video_flag"
 fi
 
+if [ "$subtitle" != "" ]; then
+	encoding=$(file -b --mime-encoding "$subtitle")
+	if [ $encoding != 'utf-8' ]; then
+		encoding=${encoding/%le/}
+		encoding=${encoding/%be/}
+		new_file=$(mktemp /tmp/sub.srt.XXXXXX)
+		iconv -f $encoding -t utf-8 "$subtitle" > "$new_file"
+		#sed -i '1s/^\xEF\xBB\xBF//' "$new_file"
+		subtitle="$new_file"
+	fi
+fi
+
 function output_video() {
 	if [ "$subtitle" == "" ]; then
-		"$project_path/decoder/decoder" "$media_file" -v $video
+		"$project_path/decoder/cl_decoder" "$media_file" -v $video
 	else
-		encoding=$(file -b --mime-encoding "$subtitle")
-		if [ $encoding != 'utf-8' ]; then
-			#encoding=${encoding/%le/}
-			#encoding=${encoding/%be/}
-			new_file=$(mktemp /tmp/sub.srt.XXXXXX)
-			iconv -f $encoding -t utf-8 "$subtitle" > "$new_file"
-			sed -i '1s/^\xEF\xBB\xBF//' "$new_file"
-			subtitle="$new_file"
-		fi
-		"$project_path/decoder/decoder" "$media_file" -v $video | "$project_path/subtitle/subtitle" -f "$project_path/wqy-zenhei.ttc" "$subtitle"
+		"$project_path/decoder/cl_decoder" "$media_file" -v $video | "$project_path/subtitle/cl_subtitle" -f "$project_path/wqy-zenhei.ttc" "$subtitle"
 	fi
 }
 
-function output_audio() {
-	 "$project_path/decoder/decoder" "$media_file" -a $audio | "$project_path/resampler/resampler" -f pack:flt32:maxbit32 -l stereo | "$project_path/speaker/speaker" -d 1
+function play_audio() {
+	 "$project_path/decoder/cl_decoder" "$media_file" -a $audio | "$project_path/resampler/cl_resampler" -f pack:flt32:maxbit32 -l stereo | "$project_path/speaker/cl_speaker" -d 1
 }
 
 (
-	(output_audio | grep -v --line-buffered 'CLOCK') &
-	"$project_path/terminal"
-) | "$project_path/controller/controller"
+	(play_audio | grep -v --line-buffered 'CLOCK') &
+	"$project_path/cl_terminal"
+) | "$project_path/controller/cl_controller"
 
 exit
 
@@ -61,8 +64,8 @@ set -x
 (
 (
 	output_video &
-	#output_audio
-) | "$project_path/screen/screen" $position $size $video_flag &
-"$project_path/terminal"
-) | "$project_path/controller/controller"
+	#play_audio
+) | "$project_path/screen/cl_screen" $position $size $video_flag &
+"$project_path/cl_terminal"
+) | "$project_path/controller/cl_controller"
 
