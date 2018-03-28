@@ -4,10 +4,27 @@
 project_path="$(dirname "$0")"
 media_file=$1
 
+DECODER_BIN="$project_path/decoder/cl_decoder"
+SUBTITLE_BIN="$project_path/subtitle/cl_subtitle"
+SCREEN_BIN="$project_path/screen/cl_screen"
+RESAMPLER_BIN="$project_path/resampler/cl_resampler"
+SPEEKER_BIN="$project_path/speaker/cl_speaker"
+CONTROLLER_BIN="$project_path/controller/cl_controller"
+TERMINAL_BIN="$project_path/cl_terminal"
+
+new_sub_file=$(mktemp -u /tmp/cl_sub.srt.XXXXXX)
+audio_control_queue=$(mktemp -u /tmp/cl_ab.XXXXXX)
+video_control_queue=$(mktemp -u /tmp/cl_vb.XXXXXX)
+clock_control_queue=$(mktemp -u /tmp/cl_cb.XXXXXX)
+
+mkfifo "$clock_control_queue"
+
+trap "{ rm -f $new_sub_file $clock_control_queue; }" EXIT
+
 shift 1
 for args in "$@"
 do
-        eval "$args"
+	eval "$args"
 done
 
 video=${v:-0}
@@ -34,38 +51,48 @@ if [ "$subtitle" != "" ]; then
 	if [ $encoding != 'utf-8' ]; then
 		encoding=${encoding/%le/}
 		encoding=${encoding/%be/}
-		new_file=$(mktemp /tmp/sub.srt.XXXXXX)
-		iconv -f $encoding -t utf-8 "$subtitle" > "$new_file"
-		#sed -i '1s/^\xEF\xBB\xBF//' "$new_file"
-		subtitle="$new_file"
+		new_sub_file=$(mktemp /tmp/sub.srt.XXXXXX)
+		iconv -f $encoding -t utf-8 "$subtitle" > "$new_sub_file"
+		#sed -i '1s/^\xEF\xBB\xBF//' "$new_sub_file"
+		subtitle="$new_sub_file"
 	fi
 fi
 
-function output_video() {
+function play_audio() {
+	"$DECODER_BIN" "$media_file" -a $audio |
+	"$RESAMPLER_BIN" -f pack:flt32:maxbit32 -l stereo |
+	"$SPEEKER_BIN" -d 1
+}
+
+function play_audio_with_controller() {
+	(
+	play_audio | tee >( grep --line-buffered 'CLOCK' > "$clock_control_queue" ) | grep -v --line-buffered 'CLOCK' &
+	cat
+	) | "$CONTROLLER_BIN"
+}
+
+function wrapper_video_with_subtitle() {
 	if [ "$subtitle" == "" ]; then
-		"$project_path/decoder/cl_decoder" "$media_file" -v $video
+		"$DECODER_BIN" "$media_file" -v $video
 	else
-		"$project_path/decoder/cl_decoder" "$media_file" -v $video | "$project_path/subtitle/cl_subtitle" -f "$project_path/wqy-zenhei.ttc" "$subtitle"
+		"$DECODER_BIN" "$media_file" -v $video | "$SUBTITLE_BIN" -f "$project_path/wqy-zenhei.ttc" "$subtitle"
 	fi
 }
 
-function play_audio() {
-	 "$project_path/decoder/cl_decoder" "$media_file" -a $audio | "$project_path/resampler/cl_resampler" -f pack:flt32:maxbit32 -l stereo | "$project_path/speaker/cl_speaker" -d 1
+function play_video() {
+	(
+	wrapper_video_with_subtitle &
+	cat $clock_control_queue
+	) | "$SCREEN_BIN" $position $size $video_flag
 }
 
-(
-	(play_audio | grep -v --line-buffered 'CLOCK') &
-	"$project_path/cl_terminal"
-) | "$project_path/controller/cl_controller"
-
-exit
+function play_video_with_controller() {
+	(
+	play_video &
+	cat
+	) | "$CONTROLLER_BIN"
+}
 
 set -x
-(
-(
-	output_video &
-	#play_audio
-) | "$project_path/screen/cl_screen" $position $size $video_flag &
-"$project_path/cl_terminal"
-) | "$project_path/controller/cl_controller"
+"$TERMINAL_BIN" | tee >( play_video_with_controller ) | play_audio_with_controller
 

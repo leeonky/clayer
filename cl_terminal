@@ -8,7 +8,7 @@
 
 while true
 do
-	echo -n "clayer:> " >&2
+	echo -n "clayer:> " | tee >&2
 	read line
 	echo "COMMAND $line"
 done
