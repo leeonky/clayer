@@ -106,8 +106,8 @@ namespace {
 
 							if(show_pic) {
 								context.sync_clock_as_needed(pts);
-								context.clock().wait(pts, 100000);
-								SDL_RenderPresent(renderer);
+								if(!context.clock().wait(pts, 100000))
+									SDL_RenderPresent(renderer);
 							}
 							return 0;
 					});

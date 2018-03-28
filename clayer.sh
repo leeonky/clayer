@@ -46,6 +46,13 @@ if [ "$video_flag" != "" ]; then
 	video_flag="-f $video_flag"
 fi
 
+if [ "$subtitle" == "" ]; then
+	srt_name="${media_file%.*}.srt"
+	if [ -f "$srt_name" ]; then
+		subtitle="$srt_name"
+	fi
+fi
+
 if [ "$subtitle" != "" ]; then
 	encoding=$(file -b --mime-encoding "$subtitle")
 	if [ $encoding != 'utf-8' ]; then
