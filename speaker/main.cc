@@ -23,8 +23,10 @@ namespace {
 									iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, base, offset);
 								}
 								shms[buffer_key]->free(index, [&](void *buffer){
-										if(!context.is_resetting())
+										if(!context.is_resetting()) {
+											context.sync_clock_as_needed(pts);
 											Pa_WriteStream(stream, buffer, samples);
+										}
 									});
 
 								reset_event(iob, [&]() {

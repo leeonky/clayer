@@ -68,6 +68,7 @@ extern_mock_function_1(enum AVSampleFormat, av_get_packed_sample_fmt, enum AVSam
 extern_mock_function_1(enum AVSampleFormat, av_get_planar_sample_fmt, enum AVSampleFormat)
 
 extern_mock_function_4(int, av_seek_frame, AVFormatContext *, int, int64_t, int);
+extern_mock_function_6(int, avformat_seek_file, AVFormatContext *, int, int64_t, int64_t, int64_t, int);
 
 
 #ifdef __cplusplus

@@ -54,8 +54,8 @@ namespace {
 				msgrcv(msgid, [&](const char *command) {
 						int64_t value;
 						if(1==sscanf(command, "s %" PRId64, &value)) {
+							avcodec_flush_buffers(&codec_context);
 							av_seek_frame(format_context, codec_context, value, [&]() {
-									avcodec_flush_buffers(&codec_context);
 									iob.post("RESET");
 									return 0;
 								});
