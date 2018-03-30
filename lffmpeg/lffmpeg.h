@@ -68,5 +68,7 @@ struct scale_context {
 
 extern int sws_getContext(int, int, enum AVPixelFormat, int, int, enum AVPixelFormat, int, const std::function<int(scale_context &)> &);
 
+extern int sws_scale(scale_context &, const void *, void *);
+
 #endif
 

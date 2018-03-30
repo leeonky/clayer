@@ -400,3 +400,12 @@ int sws_getContext(int in_w, int in_h, enum AVPixelFormat in_format,
 	return res;
 }
 
+int sws_scale(scale_context &context, const void *in_buf, void *out_buf) {
+	return av_image_fill_arrays(context.out_w, context.out_h, context.out_format, out_buf, [&](uint8_t **out_data, int *out_lines) {
+			return av_image_fill_arrays(context.in_w, context.in_h, context.in_format, in_buf, [&](uint8_t **in_data, int *in_lines) {
+					sws_scale(context.sws_context, in_data, in_lines, 0, context.in_h, out_data, out_lines);
+					return 0;
+					});
+			});
+}
+

@@ -27,6 +27,14 @@ BEFORE_EACH() {
 
 	ret_sws_context = (SwsContext *)&ret_sws_context;
 
+	arg_in_w = 100;
+	arg_in_h = 200;
+	arg_in_format = AV_PIX_FMT_YUV420P;
+
+	arg_out_w = 1000;
+	arg_out_h = 2000;
+	arg_out_format = AV_PIX_FMT_YUV444P;
+
 	init_mock_function(sws_new_action);
 	init_mock_function_with_return(sws_getContext, ret_sws_context);
 	init_mock_function(sws_freeContext);
@@ -64,7 +72,7 @@ SUITE_CASE("create scale_context") {
 	CUE_EXPECT_CALLED_WITH_INT(sws_getContext, 3, arg_in_format);
 	CUE_EXPECT_CALLED_WITH_INT(sws_getContext, 4, arg_out_w);
 	CUE_EXPECT_CALLED_WITH_INT(sws_getContext, 5, arg_out_h);
-	CUE_EXPECT_CALLED_WITH_INT(sws_getContext, 6, arg_in_format);
+	CUE_EXPECT_CALLED_WITH_INT(sws_getContext, 6, arg_out_format);
 	CUE_EXPECT_CALLED_WITH_INT(sws_getContext, 7, arg_flag);
 	CUE_EXPECT_CALLED_WITH_PTR(sws_getContext, 8, NULL);
 	CUE_EXPECT_CALLED_WITH_PTR(sws_getContext, 9, NULL);

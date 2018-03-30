@@ -21,6 +21,7 @@ int main() {
 	ADD_SUITE(av_seek_frame_test);
 	ADD_SUITE(av_frame_pts2_test);
 	ADD_SUITE(sws_getContext_test);
+	ADD_SUITE(sws_scale_test);
 	return run_test();
 }
 
