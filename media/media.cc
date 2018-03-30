@@ -351,7 +351,7 @@ void player_context::process_command() {
 		char buffer[128];
 		bool need_reset = false;
 		msgrcv(_msgid, [&](const char *command) {
-				int64_t dumy;
+				int64_t value;
 				if(!strcmp(command, "p")) {
 					paused = true;
 				} else if(!strcmp(command, "r")) {
@@ -360,9 +360,8 @@ void player_context::process_command() {
 				} else if(!strcmp(command, "x")) {
 					sprintf(buffer, "%s", command);
 					need_reset = true;
-				}
-				else if(sscanf(command, "s %" PRId64, &dumy)==1) {
-					sprintf(buffer, "%s", command);
+				} else if(sscanf(command, "s %" PRId64, &value)==1) {
+					sprintf(buffer, "s %" PRId64, value*1000000);
 					need_reset = true;
 					_need_sync = true;
 				} else if(!strcmp(command, "f")) {
@@ -379,6 +378,14 @@ void player_context::process_command() {
 					_need_sync = true;
 				} else if(!strcmp(command, "bb")) {
 					sprintf(buffer, "s %" PRId64, _clock.now()-15000000);
+					need_reset = true;
+					_need_sync = true;
+				} else if(sscanf(command, "f %" PRId64, &value)==1) {
+					sprintf(buffer, "s %" PRId64, _clock.now()+value*60000000);
+					need_reset = true;
+					_need_sync = true;
+				} else if(sscanf(command, "b %" PRId64, &value)==1) {
+					sprintf(buffer, "s %" PRId64, _clock.now()-value*60000000);
 					need_reset = true;
 					_need_sync = true;
 				}

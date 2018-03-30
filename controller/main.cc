@@ -9,7 +9,7 @@
 int main() {
 	iobus iob(stdin, stdout, stderr);
 
-	while(!control_event(iob, [&](int receiver) {
+	while(!ignore_untill(iob, control_event, [&](int receiver) {
 				while(!iob.get("COMMAND", [&](const char *args) {
 							msgsnd(receiver, args, []{return 0;});
 							return 0;

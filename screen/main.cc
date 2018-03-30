@@ -39,6 +39,8 @@ namespace {
 					window_flag |= SDL_WINDOW_OPENGL;
 				if(strstr(arg, "borderless"))
 					window_flag |= SDL_WINDOW_BORDERLESS;
+				if(strstr(arg, "highdpi"))
+					window_flag |= SDL_WINDOW_ALLOW_HIGHDPI;
 				}).parse(argc, argv);
 	}
 
