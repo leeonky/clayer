@@ -7,6 +7,7 @@ extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
 #include <libswresample/swresample.h>
+#include <libswscale/swscale.h>
 }
 
 #define VIDEO_ALIGN 64
@@ -55,6 +56,17 @@ extern int swr_alloc_set_opts_and_init(int64_t, enum AVSampleFormat, int, int64_
 extern int swr_convert(resample_context &, void *, size_t, void *);
 
 extern int av_seek_frame(AVFormatContext &, int64_t, const std::function<int(void)> &);
+
+struct scale_context {
+	int in_w, in_h;
+	enum AVPixelFormat in_format;
+	int out_w, out_h;
+	enum AVPixelFormat out_format;
+	int flag;
+	SwsContext *sws_context;
+};
+
+extern int sws_getContext(int, int, enum AVPixelFormat, int, int, enum AVPixelFormat, int, const std::function<int(scale_context &)> &);
 
 #endif
 

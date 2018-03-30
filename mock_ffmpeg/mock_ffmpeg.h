@@ -8,6 +8,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <cunitexd.h>
+#include <libswscale/swscale.h>
 
 extern_mock_void_function_0(av_register_all);
 extern_mock_function_4(int, avformat_open_input, AVFormatContext **, const char *, AVInputFormat *, AVDictionary **);
@@ -70,6 +71,9 @@ extern_mock_function_1(enum AVSampleFormat, av_get_planar_sample_fmt, enum AVSam
 extern_mock_function_4(int, av_seek_frame, AVFormatContext *, int, int64_t, int);
 extern_mock_function_6(int, avformat_seek_file, AVFormatContext *, int, int64_t, int64_t, int64_t, int);
 
+extern_mock_function_10(struct SwsContext *, sws_getContext, int, int, enum AVPixelFormat, int, int, enum AVPixelFormat, int, SwsFilter *, SwsFilter *, const double *);
+extern_mock_function_7(int, sws_scale, struct SwsContext *, const uint8_t * const *, const int *, int, int, uint8_t * const *, const int *);
+extern_mock_void_function_1(sws_freeContext, struct SwsContext *);
 
 #ifdef __cplusplus
 }

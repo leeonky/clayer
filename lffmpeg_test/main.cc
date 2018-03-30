@@ -20,6 +20,7 @@ int main() {
 	ADD_SUITE(swr_convert_test);
 	ADD_SUITE(av_seek_frame_test);
 	ADD_SUITE(av_frame_pts2_test);
+	ADD_SUITE(sws_getContext_test);
 	return run_test();
 }
 

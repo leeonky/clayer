@@ -386,3 +386,17 @@ int av_seek_frame(AVFormatContext &format_context, int64_t time, const std::func
 	return res;
 }
 
+int sws_getContext(int in_w, int in_h, enum AVPixelFormat in_format,
+		int out_w, int out_h, enum AVPixelFormat out_format,
+		int flag, const std::function<int(scale_context &)> &action) {
+	scale_context context{in_w, in_h, in_format, out_w, out_h, out_format, flag,
+		sws_getContext(in_w, in_h, in_format, out_w, out_h, out_format, flag, nullptr, nullptr, nullptr)};
+	int res = 0;
+	if(context.sws_context) {
+		res = action(context);
+		sws_freeContext(context.sws_context);
+	} else
+		res = log_error("failed to sws_getContext");
+	return res;
+}
+
