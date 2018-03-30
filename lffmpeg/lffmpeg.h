@@ -54,7 +54,7 @@ extern int swr_alloc_set_opts_and_init(int64_t, enum AVSampleFormat, int, int64_
 
 extern int swr_convert(resample_context &, void *, size_t, void *);
 
-extern int av_seek_frame(AVFormatContext &, AVCodecContext &, int64_t, const std::function<int(void)> &);
+extern int av_seek_frame(AVFormatContext &, int64_t, const std::function<int(void)> &);
 
 #endif
 

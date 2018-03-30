@@ -7,10 +7,7 @@
 
 SUITE_START("av_seek_frame_test");
 
-static stub_decoding_context arg_decoding_context;
 static AVFormatContext arg_av_format_context;
-static AVCodecContext arg_av_codec_context;
-static AVStream arg_av_stream;
 
 static int arg_index;
 static int64_t arg_time;
@@ -22,12 +19,6 @@ BEFORE_EACH() {
 	app_stdin = actxt.input_stream;
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;
-
-	arg_av_codec_context.opaque = &arg_decoding_context;
-	arg_decoding_context.av_stream = &arg_av_stream;
-	arg_av_stream.index = arg_index = 10;
-	arg_av_stream.time_base.num = 1;
-	arg_av_stream.time_base.den = 24;
 
 	arg_time = 10000000;
 
@@ -41,7 +32,7 @@ AFTER_EACH() {
 }
 
 SUBJECT(int) {
-	return av_seek_frame(arg_av_format_context, arg_av_codec_context, arg_time, av_seek_frame_action);
+	return av_seek_frame(arg_av_format_context, arg_time, av_seek_frame_action);
 }
 
 SUITE_CASE("seek frame") {
@@ -49,10 +40,10 @@ SUITE_CASE("seek frame") {
 
 	CUE_EXPECT_CALLED_ONCE(avformat_seek_file);
 	CUE_EXPECT_CALLED_WITH_PTR(avformat_seek_file, 1, &arg_av_format_context);
-	CUE_EXPECT_CALLED_WITH_INT(avformat_seek_file, 2, arg_index);
-	CUE_EXPECT_CALLED_WITH_INT(avformat_seek_file, 3, arg_time*24/1000000-1000000);
-	CUE_EXPECT_CALLED_WITH_INT(avformat_seek_file, 4, arg_time*24/1000000);
-	CUE_EXPECT_CALLED_WITH_INT(avformat_seek_file, 5, arg_time*24/1000000+1000000);
+	CUE_EXPECT_CALLED_WITH_INT(avformat_seek_file, 2, -1);
+	CUE_EXPECT_CALLED_WITH_INT(avformat_seek_file, 3, arg_time-100000);
+	CUE_EXPECT_CALLED_WITH_INT(avformat_seek_file, 4, arg_time);
+	CUE_EXPECT_CALLED_WITH_INT(avformat_seek_file, 5, arg_time+100000);
 	CUE_EXPECT_CALLED_WITH_INT(avformat_seek_file, 6, AVSEEK_FLAG_BACKWARD);
 
 	CUE_EXPECT_CALLED_ONCE(av_seek_frame_action);

@@ -58,7 +58,6 @@ if [ "$subtitle" != "" ]; then
 	if [ $encoding != 'utf-8' ]; then
 		encoding=${encoding/%le/}
 		encoding=${encoding/%be/}
-		new_sub_file=$(mktemp /tmp/sub.srt.XXXXXX)
 		iconv -f $encoding -t utf-8 "$subtitle" > "$new_sub_file"
 		#sed -i '1s/^\xEF\xBB\xBF//' "$new_sub_file"
 		subtitle="$new_sub_file"
