@@ -186,45 +186,22 @@ int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext 
 	return res;
 }
 
-namespace {
-	inline int output_audio_frame(AVFrame *avframe, const std::function<int(const AVFrame &)> &action) {
-		int res = action(*avframe);
-		avframe->nb_samples = 0;
-		avframe->pkt_duration = 0;
-		return res;
-	}
-}
-
 int avcodec_receive_frame(AVCodecContext &codec_context, const std::function<int(const AVFrame &)> &action) {
 	int res;
 	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
 	AVFrame *wframe = context->working_av_frame;
-	AVFrame *dframe = context->decoded_av_frame;
 	if(!(res = avcodec_receive_frame(&codec_context, context->working_av_frame))) {
 		switch(codec_context.codec_type) {
 			case AVMEDIA_TYPE_VIDEO:
+			case AVMEDIA_TYPE_AUDIO:
 				wframe->opaque = context;
 				res = action(*wframe);
-				break;
-			case AVMEDIA_TYPE_AUDIO:
-				if(dframe->nb_samples + wframe->nb_samples > context->samples_size)
-					res = output_audio_frame(dframe, action);
-				if(!dframe->nb_samples)
-					av_frame_set_best_effort_timestamp(dframe, av_frame_get_best_effort_timestamp(wframe));
-				av_samples_copy(dframe->data, wframe->data,
-						dframe->nb_samples, 0,
-						wframe->nb_samples,
-						wframe->channels, (enum AVSampleFormat)wframe->format);
-				dframe->nb_samples += wframe->nb_samples;
-				dframe->pkt_duration = dframe->nb_samples;
 				break;
 			default:
 				not_support_media_type(codec_context.codec_type);
 				return -1;
 		}
 	}
-	if(context->stream_ended && dframe->nb_samples)
-		output_audio_frame(dframe, action);
 	return res;
 }
 
@@ -309,15 +286,26 @@ int64_t av_frame_pts(const AVFrame &frame) {
 	return context->previous_pts;
 }
 
+int64_t av_frame_pts2(const AVFrame &frame) {
+	decoding_context *context = static_cast<decoding_context *>(frame.opaque);
+	AVStream *stream = context->av_stream;
+	int64_t pts = 1000000;
+	if(AV_NOPTS_VALUE != frame.pts)
+		pts = pts*(frame.pts-stream->start_time)*stream->time_base.num/stream->time_base.den;
+	else
+		pts = pts*(av_frame_get_best_effort_timestamp(&frame)-stream->start_time)*stream->time_base.num/stream->time_base.den;
+	return pts;
+}
+
 const char *av_frame_info(int index, const AVFrame &frame, int buffer_key) {
 	decoding_context *context = static_cast<decoding_context *>(frame.opaque);
 	static __thread char buffer[1024];
 	switch(context->av_stream->codecpar->codec_type) {
 		case AVMEDIA_TYPE_VIDEO:
-			sprintf(buffer, "FRAME buffer:%d %d=>%" PRId64, buffer_key, index, av_frame_pts(frame));
+			sprintf(buffer, "FRAME buffer:%d %d=>%" PRId64, buffer_key, index, av_frame_pts2(frame));
 			break;
 		case AVMEDIA_TYPE_AUDIO:
-			sprintf(buffer, "SAMPLE buffer:%d %d=>%" PRId64 ",%d", buffer_key, index, av_frame_pts(frame), frame.nb_samples);
+			sprintf(buffer, "SAMPLE buffer:%d %d=>%" PRId64 ",%d", buffer_key, index, av_frame_pts2(frame), frame.nb_samples);
 			break;
 		default:
 			not_support_media_type(context->av_stream->codecpar->codec_type);

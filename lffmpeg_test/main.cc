@@ -12,13 +12,14 @@ int main() {
 	ADD_SUITE(avcodec_receive_frame_video_test);
 	ADD_SUITE(av_get_buffer_size_test);
 	ADD_SUITE(av_copy_frame_to_buffer_test);
-	ADD_SUITE(avcodec_receive_frame_audio_test);
+	//ADD_SUITE(avcodec_receive_frame_audio_test);
 	ADD_SUITE(av_frame_pts_test);
 	ADD_SUITE(av_image_fill_arrays_test);
 	ADD_SUITE(swr_alloc_set_opts_and_init_test);
 	ADD_SUITE(swr_resample_size_test);
 	ADD_SUITE(swr_convert_test);
 	ADD_SUITE(av_seek_frame_test);
+	ADD_SUITE(av_frame_pts2_test);
 	return run_test();
 }
 
