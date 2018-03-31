@@ -1,5 +1,5 @@
 #!/bin/bash
-# clayer file [v=index] [a=index] [sub=subtitle_file] [p=position(0,0)] [s=size(1920x1080)] [vf=video_flag(full|opengl|borderless|highdpi)]
+# clayer file [v=index] [a=index] [thread=thread_count] [sub=subtitle_file] [p=position(0,0)] [s=size(1920x1080)] [vf=video_flag(full|opengl|borderless|highdpi)]
 
 project_path="$(dirname "$0")"
 media_file=$1
@@ -42,6 +42,11 @@ if [ "$size" != "" ]; then
 	size="-s $size"
 fi
 
+thread_count=${thread:-}
+if [ "$thread_count" != "" ]; then
+	thread_count="-t $thread_count"
+fi
+
 video_flag=${vf:-}
 if [ "$video_flag" != "" ]; then
 	video_flag="-f $video_flag"
@@ -80,9 +85,9 @@ function play_audio_with_controller() {
 
 function wrapper_video_with_subtitle() {
 	if [ "$subtitle" == "" ]; then
-		"$DECODER_BIN" "$media_file" -v $video | "$RESCALER_BIN" -m yuv420p10le -f yuv420p
+		"$DECODER_BIN" "$media_file" -v $video $thread_count | "$RESCALER_BIN" -m yuv420p10le -f yuv420p
 	else
-		"$DECODER_BIN" "$media_file" -v $video | "$RESCALER_BIN" -m yuv420p10le -f yuv420p | "$SUBTITLE_BIN" -f "$project_path/wqy-zenhei.ttc" "$subtitle"
+		"$DECODER_BIN" "$media_file" -v $video $thread_count | "$RESCALER_BIN" -m yuv420p10le -f yuv420p | "$SUBTITLE_BIN" -f "$project_path/wqy-zenhei.ttc" "$subtitle"
 	fi
 }
 

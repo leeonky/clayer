@@ -16,6 +16,7 @@ static AVCodecParameters arg_codec_parameters;
 
 static AVPacket *ret_av_packet;
 static AVFrame ret_working_av_frame, ret_decoded_av_frame;
+static codec_params arg_params;
 
 mock_function_1(int, avcodec_open_action, AVCodecContext *);
 
@@ -31,6 +32,7 @@ BEFORE_EACH() {
 	app_stderr = actxt.error_stream;
 
 	av_frame_alloc_called_times = 0;
+	arg_params.thread_count = 4;
 	ret_decoded_av_frame.pkt_duration = ret_decoded_av_frame.nb_samples = ret_decoded_av_frame.channels = ret_decoded_av_frame.format = -1;
 
 	init_mock_function_with_return(avcodec_find_decoder, &ret_codec);
@@ -55,7 +57,7 @@ AFTER_EACH() {
 }
 
 SUBJECT(int) {
-	return avcodec_open(arg_av_stream, avcodec_open_action_ref);
+	return avcodec_open(arg_av_stream, arg_params, avcodec_open_action_ref);
 }
 
 static int avcodec_open_action_assert(AVCodecContext *av_codec_context) {
@@ -67,6 +69,7 @@ static int avcodec_open_action_assert(AVCodecContext *av_codec_context) {
 
 	CUE_ASSERT_PTR_EQ(context->working_av_frame->opaque, context);
 	CUE_ASSERT_PTR_EQ(context->decoded_av_frame->opaque, context);
+	CUE_ASSERT_EQ(av_codec_context->thread_count, 4);
 	return 0;
 }
 

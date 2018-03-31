@@ -148,13 +148,21 @@ namespace {
 	}
 }
 
-int avcodec_open(AVStream &stream, const std::function<int(AVCodecContext &)> &action) {
+namespace {
+	int set_decoder_params(AVCodecContext *context, const codec_params &params) {
+		context->thread_count = params.thread_count;
+		return 0;
+	}
+}
+
+int avcodec_open(AVStream &stream, const codec_params &params, const std::function<int(AVCodecContext &)> &action) {
 	int res = 0, ret;
 	AVCodec *av_codec;
 	AVCodecContext *av_codec_context;
 	if((av_codec = avcodec_find_decoder(stream.codecpar->codec_id))) {
 		if ((av_codec_context = avcodec_alloc_context3(av_codec))) {
 			if ((ret=avcodec_parameters_to_context(av_codec_context, stream.codecpar)) >= 0
+					&& !set_decoder_params(av_codec_context, params)
 					&& (!(ret=avcodec_open2(av_codec_context, av_codec, nullptr)))) {
 				res = init_decoding_context(stream, *av_codec_context, [action, av_codec_context](decoding_context &context) -> int {
 						av_codec_context->opaque = &context;

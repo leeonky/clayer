@@ -22,7 +22,11 @@ extern int av_new_packet(const std::function<int(AVPacket &)> &);
 
 extern int av_new_frame(const std::function<int(AVFrame &)> &);
 
-extern int avcodec_open(AVStream &, const std::function<int(AVCodecContext &)> &);
+struct codec_params {
+	int thread_count = 1;
+};
+
+extern int avcodec_open(AVStream &, const codec_params &, const std::function<int(AVCodecContext &)> &);
 
 extern int av_read_and_send_to_avcodec(AVFormatContext &, AVCodecContext &);
 

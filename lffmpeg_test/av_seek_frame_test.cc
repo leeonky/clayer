@@ -9,7 +9,6 @@ SUITE_START("av_seek_frame_test");
 
 static AVFormatContext arg_av_format_context;
 
-static int arg_index;
 static int64_t arg_time;
 
 mock_function_0(int, av_seek_frame_action);

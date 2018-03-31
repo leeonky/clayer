@@ -11,6 +11,7 @@ namespace {
 	int buffer_key = 0;
 	int msgid = -1;
 	const char *file_name;
+	codec_params params;
 	iobus iob(app_stdin, app_stdout, app_stderr);
 
 	void process_args(int argc, char **argv) {
@@ -24,6 +25,9 @@ namespace {
 		.require_full_argument("video", 'v', [&](const char *arg){
 				sscanf(arg, "%d", &track_index);
 				track_type = AVMEDIA_TYPE_VIDEO;
+				})
+		.require_full_argument("thread", 't', [&](const char *arg){
+				sscanf(arg, "%d", &params.thread_count);
 				})
 		.require_full_argument("audio", 'a', [&](const char *arg){
 				sscanf(arg, "%d", &track_index);
@@ -72,7 +76,7 @@ namespace {
 
 	inline std::function<int(AVStream &)> open_and_decoding(iobus &iob, AVFormatContext &format_context) {
 		return [&](AVStream &stream){
-			return avcodec_open(stream, [&](AVCodecContext &codec_context){
+			return avcodec_open(stream, params, [&](AVCodecContext &codec_context){
 					iob.post(avstream_info(stream));
 					return circular_shm::create(av_get_buffer_size(codec_context),
 							buffer_count, decoding_loop(iob, format_context, codec_context));

@@ -108,8 +108,8 @@ namespace {
 
 							if(show_pic) {
 								context.sync_clock_as_needed(pts);
-								if(!context.clock().wait(pts, 100000))
-									SDL_RenderPresent(renderer);
+								context.clock().wait(pts, 100000);
+								SDL_RenderPresent(renderer);
 							}
 							return 0;
 					});
@@ -127,6 +127,10 @@ int main(int argc, char **argv) {
 					win_h = frm_h = fh;
 					format = av_format;
 					process_args(argc, argv);
+					if(window_flag & SDL_WINDOW_ALLOW_HIGHDPI) {
+						win_w /= 2;
+						win_h /= 2;
+					}
 					return SDL_CreateWindow(title, x, y, win_w, win_h, window_flag,
 							[&](SDL_Window *window){
 							SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "4");
