@@ -64,6 +64,8 @@ struct scale_context {
 	enum AVPixelFormat out_format;
 	int flag;
 	SwsContext *sws_context;
+
+	size_t rescale_size() const;
 };
 
 extern int sws_getContext(int, int, enum AVPixelFormat, int, int, enum AVPixelFormat, int, const std::function<int(scale_context &)> &);

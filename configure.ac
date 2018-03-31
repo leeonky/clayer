@@ -57,6 +57,7 @@ AM_COND_IF([ENV_TEST], [],
 	   screen/Makefile
 	   speaker/Makefile
 	   resampler/Makefile
+	   rescaler/Makefile
 	   subtitle/Makefile
 	   controller/Makefile
 	   ])])

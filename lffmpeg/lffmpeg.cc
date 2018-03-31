@@ -409,3 +409,7 @@ int sws_scale(scale_context &context, const void *in_buf, void *out_buf) {
 			});
 }
 
+size_t scale_context::rescale_size() const {
+	return av_image_get_buffer_size(out_format, out_w, out_h, VIDEO_ALIGN);
+}
+

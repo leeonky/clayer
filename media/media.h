@@ -158,5 +158,7 @@ private:
 	player_context(int msgid, int receiver) :_resetting(false), _need_sync(false), _msgid(msgid), _receiver(receiver) {}
 };
 
+extern enum AVPixelFormat analyze_pixel_format(enum AVPixelFormat, const char *, const char *);
+
 #endif
 

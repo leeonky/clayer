@@ -401,3 +401,10 @@ void player_context::process_command() {
 	} while(paused && !usleep(10));
 }
 
+enum AVPixelFormat analyze_pixel_format(enum AVPixelFormat format, const char *from, const char *to) {
+	enum AVPixelFormat to_format = av_get_pix_fmt(to);
+	enum AVPixelFormat cond_format = av_get_pix_fmt(from);
+	if(AV_PIX_FMT_NONE != to_format && (AV_PIX_FMT_NONE == cond_format || format == cond_format))
+		format = to_format;
+	return format;
+}

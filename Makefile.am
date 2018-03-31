@@ -15,6 +15,7 @@ SUBDIRS += decoder
 SUBDIRS += screen
 SUBDIRS += speaker
 SUBDIRS += resampler
+SUBDIRS += rescaler
 SUBDIRS += subtitle
 SUBDIRS += controller
 endif

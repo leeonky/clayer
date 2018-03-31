@@ -18,6 +18,7 @@ int main() {
 	ADD_SUITE(no_layer_event_test);
 	ADD_SUITE(control_event_test);
 	ADD_SUITE(create_player_context_test);
+	ADD_SUITE(rescaler_params_test);
 	return run_test();
 }
 
