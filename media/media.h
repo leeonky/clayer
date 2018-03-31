@@ -160,5 +160,7 @@ private:
 
 extern enum AVPixelFormat analyze_pixel_format(enum AVPixelFormat, const char *, const char *);
 
+extern void analyze_size_format(int &, int &, const char *);
+
 #endif
 

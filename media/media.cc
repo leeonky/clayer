@@ -408,3 +408,17 @@ enum AVPixelFormat analyze_pixel_format(enum AVPixelFormat format, const char *f
 		format = to_format;
 	return format;
 }
+
+void analyze_size_format(int &w, int &h, const char *arg) {
+	int sw, sh;
+	if(2==sscanf(arg, "%dx%d", &sw, &sh)) {
+		if(w*sh>sw*h) {
+			h = sw * h / w;
+			w = sw;
+		} else {
+			w = sh * w / h;
+			h = sh;
+		}
+	}
+}
+

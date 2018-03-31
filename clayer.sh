@@ -1,5 +1,5 @@
 #!/bin/bash
-# clayer file [v=index] [a=index] [sub=subtitle_file] [p=position(0,0)] [s=size(1920x1080)] [vf=video_flag(full|opengl|borderless)]
+# clayer file [v=index] [a=index] [sub=subtitle_file] [p=position(0,0)] [s=size(1920x1080)] [vf=video_flag(full|opengl|borderless|highdpi)]
 
 project_path="$(dirname "$0")"
 media_file=$1

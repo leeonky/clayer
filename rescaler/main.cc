@@ -22,7 +22,7 @@ namespace {
 				}).require_full_argument("to_format", 'f', [&](const char *arg){
 					to_format = arg;
 					}).require_full_argument("size", 's', [&](const char *arg){
-						sscanf(arg, "%dx%d", &arg_w, &arg_h);
+						analyze_size_format(arg_w, arg_h, arg);
 						}).parse(argc, argv);
 	}
 }
