@@ -36,12 +36,13 @@ int SDL_CreateTexture(SDL_Window *window, int width, int height, Uint32 format, 
 	return res;
 }
 
-int SDL_UpdateAndCopyYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas, int *lines) {
+int SDL_UpdateAndCopy(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas, int *lines) {
 	int res = 0;
 	SDL_Rect target_rect;
+	Uint32 format;
 	int renderer_w, renderer_h, texture_w, texture_h;
 	if(!SDL_GetRendererOutputSize(renderer, &renderer_w, &renderer_h)
-			&& !SDL_QueryTexture(texture, NULL, NULL, &texture_w, &texture_h)) {
+			&& !SDL_QueryTexture(texture, &format, NULL, &texture_w, &texture_h)) {
 		float renderer_w_h_radio = static_cast<float>(renderer_w)/renderer_h;
 		float texture_w_h_radio = static_cast<float>(texture_w)/texture_h;
 
@@ -56,9 +57,15 @@ int SDL_UpdateAndCopyYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t *
 			target_rect.x = 0;
 			target_rect.y = (renderer_h-target_rect.h)/2;
 		}
-		if(SDL_UpdateYUVTexture(texture, NULL, datas[0], lines[0], datas[1], lines[1], datas[2], lines[2])
-				|| SDL_RenderCopy(renderer, texture,  NULL, &target_rect))
-			res = log_sdl_error();
+		if(SDL_PIXELFORMAT_IYUV == format) {
+			if(SDL_UpdateYUVTexture(texture, NULL, datas[0], lines[0], datas[1], lines[1], datas[2], lines[2])
+					|| SDL_RenderCopy(renderer, texture,  NULL, &target_rect))
+				res = log_sdl_error();
+		} else {
+			if(SDL_UpdateTexture(texture, NULL, datas[0], lines[0])
+					|| SDL_RenderCopy(renderer, texture,  NULL, &target_rect))
+				res = log_sdl_error();
+		}
 	} else
 		res = log_sdl_error();
 	return res;
@@ -66,7 +73,7 @@ int SDL_UpdateAndCopyYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t *
 
 int SDL_PresentYUV(SDL_Renderer *renderer, SDL_Texture *texture, uint8_t **datas, int *lines) {
 	int res = 0;
-	if(!SDL_UpdateAndCopyYUV(renderer, texture, datas, lines))
+	if(!SDL_UpdateAndCopy(renderer, texture, datas, lines))
 		SDL_RenderPresent(renderer);
 	else
 		res = -1;

@@ -21,7 +21,8 @@ static int stub_SDL_GetRendererOutputSize(SDL_Renderer *, int *w, int *h) {
 	return 0;
 }
 
-static int stub_SDL_QueryTexture(SDL_Texture *, Uint32 *, int *, int *w, int *h) {
+static int stub_SDL_QueryTexture(SDL_Texture *, Uint32 *fm, int *, int *w, int *h) {
+	*fm = SDL_PIXELFORMAT_IYUV;
 	*w = ret_texture_width;
 	*h = ret_texture_height;
 	return 0;

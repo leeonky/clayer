@@ -17,6 +17,7 @@ mock_function_1(int, SDL_ShowCursor, int);
 mock_void_function_3(SDL_GL_GetDrawableSize, SDL_Window *, int *, int *);
 
 mock_function_8(int, SDL_UpdateYUVTexture, SDL_Texture *, const SDL_Rect *, const Uint8 *, int , const Uint8 *, int , const Uint8 *, int);
+mock_function_4(int, SDL_UpdateTexture, SDL_Texture *, const SDL_Rect *, const void *, int);
 mock_function_4(int, SDL_RenderCopy, SDL_Renderer *, SDL_Texture *, const SDL_Rect *, const SDL_Rect *);
 mock_void_function_1(SDL_RenderPresent, SDL_Renderer *);
 

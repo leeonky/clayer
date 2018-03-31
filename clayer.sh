@@ -107,4 +107,5 @@ function play_video_with_controller() {
 
 set -x
 "$TERMINAL_BIN" | tee >( play_video_with_controller ) | play_audio_with_controller
+#cat | tee >( play_video_with_controller ) | play_audio_with_controller
 

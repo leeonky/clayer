@@ -19,6 +19,18 @@ Uint32 AVPixelFormat_to_SDL(enum AVPixelFormat format) {
 		case AV_PIX_FMT_YUV410P:
 		case AV_PIX_FMT_YUV411P:
 			return SDL_PIXELFORMAT_IYUV;
+		case AV_PIX_FMT_RGB24:
+			return SDL_PIXELFORMAT_RGB24;
+		case AV_PIX_FMT_BGR24:
+			return  SDL_PIXELFORMAT_BGR24;
+		case AV_PIX_FMT_ARGB:
+			return SDL_PIXELFORMAT_ARGB8888;
+		case AV_PIX_FMT_RGBA:
+			return SDL_PIXELFORMAT_RGBA8888;
+		case AV_PIX_FMT_ABGR:
+			return SDL_PIXELFORMAT_ABGR8888;
+		case AV_PIX_FMT_BGRA:
+			return SDL_PIXELFORMAT_BGRA8888;
 		default:
 			log_error("Unknow support ffmpeg video format '%d'", format);
 	  		return SDL_PIXELFORMAT_UNKNOWN;

@@ -12,7 +12,7 @@ int SDL_CreateWindow(const char *, int, int, int, int, Uint32, const std::functi
 
 int SDL_CreateTexture(SDL_Window *, int, int, Uint32, const std::function<int(int, int, SDL_Renderer *, SDL_Texture *)> &);
 
-int SDL_UpdateAndCopyYUV(SDL_Renderer *, SDL_Texture *, uint8_t **, int *);
+int SDL_UpdateAndCopy(SDL_Renderer *, SDL_Texture *, uint8_t **, int *);
 
 int SDL_PresentYUV(SDL_Renderer *, SDL_Texture *, uint8_t **, int *);
 

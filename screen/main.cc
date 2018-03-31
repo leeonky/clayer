@@ -93,7 +93,7 @@ namespace {
 							bool show_pic = !context.is_resetting();
 
 							SDL_RenderClear(renderer);
-							SDL_UpdateAndCopyYUV(renderer, texture, datas, lines);
+							SDL_UpdateAndCopy(renderer, texture, datas, lines);
 
 							while(!iob.except("FRAME"))
 								if(clock_event(iob, clock_action(context.clock()))
