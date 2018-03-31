@@ -8,6 +8,7 @@ DECODER_BIN="$project_path/decoder/cl_decoder"
 SUBTITLE_BIN="$project_path/subtitle/cl_subtitle"
 SCREEN_BIN="$project_path/screen/cl_screen"
 RESAMPLER_BIN="$project_path/resampler/cl_resampler"
+RESCALER_BIN="$project_path/rescaler/cl_rescaler"
 SPEEKER_BIN="$project_path/speaker/cl_speaker"
 CONTROLLER_BIN="$project_path/controller/cl_controller"
 TERMINAL_BIN="$project_path/cl_terminal"
@@ -79,9 +80,9 @@ function play_audio_with_controller() {
 
 function wrapper_video_with_subtitle() {
 	if [ "$subtitle" == "" ]; then
-		"$DECODER_BIN" "$media_file" -v $video
+		"$DECODER_BIN" "$media_file" -v $video | "$RESCALER_BIN" -m yuv420p10le -f yuv420p
 	else
-		"$DECODER_BIN" "$media_file" -v $video | "$SUBTITLE_BIN" -f "$project_path/wqy-zenhei.ttc" "$subtitle"
+		"$DECODER_BIN" "$media_file" -v $video | "$RESCALER_BIN" -m yuv420p10le -f yuv420p | "$SUBTITLE_BIN" -f "$project_path/wqy-zenhei.ttc" "$subtitle"
 	fi
 }
 

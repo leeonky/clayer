@@ -8,7 +8,7 @@
 namespace {
 	circular_shm *shms[MAX_LAYER_COUNT];
 	int new_key = 1;
-	int new_count = 16;
+	int new_count = 4;
 
 	int arg_w, arg_h;
 	const char *from_format = "";
@@ -17,7 +17,7 @@ namespace {
 
 
 	void process_arg(int argc, char **argv) {
-		command_argument().require_full_argument("form_format", 't', [&](const char *arg){
+		command_argument().require_full_argument("form_format", 'm', [&](const char *arg){
 				from_format = arg;
 				}).require_full_argument("to_format", 'f', [&](const char *arg){
 					to_format = arg;
