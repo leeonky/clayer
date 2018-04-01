@@ -5,6 +5,7 @@
 #include <semaphore.h>
 #include <sys/ipc.h>
 #include <cerrno>
+#include <cstring>
 
 int shmget(size_t, const std::function<int(int)> &);
 
