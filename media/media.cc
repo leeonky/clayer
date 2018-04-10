@@ -137,8 +137,8 @@ int sample_event(iobus &iob, const std::function<int(int, int, int64_t, int)> &a
 			}, 4, "buffer:%d %d=>%" PRId64 ",%d", &buffer_key, &index, &pts, &samples);
 }
 
-int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSampleFormat)> &action) {
-	int rate, channels;
+int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSampleFormat, int)> &action) {
+	int rate, channels, passthrough;
 	char layout[128], format[128];
 	return iob.get("AUDIO", [&] {
 			int res = 0;
@@ -147,11 +147,11 @@ int audio_event(iobus &iob, const std::function<int(int, int, int64_t, enum AVSa
 				if(AV_SAMPLE_FMT_NONE == av_format)
 					res = log_error("Unsupport ffmpeg audio format '%s'", format);
 				else
-					res = action(rate, channels, av_layout, av_format);
+					res = action(rate, channels, av_layout, av_format, passthrough);
 			} else
 				res = log_error("Unsupport ffmpeg audio layout '%s'", layout);
 			return res;
-			}, 4, "sample_rate:%d channels:%d layout:%s format:%s", &rate, &channels, layout, format);
+			}, 5, "sample_rate:%d channels:%d layout:%s format:%s passthrough:%d", &rate, &channels, layout, format, &passthrough);
 }
 
 int clock_event(iobus &iob, const std::function<int(int64_t, int64_t)> &action) {

@@ -19,6 +19,7 @@ static int arg_channels, arg_samples_size;
 
 BEFORE_EACH() {
 	arg_codec_context.opaque = &arg_decoding_context;
+	arg_decoding_context.passthrough = false;
 	return 0;
 }
 
@@ -44,6 +45,25 @@ SUITE_CASE("get frame buffer size for audio") {
 	arg_codec_context.codec_type = AVMEDIA_TYPE_AUDIO;
 	arg_codec_context.channels = arg_channels = 8;
 	arg_codec_context.sample_fmt = arg_sample_format = AV_SAMPLE_FMT_S64;
+	arg_decoding_context.samples_size = arg_samples_size = 128;
+	arg_decoding_context.align = arg_align = 1;
+
+	CUE_ASSERT_EQ(av_get_buffer_size(arg_codec_context), 1000);
+
+	CUE_EXPECT_CALLED_ONCE(av_samples_get_buffer_size);
+	CUE_EXPECT_CALLED_WITH_PTR(av_samples_get_buffer_size, 1, nullptr);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_get_buffer_size, 2, arg_channels);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_get_buffer_size, 3, arg_samples_size);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_get_buffer_size, 4, arg_sample_format);
+	CUE_EXPECT_CALLED_WITH_INT(av_samples_get_buffer_size, 5, arg_align);
+}
+
+SUITE_CASE("get frame buffer size for passthrough audio") {
+	init_mock_function_with_return(av_samples_get_buffer_size, 1000);
+	arg_codec_context.codec_type = AVMEDIA_TYPE_AUDIO;
+	arg_decoding_context.passthrough = true;
+	arg_decoding_context.passthrough_format = arg_sample_format = AV_SAMPLE_FMT_S16;
+	arg_decoding_context.passthrough_channels = arg_channels = 8;
 	arg_decoding_context.samples_size = arg_samples_size = 128;
 	arg_decoding_context.align = arg_align = 1;
 

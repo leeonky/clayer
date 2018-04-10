@@ -91,6 +91,13 @@ struct stub_decoding_context {
 #endif
 	int64_t previous_pts;
 	int64_t previous_duration;
+
+#ifdef __cplusplus
+	bool passthrough;
+#endif
+	enum AVSampleFormat passthrough_format;
+	int64_t passthrough_layout;
+	int passthrough_rate, passthrough_channels;
 };
 
 #endif

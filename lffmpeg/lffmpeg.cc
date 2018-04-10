@@ -106,6 +106,10 @@ namespace {
 		bool stream_ended = false;
 		int64_t previous_pts = 0;
 		int64_t previous_duration = 0;
+		bool passthrough = false;
+		enum AVSampleFormat passthrough_format;
+		int64_t passthrough_layout;
+		int passthrough_rate, passthrough_channels;
 	};
 
 	int init_decoding_context(AVStream &stream, AVCodecContext &codec_context, const std::function<int(decoding_context &)> &action) {
@@ -146,13 +150,48 @@ namespace {
 					});
 				});
 	}
-}
 
-namespace {
 	int set_decoder_params(AVCodecContext *context, const codec_params &params) {
 		context->thread_count = params.thread_count;
 		return 0;
 	}
+}
+
+const char *avstream_info(const AVCodecContext &codec_context) {
+	static __thread char buffer[1024];
+	char layout_string_buffer[1024];
+	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
+	switch(codec_context.codec_type) {
+		case AVMEDIA_TYPE_VIDEO:
+			sprintf(buffer, "VIDEO width:%d height:%d format:%s",
+					codec_context.width,
+					codec_context.height,
+					av_get_pix_fmt_name(codec_context.pix_fmt));
+			break;
+		case AVMEDIA_TYPE_AUDIO:
+			if(context->passthrough) {
+				av_get_channel_layout_string(layout_string_buffer, sizeof(layout_string_buffer), context->passthrough_channels, context->passthrough_layout);
+				sprintf(buffer, "AUDIO sample_rate:%d channels:%d layout:%s format:%s passthrough:%d",
+						context->passthrough_rate,
+						context->passthrough_channels,
+						layout_string_buffer,
+						av_get_sample_fmt_name(context->passthrough_format), context->passthrough
+						);
+			} else {
+				av_get_channel_layout_string(layout_string_buffer, sizeof(layout_string_buffer), codec_context.channels, codec_context.channel_layout);
+				sprintf(buffer, "AUDIO sample_rate:%d channels:%d layout:%s format:%s passthrough:%d",
+						codec_context.sample_rate,
+						codec_context.channels,
+						layout_string_buffer,
+						av_get_sample_fmt_name(codec_context.sample_fmt), context->passthrough
+						);
+			}
+			break;
+		default:
+			not_support_media_type(codec_context.codec_type);
+			break;
+	}
+	return buffer;
 }
 
 int avcodec_open(AVStream &stream, const codec_params &params, const std::function<int(AVCodecContext &)> &action) {
@@ -219,8 +258,11 @@ int av_get_buffer_size(const AVCodecContext &codec_context) {
 		case AVMEDIA_TYPE_VIDEO:
 			return av_image_get_buffer_size(codec_context.pix_fmt, codec_context.width, codec_context.height, context->align);
 		case AVMEDIA_TYPE_AUDIO:
-			return av_samples_get_buffer_size(nullptr, codec_context.channels,
-					context->samples_size, codec_context.sample_fmt, context->align);
+			return context->passthrough ?
+				av_samples_get_buffer_size(nullptr, context->passthrough_channels,
+						context->samples_size, context->passthrough_format, context->align)
+				: av_samples_get_buffer_size(nullptr, codec_context.channels,
+						context->samples_size, codec_context.sample_fmt, context->align);
 		default:
 			not_support_media_type(codec_context.codec_type);
 			return -1;
@@ -419,5 +461,49 @@ int sws_scale(scale_context &context, const void *in_buf, void *out_buf) {
 
 size_t scale_context::rescale_size() const {
 	return av_image_get_buffer_size(out_format, out_w, out_h, VIDEO_ALIGN);
+}
+
+bool passthrough_process(AVCodecContext &codec_context) {
+	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
+	switch(codec_context.codec_id) {
+		case AV_CODEC_ID_EAC3:
+			context->passthrough = true;
+			context->passthrough_format = AV_SAMPLE_FMT_S16;
+			context->passthrough_rate = codec_context.sample_rate;
+			context->passthrough_channels = 8;
+			context->passthrough_layout = AV_CH_LAYOUT_7POINT1;
+			break;
+		case AV_CODEC_ID_AC3:
+			context->passthrough = true;
+			context->passthrough_format = AV_SAMPLE_FMT_S16;
+			context->passthrough_rate = codec_context.sample_rate;
+			context->passthrough_channels = 2;
+			context->passthrough_layout = AV_CH_LAYOUT_STEREO;
+			break;
+		case AV_CODEC_ID_TRUEHD:
+			context->passthrough = true;
+			context->passthrough_rate = 192000;
+			context->passthrough_format = AV_SAMPLE_FMT_S16;
+			context->passthrough_channels = 8;
+			context->passthrough_layout = AV_CH_LAYOUT_7POINT1;
+			break;
+		case AV_CODEC_ID_DTS:
+			context->passthrough = true;
+			context->passthrough_format = AV_SAMPLE_FMT_S16;
+			if(FF_PROFILE_DTS_HD_MA==codec_context.profile || FF_PROFILE_DTS_HD_HRA==codec_context.profile) {
+				context->passthrough_rate = 192000;
+				context->passthrough_channels = 8;
+				context->passthrough_layout = AV_CH_LAYOUT_7POINT1;
+			} else {
+				context->passthrough_rate = 48000;
+				context->passthrough_channels = 2;
+				context->passthrough_layout = AV_CH_LAYOUT_STEREO;
+			}
+			break;
+		default:
+			context->passthrough = false;
+			break;
+	}
+	return context->passthrough;
 }
 

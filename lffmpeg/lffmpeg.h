@@ -18,6 +18,8 @@ extern int avformat_find_stream(AVFormatContext &, enum AVMediaType, int, const 
 
 extern const char *avstream_info(const AVStream &);
 
+extern const char *avstream_info(const AVCodecContext &);
+
 extern int av_new_packet(const std::function<int(AVPacket &)> &);
 
 extern int av_new_frame(const std::function<int(AVFrame &)> &);
@@ -75,6 +77,8 @@ struct scale_context {
 extern int sws_getContext(int, int, enum AVPixelFormat, int, int, enum AVPixelFormat, int, const std::function<int(scale_context &)> &);
 
 extern int sws_scale(scale_context &, const void *, void *);
+
+extern bool passthrough_process(AVCodecContext &);
 
 #endif
 

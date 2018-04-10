@@ -14,7 +14,7 @@ SUITE_START("audio_event_test");
 static int64_t ret_layout;
 static enum AVSampleFormat ret_format;
 
-mock_function_4(int, audio_event_action, int, int, int64_t, enum AVSampleFormat);
+mock_function_5(int, audio_event_action, int, int, int64_t, enum AVSampleFormat, int);
 
 BEFORE_EACH() {
 	init_subject("");
@@ -41,7 +41,7 @@ SUBJECT(int) {
 }
 
 SUITE_CASE("create sdl texture") {
-	init_subject("AUDIO sample_rate:48000 channels:8 layout:7.1 format:s32");
+	init_subject("AUDIO sample_rate:48000 channels:8 layout:7.1 format:s32 passthrough:1");
 
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
@@ -54,10 +54,11 @@ SUITE_CASE("create sdl texture") {
 	CUE_EXPECT_CALLED_WITH_INT(audio_event_action, 2, 8);
 	CUE_EXPECT_CALLED_WITH_INT(audio_event_action, 3, AV_CH_LAYOUT_MONO);
 	CUE_EXPECT_CALLED_WITH_INT(audio_event_action, 4, AV_SAMPLE_FMT_S16);
+	CUE_EXPECT_CALLED_WITH_INT(audio_event_action, 5, 1);
 }
 
 SUITE_CASE("unsupport format") {
-	init_subject("AUDIO sample_rate:48000 channels:8 layout:7.1 format:s32");
+	init_subject("AUDIO sample_rate:48000 channels:8 layout:7.1 format:s32 passthrough:0");
 	app_stdin = actxt.input_stream;
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;
@@ -69,7 +70,7 @@ SUITE_CASE("unsupport format") {
 }
 
 SUITE_CASE("unsupport layout") {
-	init_subject("AUDIO sample_rate:48000 channels:8 layout:7.1 format:s32");
+	init_subject("AUDIO sample_rate:48000 channels:8 layout:7.1 format:s32 passthrough:0");
 	app_stdin = actxt.input_stream;
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;

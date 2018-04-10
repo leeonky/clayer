@@ -11,7 +11,7 @@ namespace {
 	circular_shm *shms[MAX_LAYER_COUNT];
 
 	int play_with_portaudio(iobus &iob, int device, player_context &context) {
-		return forward_untill(iob, audio_event, [&](int sample_rate, int channels, int64_t /*layout*/, enum AVSampleFormat format){
+		return forward_untill(iob, audio_event, [&](int sample_rate, int channels, int64_t /*layout*/, enum AVSampleFormat format, int /*passthrough*/){
 				return Pa_Init_OpenOutputStream(device, sample_rate, channels, AVSampleFormat_to_PortAudio(format), [&](PaStream *stream){
 						long buffer_len = Pa_GetStreamWriteAvailable(stream);
 						return main_reducer(iob, shms, sample_event, [&](int buffer_key, int index, int64_t pts, int samples) {

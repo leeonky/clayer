@@ -5,6 +5,7 @@
 #include "iobus/iobus.h"
 
 namespace {
+	bool passthrough = false;
 	int track_index = -1;
 	enum AVMediaType track_type = AVMEDIA_TYPE_VIDEO;
 	int buffer_count = 16;
@@ -32,7 +33,9 @@ namespace {
 		.require_full_argument("audio", 'a', [&](const char *arg){
 				sscanf(arg, "%d", &track_index);
 				track_type = AVMEDIA_TYPE_AUDIO;
-				}).parse(argc, argv);
+				}).require_option("pass", 'p', [&](const char *){
+					passthrough = true;
+					}).parse(argc, argv);
 
 		if(!file_name) {
 			fprintf(app_stderr, "Error[decoder]: require media file\n");
@@ -74,13 +77,23 @@ namespace {
 		};
 	}
 
+	inline std::function<int(circular_shm &)> passthrough_loop(iobus &iob, AVFormatContext &format_context, AVCodecContext &codec_context) {
+		return [&](circular_shm &buffer){
+			return 0;
+		};
+	}
+
 	inline std::function<int(AVStream &)> open_and_decoding(iobus &iob, AVFormatContext &format_context) {
 		return [&](AVStream &stream){
 			return avcodec_open(stream, params, [&](AVCodecContext &codec_context){
-					iob.post(avstream_info(stream));
+					passthrough = passthrough && passthrough_process(codec_context);
+					iob.post(avstream_info(codec_context));
 					return circular_shm::create(av_get_buffer_size(codec_context),
-							buffer_count, decoding_loop(iob, format_context, codec_context));
-					});
+							buffer_count,
+							(passthrough ?
+							passthrough_loop(iob, format_context, codec_context)
+							: decoding_loop(iob, format_context, codec_context)));
+				});
 		};
 	}
 }

@@ -66,4 +66,11 @@ SUITE_CASE("parse paramters") {
 	CUE_EXPECT_CALLED_WITH_STRING(assert_arg_4, 1, "foo");
 }
 
+SUITE_CASE("option paramters") {
+	init_subject("", "--pass");
+	command_argument().require_option("pass", 'p', assert_arg_1).parse(actxt.argc, actxt.argv);
+
+	CUE_EXPECT_CALLED_ONCE(assert_arg_1);
+}
+
 SUITE_END(stdarg_test);

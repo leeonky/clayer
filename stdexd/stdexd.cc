@@ -48,6 +48,13 @@ command_argument command_argument::require_full_argument(const char *long_opt, i
 	return ca;
 }
 
+command_argument command_argument::require_option(const char *long_opt, int opt, const std::function<void(const char *)> &action) {
+	command_argument ca(*this);
+	ca.long_options.push_back({long_opt, no_argument, nullptr, opt});
+	ca.argument_handlers.insert({opt, action});
+	return ca;
+}
+
 const char *command_argument::parse(int argc, char **argv) {
 	long_options.push_back({0, 0, 0, 0});
 	int option_index, c;
