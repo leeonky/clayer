@@ -110,6 +110,7 @@ namespace {
 		enum AVSampleFormat passthrough_format;
 		int64_t passthrough_layout;
 		int passthrough_rate, passthrough_channels;
+		int passthrough_dts_rate = 0;
 	};
 
 	int init_decoding_context(AVStream &stream, AVCodecContext &codec_context, const std::function<int(decoding_context &)> &action) {
@@ -505,5 +506,44 @@ bool passthrough_process(AVCodecContext &codec_context) {
 			break;
 	}
 	return context->passthrough;
+}
+
+namespace {
+	struct write_packet_arg {
+		decoding_context *context;
+		const std::function<void(void *, int)> *call_back;
+	};
+
+	int write_packet(void *opaque, uint8_t *buf, int size) {
+		write_packet_arg *arg = (write_packet_arg *)opaque;
+		int sample_byes = av_get_bytes_per_sample(arg->context->passthrough_format);
+		int frame_size = size/sample_byes;
+		(*(arg->call_back))(buf, frame_size);
+		return frame_size*sample_byes;
+	}
+}
+
+int avformat_alloc_passthrough_context(AVCodecContext &codec_context, const std::function<int(AVFormatContext &)> &action, const std::function<void(void *, int)> &buffer_handler) {
+	int res = 0;
+	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
+	AVFormatContext *format_context = NULL;
+	avformat_alloc_output_context2(&format_context, NULL, "spdif", "");
+	int len = av_get_buffer_size(codec_context);
+	void *buffer = av_malloc(len);
+	AVStream *out_streams[1];
+	out_streams[0] = {context->av_stream};
+	write_packet_arg args{context, &buffer_handler};
+	format_context->pb = avio_alloc_context((uint8_t *)buffer, len, 0, &args, NULL, write_packet, NULL);
+	format_context->streams = out_streams;
+
+	if(context->passthrough_dts_rate)
+		av_opt_set_int(format_context->priv_data, "dtshd_rate", context->passthrough_dts_rate, 0);
+
+	res = action(*format_context);
+
+	avio_context_free(&format_context->pb);
+	av_free(buffer);
+	avformat_free_context(format_context);
+	return res;
 }
 

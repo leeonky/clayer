@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <libavformat/avformat.h>
+#include <libavformat/avio.h>
 #include <libavcodec/avcodec.h>
 #include <cunitexd.h>
 #include <libswscale/swscale.h>
@@ -75,6 +76,15 @@ extern_mock_function_10(struct SwsContext *, sws_getContext, int, int, enum AVPi
 extern_mock_function_7(int, sws_scale, struct SwsContext *, const uint8_t * const *, const int *, int, int, uint8_t * const *, const int *);
 extern_mock_void_function_1(sws_freeContext, struct SwsContext *);
 
+extern_mock_function_4(int, avformat_alloc_output_context2, AVFormatContext **, AVOutputFormat *, const char *, const char *);
+typedef int(*avio_read_write_t)(void *, uint8_t *, int);
+typedef int64_t(*avio_seek_t)(void *, int64_t, int);
+extern_mock_function_7(AVIOContext *, avio_alloc_context, unsigned char *, int, int, void *, avio_read_write_t, avio_read_write_t, avio_seek_t);
+extern_mock_void_function_1(avio_context_free, AVIOContext **);
+extern_mock_function_4(int, av_opt_set, void *, const char *, const char *, int);
+extern_mock_void_function_1(avformat_free_context, AVFormatContext *);
+extern_mock_function_4(int, av_opt_set_int, void *, const char *, int64_t, int);
+
 #ifdef __cplusplus
 }
 #endif
@@ -98,6 +108,7 @@ struct stub_decoding_context {
 	enum AVSampleFormat passthrough_format;
 	int64_t passthrough_layout;
 	int passthrough_rate, passthrough_channels;
+	int passthrough_dts_rate;
 };
 
 #endif

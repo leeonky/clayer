@@ -66,3 +66,11 @@ mock_function_6(int, avformat_seek_file, AVFormatContext *, int, int64_t, int64_
 mock_function_10(struct SwsContext *, sws_getContext, int, int, enum AVPixelFormat, int, int, enum AVPixelFormat, int, SwsFilter *, SwsFilter *, const double *);
 mock_function_7(int, sws_scale, struct SwsContext *, const uint8_t * const *, const int *, int, int, uint8_t * const *, const int *);
 mock_void_function_1(sws_freeContext, struct SwsContext *);
+
+mock_function_4(int, avformat_alloc_output_context2, AVFormatContext **, AVOutputFormat *, const char *, const char *);
+mock_function_7(AVIOContext *, avio_alloc_context, unsigned char *, int, int, void *, avio_read_write_t, avio_read_write_t, avio_seek_t);
+mock_void_function_1(avio_context_free, AVIOContext **);
+mock_function_4(int, av_opt_set, void *, const char *, const char *, int);
+mock_void_function_1(avformat_free_context, AVFormatContext *);
+mock_function_4(int, av_opt_set_int, void *, const char *, int64_t, int);
+

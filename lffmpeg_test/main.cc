@@ -22,6 +22,7 @@ int main() {
 	ADD_SUITE(av_frame_pts2_test);
 	ADD_SUITE(sws_getContext_test);
 	ADD_SUITE(sws_scale_test);
+	ADD_SUITE(avformat_alloc_passthrough_context_test);
 	return run_test();
 }
 

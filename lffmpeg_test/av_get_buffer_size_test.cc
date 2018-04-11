@@ -78,3 +78,4 @@ SUITE_CASE("get frame buffer size for passthrough audio") {
 }
 
 SUITE_END(av_get_buffer_size_test);
+

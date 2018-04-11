@@ -4,6 +4,7 @@
 
 extern "C" {
 #include <libavformat/avformat.h>
+#include <libavformat/avio.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
 #include <libswresample/swresample.h>
@@ -79,6 +80,8 @@ extern int sws_getContext(int, int, enum AVPixelFormat, int, int, enum AVPixelFo
 extern int sws_scale(scale_context &, const void *, void *);
 
 extern bool passthrough_process(AVCodecContext &);
+
+extern int avformat_alloc_passthrough_context(AVCodecContext &, const std::function<int(AVFormatContext &)> &, const std::function<void(void *, int)> &);
 
 #endif
 
