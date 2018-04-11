@@ -8,11 +8,13 @@
 #include "lffmpeg/lffmpeg.h"
 #include "mem/circular_shm.h"
 #include "lsdl2/lsdl2.h"
+#include "lalsa/lalsa.h"
 #include "stdport/stdport.h"
 
 Uint32 AVPixelFormat_to_SDL(enum AVPixelFormat);
 SDL_AudioFormat AVSampleFormat_to_SDL(enum AVSampleFormat);
 PaSampleFormat AVSampleFormat_to_PortAudio(enum AVSampleFormat);
+snd_pcm_format_t AVSampleFormat_to_ALSA(enum AVSampleFormat);
 
 int video_event(iobus &, const std::function<int(int, int, enum AVPixelFormat)> &);
 int buffer_event(iobus &, const std::function<int(int, size_t, int, int, int)> &);

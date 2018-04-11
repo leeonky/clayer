@@ -31,6 +31,8 @@ struct codec_params {
 
 extern int avcodec_open(AVStream &, const codec_params &, const std::function<int(AVCodecContext &)> &);
 
+extern int av_read_frame(AVFormatContext &, AVCodecContext &, const std::function<void(AVPacket *)> &);
+
 extern int av_read_and_send_to_avcodec(AVFormatContext &, AVCodecContext &);
 
 extern int avcodec_receive_frame(AVCodecContext &, const std::function<int(const AVFrame &)> &);

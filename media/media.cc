@@ -69,6 +69,24 @@ PaSampleFormat AVSampleFormat_to_PortAudio(enum AVSampleFormat format) {
 	}
 }
 
+snd_pcm_format_t AVSampleFormat_to_ALSA(enum AVSampleFormat format) {
+	switch(format) {
+		case AV_SAMPLE_FMT_U8:
+			return SND_PCM_FORMAT_U8;
+		case AV_SAMPLE_FMT_S16:
+			return SND_PCM_FORMAT_S16_LE;
+		case AV_SAMPLE_FMT_S32:
+			return SND_PCM_FORMAT_S32_LE;
+		case AV_SAMPLE_FMT_FLT:
+			return SND_PCM_FORMAT_FLOAT_LE;
+		case AV_SAMPLE_FMT_DBL:
+			return SND_PCM_FORMAT_FLOAT64_LE;
+		default:
+			log_error("Unknow support ffmpeg audio format '%d'", format);
+			return SND_PCM_FORMAT_UNKNOWN;
+	}
+}
+
 int video_event(iobus &iob, const std::function<int(int, int, enum AVPixelFormat)> &action) {
 	int vw, vh;
 	char format [128] = "";

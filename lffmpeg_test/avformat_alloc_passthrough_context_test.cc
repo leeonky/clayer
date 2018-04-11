@@ -163,5 +163,47 @@ SUITE_CASE("should not set dtsrate for non dts hd") {
 	CUE_EXPECT_NEVER_CALLED(av_opt_set_int);
 }
 
+SUITE_CASE("allocate format context failed") {
+	init_mock_function_with_return(avformat_alloc_output_context2, -100);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(av_malloc);
+	CUE_EXPECT_NEVER_CALLED(avio_alloc_context);
+	CUE_EXPECT_NEVER_CALLED(avformat_alloc_action);
+	CUE_EXPECT_NEVER_CALLED(av_free);
+	CUE_EXPECT_NEVER_CALLED(avio_context_free);
+	CUE_EXPECT_NEVER_CALLED(avformat_free_context);
+
+	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: -100\n");
+}
+
+SUITE_CASE("allocate format context failed") {
+	init_mock_function_with_return(av_malloc, NULL);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(avio_alloc_context);
+	CUE_EXPECT_NEVER_CALLED(avformat_alloc_action);
+	CUE_EXPECT_NEVER_CALLED(av_free);
+	CUE_EXPECT_NEVER_CALLED(avio_context_free);
+	CUE_EXPECT_CALLED_ONCE(avformat_free_context);
+
+	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: alloc buffer failed\n");
+}
+
+SUITE_CASE("avio_alloc_context failed") {
+	init_mock_function_with_return(avio_alloc_context, NULL);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(avformat_alloc_action);
+	CUE_EXPECT_NEVER_CALLED(avio_context_free);
+	CUE_EXPECT_CALLED_ONCE(av_free);
+	CUE_EXPECT_CALLED_ONCE(avformat_free_context);
+
+	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: avio_alloc_context failed\n");
+}
+
 SUITE_END(avformat_alloc_passthrough_context_test)
 

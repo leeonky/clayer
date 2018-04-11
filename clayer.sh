@@ -73,7 +73,7 @@ fi
 function play_audio() {
 	"$DECODER_BIN" "$media_file" -a $audio |
 	"$RESAMPLER_BIN" -f pack:flt32:maxbit32 -l stereo |
-	"$SPEEKER_BIN" -d 1
+	"$SPEEKER_BIN" -t 1
 }
 
 function play_audio_with_controller() {

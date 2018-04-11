@@ -219,6 +219,17 @@ int avcodec_open(AVStream &stream, const codec_params &params, const std::functi
 	return res;
 }
 
+int av_read_frame(AVFormatContext &format_context, AVCodecContext &codec_context, const std::function<void(AVPacket *)> &action) {
+	int res;
+	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
+	while((!(res = av_read_frame(&format_context, context->av_packet)))
+			&& context->av_stream->index != context->av_packet->stream_index)
+		;
+	if(res >= 0)
+		action(context->av_packet);
+	return !(res >= 0);
+}
+
 int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext &codec_context) {
 	int res;
 	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
@@ -229,7 +240,7 @@ int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext 
 		res = avcodec_send_packet(&codec_context, context->av_packet);
 	else{
 		avcodec_send_packet(&codec_context, nullptr);
-		context->stream_ended = 1;
+		context->stream_ended = true;
 	}
 	return res;
 }
@@ -524,26 +535,31 @@ namespace {
 }
 
 int avformat_alloc_passthrough_context(AVCodecContext &codec_context, const std::function<int(AVFormatContext &)> &action, const std::function<void(void *, int)> &buffer_handler) {
-	int res = 0;
+	int res = 0, ret;
 	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
 	AVFormatContext *format_context = NULL;
-	avformat_alloc_output_context2(&format_context, NULL, "spdif", "");
-	int len = av_get_buffer_size(codec_context);
-	void *buffer = av_malloc(len);
-	AVStream *out_streams[1];
-	out_streams[0] = {context->av_stream};
-	write_packet_arg args{context, &buffer_handler};
-	format_context->pb = avio_alloc_context((uint8_t *)buffer, len, 0, &args, NULL, write_packet, NULL);
-	format_context->streams = out_streams;
+	if((ret = avformat_alloc_output_context2(&format_context, NULL, "spdif", "")) >= 0) {
+		int len = av_get_buffer_size(codec_context);
+		if(void *buffer = av_malloc(len)) {
+			AVStream *out_streams[1];
+			out_streams[0] = {context->av_stream};
+			write_packet_arg args{context, &buffer_handler};
+			if((format_context->pb = avio_alloc_context((uint8_t *)buffer, len, 0, &args, NULL, write_packet, NULL))) {
+				format_context->streams = out_streams;
+				if(context->passthrough_dts_rate)
+					av_opt_set_int(format_context->priv_data, "dtshd_rate", context->passthrough_dts_rate, 0);
 
-	if(context->passthrough_dts_rate)
-		av_opt_set_int(format_context->priv_data, "dtshd_rate", context->passthrough_dts_rate, 0);
+				res = action(*format_context);
 
-	res = action(*format_context);
-
-	avio_context_free(&format_context->pb);
-	av_free(buffer);
-	avformat_free_context(format_context);
+				avio_context_free(&format_context->pb);
+			} else
+				res = log_error("avio_alloc_context failed");
+			av_free(buffer);
+		} else
+			res = log_error("alloc buffer failed");
+		avformat_free_context(format_context);
+	} else
+		res = log_errno(ret);
 	return res;
 }
 
