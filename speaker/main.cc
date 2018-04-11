@@ -9,6 +9,7 @@
 
 namespace {
 	circular_shm *shms[MAX_LAYER_COUNT];
+	int sync_interval = 16;
 
 	int play_with_portaudio(iobus &iob, int device, player_context &context) {
 		return forward_untill(iob, audio_event, [&](int sample_rate, int channels, int64_t /*layout*/, enum AVSampleFormat format, int /*passthrough*/){
@@ -16,11 +17,11 @@ namespace {
 						long buffer_len = Pa_GetStreamWriteAvailable(stream);
 						return main_reducer(iob, shms, sample_event, [&](int buffer_key, int index, int64_t pts, int samples) {
 								context.process_command();
-								if(samples) {
+								if(context.scaling_down(sync_interval)) {
 									int64_t base = usectime();
 									int64_t offset = pts-Pa_GetStreamLast(stream, buffer_len, sample_rate);
 									context.clock().sync(base, offset);
-									iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, base, offset);
+									context.post_clock_event(iob);
 								}
 								shms[buffer_key]->free(index, [&](void *buffer){
 										if(!context.is_resetting()) {
@@ -58,11 +59,11 @@ namespace {
 						sample_rate, channels, AVSampleFormat_to_ALSA(format), [&] (snd_pcm_t *pcm) {
 						return main_reducer(iob, shms, sample_event, [&](int buffer_key, int index, int64_t pts, int samples) {
 								context.process_command();
-								if(samples) {
+								if(context.scaling_down(sync_interval)) {
 									int64_t base = usectime();
 									int64_t offset = pts-snd_pcm_delay(pcm, sample_rate);
 									context.clock().sync(base, offset);
-									iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, base, offset);
+									context.post_clock_event(iob);
 								}
 								shms[buffer_key]->free(index, [&](void *buffer){
 										if(!context.is_resetting()) {
@@ -86,7 +87,9 @@ int main(int argc, char **argv) {
 	int device = 0;
 	char alsa_device[128] = "";
 	char alsa_passthrough[128] = "";
-	command_argument().require_full_argument("port", 't', [&](const char *arg){
+	command_argument().require_full_argument("clock", 'c', [&](const char *arg){
+			sscanf(arg, "%d", &sync_interval);
+			}).require_full_argument("port", 't', [&](const char *arg){
 			sscanf(arg, "%d", &device);
 			}).require_full_argument("alsa", 'a', [&](const char *arg){
 			sscanf(arg, "%s", alsa_device);

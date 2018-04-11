@@ -2,6 +2,8 @@
 # clayer file [v=index] [a=index] [thread=thread_count] [sub=subtitle_file] [p=position(0,0)] [s=size(1920x1080)] [vf=video_flag(full|opengl|borderless|highdpi)]
 
 project_path="$(dirname "$0")"
+. "$project_path/.clayer"
+
 media_file=$1
 
 DECODER_BIN="$project_path/decoder/cl_decoder"
@@ -72,8 +74,8 @@ fi
 
 function play_audio() {
 	"$DECODER_BIN" "$media_file" -a $audio |
-	"$RESAMPLER_BIN" -f pack:flt32:maxbit32 -l stereo |
-	"$SPEEKER_BIN" -t 1
+	"$RESAMPLER_BIN" -f pack:maxbit32 |
+	"$SPEEKER_BIN" -a "${ALSA_DEV:html}" -p "${ALSA_PASSTHROUGH_DEV:-}" "${ALSA_PASSTHROUGH:-}"
 }
 
 function play_audio_with_controller() {

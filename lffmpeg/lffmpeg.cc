@@ -367,11 +367,16 @@ const char *av_frame_info(int index, const AVFrame &frame, int buffer_key) {
 			sprintf(buffer, "FRAME buffer:%d %d=>%" PRId64, buffer_key, index, av_frame_pts2(frame));
 			break;
 		case AVMEDIA_TYPE_AUDIO:
-			sprintf(buffer, "SAMPLE buffer:%d %d=>%" PRId64 ",%d", buffer_key, index, av_frame_pts2(frame), frame.nb_samples);
-			break;
+			return av_samples_info(index, av_frame_pts2(frame), frame.nb_samples, buffer_key);
 		default:
 			not_support_media_type(context->av_stream->codecpar->codec_type);
 	}
+	return buffer;
+}
+
+extern const char *av_samples_info(int index, int64_t pts, int samples, int buffer_key) {
+	static __thread char buffer[1024];
+	sprintf(buffer, "SAMPLE buffer:%d %d=>%" PRId64 ",%d", buffer_key, index, pts, samples);
 	return buffer;
 }
 
@@ -522,19 +527,19 @@ bool passthrough_process(AVCodecContext &codec_context) {
 namespace {
 	struct write_packet_arg {
 		decoding_context *context;
-		const std::function<void(void *, int)> *call_back;
+		const std::function<void(void *, int, int)> *call_back;
 	};
 
 	int write_packet(void *opaque, uint8_t *buf, int size) {
 		write_packet_arg *arg = (write_packet_arg *)opaque;
 		int sample_byes = av_get_bytes_per_sample(arg->context->passthrough_format);
 		int frame_size = size/sample_byes;
-		(*(arg->call_back))(buf, frame_size);
+		(*(arg->call_back))(buf, size, frame_size);
 		return frame_size*sample_byes;
 	}
 }
 
-int avformat_alloc_passthrough_context(AVCodecContext &codec_context, const std::function<int(AVFormatContext &)> &action, const std::function<void(void *, int)> &buffer_handler) {
+int avformat_alloc_passthrough_context(AVCodecContext &codec_context, const std::function<int(AVFormatContext &)> &action, const std::function<void(void *, int, int)> &buffer_handler) {
 	int res = 0, ret;
 	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
 	AVFormatContext *format_context = NULL;

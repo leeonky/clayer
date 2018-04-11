@@ -11,6 +11,8 @@ int snd_pcm_open(const char *dev, int rate, int channel, snd_pcm_format_t format
 	int res = 0;
 	snd_pcm_t *pcm_t = NULL;
 	snd_pcm_hw_params_t *hw_params = NULL;
+	snd_pcm_uframes_t buffer_size = rate/10;
+	snd_pcm_uframes_t period_size = 128;
 	if(!(res = snd_pcm_open(&pcm_t, dev, SND_PCM_STREAM_PLAYBACK, SND_PCM_ASYNC))) {
 		if(!(res = snd_pcm_hw_params_malloc(&hw_params))) {
 			if(!(res = snd_pcm_hw_params_any(pcm_t, hw_params))
@@ -18,8 +20,8 @@ int snd_pcm_open(const char *dev, int rate, int channel, snd_pcm_format_t format
 					&& !(res = snd_pcm_hw_params_set_rate(pcm_t, hw_params, rate, 0))
 					&& !(res = snd_pcm_hw_params_set_channels(pcm_t, hw_params, channel))
 					&& !(res = snd_pcm_hw_params_set_format(pcm_t, hw_params, format))
-					&& !(res = snd_pcm_hw_params_set_buffer_size(pcm_t, hw_params, rate/10))
-					&& !(res = snd_pcm_hw_params_set_period_size(pcm_t, hw_params, rate/50, 0))
+					&& !(res = snd_pcm_hw_params_set_buffer_size_near(pcm_t, hw_params, &buffer_size))
+					&& !(res = snd_pcm_hw_params_set_period_size_near(pcm_t, hw_params, &period_size, NULL))
 					&& !(res = snd_pcm_hw_params(pcm_t, hw_params))){
 				res = action(pcm_t);
 			} else

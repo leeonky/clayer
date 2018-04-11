@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 			return swr_alloc_set_opts_and_init(layout, format, sample_rate, out_layout, out_format, out_rate, [&](resample_context &rs_context) {
 					char layout_string_buffer[1024];
 					av_get_channel_layout_string(layout_string_buffer, sizeof(layout_string_buffer), rs_context.out_channels, rs_context.out_layout);
-					iob.post("AUDIO sample_rate:%d channels:%d layout:%s format:%s", out_rate, rs_context.out_channels, layout_string_buffer, av_get_sample_fmt_name(out_format));
+					iob.post("AUDIO sample_rate:%d channels:%d layout:%s format:%s passthrough:0", out_rate, rs_context.out_channels, layout_string_buffer, av_get_sample_fmt_name(out_format));
 
 					return circular_shm::create(rs_context.resample_size(), new_count,
 						[&](circular_shm &shm){

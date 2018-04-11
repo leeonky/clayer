@@ -79,7 +79,21 @@ namespace {
 
 	inline std::function<int(circular_shm &)> passthrough_loop(iobus &iob, AVFormatContext &format_context, AVCodecContext &codec_context) {
 		return [&](circular_shm &buffer){
-			return 0;
+			iob.post(buffer.serialize_to_string(buffer_key));
+			return avformat_alloc_passthrough_context(codec_context, [&](AVFormatContext &out_format) {
+					bool running = true;
+					//avformat_write_header(&out_format, NULL);
+					//out_format.oformat->write_header(&out_format);
+					while(running && !av_read_frame(format_context, codec_context, [&](AVPacket *packet){
+								//av_write_frame(&out_format, packet);
+								//out_format.oformat->write_packet(&out_format, packet);
+								})) {
+					}
+					return 0;
+					}, [&](void *buf, int size, int samples){
+						//memcpy(buffer.allocate(), buf, size);
+						//iob.post(av_samples_info(buffer.index, 0, samples, buffer_key));
+					});
 		};
 	}
 

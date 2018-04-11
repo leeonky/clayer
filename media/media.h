@@ -63,7 +63,6 @@ public:
 	void backward(int64_t offset) {
 		base += offset;
 	}
-private:
 	int64_t base, offset;
 };
 
@@ -152,12 +151,21 @@ public:
 		}
 	}
 
+	bool scaling_down(int interval) {
+		return !(_sample_seq++ % interval);
+	}
+
+	void post_clock_event(iobus &iob) {
+		iob.post("CLOCK base:%" PRId64 " offset:%" PRId64, _clock.base, _clock.offset);
+	}
+
 private:
 	media_clock _clock;
 	bool _resetting, _need_sync;
 	int _msgid, _receiver;
+	int _sample_seq;
 
-	player_context(int msgid, int receiver) :_resetting(false), _need_sync(false), _msgid(msgid), _receiver(receiver) {}
+	player_context(int msgid, int receiver) :_resetting(false), _need_sync(false), _msgid(msgid), _receiver(receiver), _sample_seq(0) {}
 };
 
 extern enum AVPixelFormat analyze_pixel_format(enum AVPixelFormat, const char *, const char *);

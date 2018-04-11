@@ -46,8 +46,8 @@ BEFORE_EACH() {
 	init_mock_function(snd_pcm_hw_params_set_format);
 	init_mock_function(snd_pcm_hw_params_set_rate);
 	init_mock_function(snd_pcm_hw_params_set_channels);
-	init_mock_function(snd_pcm_hw_params_set_buffer_size);
-	init_mock_function(snd_pcm_hw_params_set_period_size);
+	init_mock_function(snd_pcm_hw_params_set_buffer_size_near);
+	init_mock_function(snd_pcm_hw_params_set_period_size_near);
 	init_mock_function(snd_pcm_hw_params);
 	init_mock_function(snd_pcm_hw_params_free);
 	init_mock_function(snd_pcm_close);
@@ -63,7 +63,19 @@ SUBJECT(int) {
 	return snd_pcm_open(arg_device, arg_rate, arg_channels, arg_format, snd_open_action);
 }
 
+static int assert_snd_pcm_hw_params_set_buffer_size_near(snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_uframes_t *t) {
+	CUE_ASSERT_EQ(*t, arg_rate/10);
+	return 0;
+}
+static int assert_snd_pcm_hw_params_set_period_size_near(snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_uframes_t *t, int *) {
+	CUE_ASSERT_EQ(*t, 128);
+	return 0;
+}
+
 SUITE_CASE("init and open audio") {
+	init_mock_function_with_function(snd_pcm_hw_params_set_buffer_size_near, assert_snd_pcm_hw_params_set_buffer_size_near);
+	init_mock_function_with_function(snd_pcm_hw_params_set_period_size_near, assert_snd_pcm_hw_params_set_period_size_near);
+
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
 	CUE_EXPECT_CALLED_ONCE(snd_pcm_open);
@@ -97,15 +109,14 @@ SUITE_CASE("init and open audio") {
 	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_channels, 2, ret_hw_params);
 	CUE_EXPECT_CALLED_WITH_INT(snd_pcm_hw_params_set_channels, 3, arg_channels);
 
-	CUE_EXPECT_CALLED_ONCE(snd_pcm_hw_params_set_buffer_size);
-	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_buffer_size, 1, ret_pcm);
-	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_buffer_size, 2, ret_hw_params);
-	CUE_EXPECT_CALLED_WITH_INT(snd_pcm_hw_params_set_buffer_size, 3, arg_rate/10);
+	CUE_EXPECT_CALLED_ONCE(snd_pcm_hw_params_set_buffer_size_near);
+	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_buffer_size_near, 1, ret_pcm);
+	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_buffer_size_near, 2, ret_hw_params);
 
-	CUE_EXPECT_CALLED_ONCE(snd_pcm_hw_params_set_period_size);
-	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_period_size, 1, ret_pcm);
-	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_period_size, 2, ret_hw_params);
-	CUE_EXPECT_CALLED_WITH_INT(snd_pcm_hw_params_set_period_size, 3, arg_rate/50);
+	CUE_EXPECT_CALLED_ONCE(snd_pcm_hw_params_set_period_size_near);
+	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_period_size_near, 1, ret_pcm);
+	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_period_size_near, 2, ret_hw_params);
+	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params_set_period_size_near, 4, NULL);
 
 	CUE_EXPECT_CALLED_ONCE(snd_pcm_hw_params);
 	CUE_EXPECT_CALLED_WITH_PTR(snd_pcm_hw_params, 1, ret_pcm);
