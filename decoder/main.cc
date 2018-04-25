@@ -77,13 +77,16 @@ namespace {
 		};
 	}
 
-	inline std::function<int(circular_shm &)> passthrough_loop(iobus &iob, AVFormatContext &format_context, AVCodecContext &codec_context) {
+	inline std::function<int(circular_shm &)> passthrough_loop(iobus &iob, AVStream &stream, AVFormatContext &format_context, AVCodecContext &codec_context) {
 		return [&](circular_shm &buffer){
 			iob.post(buffer.serialize_to_string(buffer_key));
+			int64_t pts = 0;
 			return avformat_alloc_passthrough_context(codec_context, [&](AVFormatContext &out_format) {
 					bool running = true;
 					int r = avformat_write_header(&out_format, NULL);
 					while(running && !av_read_frame(format_context, codec_context, [&](AVPacket *packet){
+								pts = packet->pts - stream.start_time;
+								pts = 1000000 * pts * stream.time_base.num/stream.time_base.den;
 								packet->stream_index = 0;
 								r = av_write_frame(&out_format, packet);
 								})) {
@@ -91,7 +94,7 @@ namespace {
 					return 0;
 					}, [&](void *buf, int samples, int size){
 						memcpy(buffer.allocate(), buf, size);
-						iob.post(av_samples_info(buffer.index, 0, samples, buffer_key));
+						iob.post(av_samples_info(buffer.index, pts, samples, buffer_key));
 					});
 		};
 	}
@@ -104,7 +107,7 @@ namespace {
 					return circular_shm::create(av_get_buffer_size(codec_context),
 							buffer_count,
 							(passthrough ?
-							passthrough_loop(iob, format_context, codec_context)
+							passthrough_loop(iob, stream, format_context, codec_context)
 							: decoding_loop(iob, format_context, codec_context)));
 				});
 		};
