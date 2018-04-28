@@ -88,8 +88,7 @@ namespace {
 
 	inline size_t pixel_copy(uint8_t *buffer, ASS_Image *image) {
 		uint32_t *colors = (uint32_t *)buffer;
-		uint32_t color = image->color;
-		color = ((color>>8) & 0xffffff);
+		uint32_t color = ((image->color>>8) & 0xffffff);
 		uint8_t *bitmap = image->bitmap;
 
 		for(int y=0; y<image->h; ++y) {

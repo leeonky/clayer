@@ -54,8 +54,17 @@ if [ "$video_flag" != "" ]; then
 	video_flag="-f $video_flag"
 fi
 
+#Try to find srt subtitle
 if [ "$subtitle" == "" ]; then
 	srt_name="${media_file%.*}.srt"
+	if [ -f "$srt_name" ]; then
+		subtitle="$srt_name"
+	fi
+fi
+
+#Try to find ass subtitle
+if [ "$subtitle" == "" ]; then
+	srt_name="${media_file%.*}.ass"
 	if [ -f "$srt_name" ]; then
 		subtitle="$srt_name"
 	fi
