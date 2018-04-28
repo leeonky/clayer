@@ -2,6 +2,7 @@
 #define SUB_SRT_H
 
 #include <cstdio>
+#include <functional>
 #include <string>
 #include <vector>
 #include "iobus/iobus.h"

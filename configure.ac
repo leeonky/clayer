@@ -72,6 +72,7 @@ AM_COND_IF([ENV_PRD], [],
 	   mock_ffmpeg/Makefile
 	   mock_port_audio/Makefile
 	   mock_alsa/Makefile
+	   mock_ass/Makefile
 	   stdport_test/Makefile
 	   sysexd_test/Makefile
 	   stdexd_test/Makefile

@@ -28,6 +28,7 @@ SUBDIRS += mock_sdl2
 SUBDIRS += mock_port_audio
 SUBDIRS += mock_ffmpeg
 SUBDIRS += mock_alsa
+SUBDIRS += mock_ass
 SUBDIRS += stdport_test
 SUBDIRS += sysexd_test
 SUBDIRS += stdexd_test
