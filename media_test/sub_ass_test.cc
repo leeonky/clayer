@@ -182,14 +182,5 @@ SUITE_CASE("do not render subtitle when got same subtitle") {
 	CUE_EXPECT_NEVER_CALLED(ass_sub_render_action);
 }
 
-SUITE_CASE("render failed") {
-	init_mock_function_with_return(ass_render_frame, NULL);
-	ass_render_frame(ret_ass_renderer, &ret_ass_track, arg_pts, ass_sub_render_action);
-
-	CUE_EXPECT_NEVER_CALLED(ass_sub_render_action);
-
-	CUE_ASSERT_STDERR_EQ("Error[libmedia]: ass_render_frame failed\n");
-}
-
 SUITE_END(sub_ass_test);
 

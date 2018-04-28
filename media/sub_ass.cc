@@ -31,10 +31,8 @@ int subtitle_ass(const char *ass_file, int w, int h, const char *font_file, cons
 
 void ass_render_frame(ASS_Renderer *renderer, ASS_Track *track, int64_t pts, const std::function<void(ASS_Image *)> &action) {
 	int new_frame = 0;
-	if(ASS_Image *ass_image = ass_render_frame(renderer, track, pts/1000, &new_frame)) {
-		if(new_frame)
-			action(ass_image);
-	} else
-		log_error("ass_render_frame failed");
+	ASS_Image *ass_image = ass_render_frame(renderer, track, pts/1000, &new_frame);
+	if(new_frame)
+		action(ass_image);
 }
 

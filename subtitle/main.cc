@@ -3,6 +3,7 @@
 #include "iobus/iobus.h"
 #include "media/media.h"
 #include "media/sub_srt.h"
+#include "media/sub_ass.h"
 #include <sstream>
 #include <iostream>
 #include <vector>
@@ -84,11 +85,21 @@ namespace {
 					});
 		};
 	}
+
+	inline int process_ass(iobus &iob, circular_shm &shm) {
+		return subtitle_ass(file_name, w, h, font_file, [&](ASS_Renderer *renderer, ASS_Track *track){
+				return main_transform(iob, shms, frame_event, [&](int, int, int64_t pts) {
+						iob.recaption_and_post();
+						return 0;
+						});
+				});
+	}
 }
 
 int main(int argc, char **argv) {
 	process_args(argc, argv);
 	iobus iob(stdin, stdout, stderr);
+	const char *file_ext = strrchr(file_name, '.');
 	return forward_untill(iob, video_event, [&](int fw, int fh, enum AVPixelFormat /*av_format*/){
 			w = w==-1 ? fw : w;
 			h = h==-1 ? fh : h;
@@ -96,7 +107,7 @@ int main(int argc, char **argv) {
 			return circular_shm::create(w*h*4, subtitle_buffer_count,
 					[&](circular_shm &shm){
 					iob.post("%s", shm.serialize_to_string(subtitle_buffer_key));
-					return fopen(file_name, "rb", process_srt(iob, shm));
+					return !strcmp(file_ext, ".ass") ? process_ass(iob, shm) : fopen(file_name, "rb", process_srt(iob, shm));
 					});
 
 			});

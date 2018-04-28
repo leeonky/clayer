@@ -55,7 +55,7 @@ namespace {
 		return [&, renderer, fw, fh](const layer_list &layer){
 			shms[layer.buffer_key]->free(layer.index, [&](void *layer_buffer){
 				if(SDL_Texture *t = SDL_CreateTexture(renderer,
-							SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, fw, fh)) {
+							SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, fw, fh)) {
 					layer_textures[layer.id] = SDL_TexturePtr(t);
 					SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
 					for(int i=0; i<layer.count; ++i) {
