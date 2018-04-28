@@ -86,10 +86,40 @@ namespace {
 		};
 	}
 
+	inline size_t pixel_copy(uint8_t *buffer, ASS_Image *image) {
+		uint32_t *colors = (uint32_t *)buffer;
+		uint32_t color = image->color;
+		color = ((color>>8) & 0xffffff);
+		uint8_t *bitmap = image->bitmap;
+
+		for(int y=0; y<image->h; ++y) {
+			for(int x=0; x<image->w; ++x)
+				colors[x] = ((bitmap[x] << 24) & 0xff000000) + color;
+			colors += image->stride;
+			bitmap += image->stride;
+		}
+		return image->stride*4 * image->h;
+	}
+
 	inline int process_ass(iobus &iob, circular_shm &shm) {
 		return subtitle_ass(file_name, w, h, font_file, [&](ASS_Renderer *renderer, ASS_Track *track){
 				return main_transform(iob, shms, frame_event, [&](int, int, int64_t pts) {
 						iob.recaption_and_post();
+						ass_render_frame(renderer, track, pts, [&](ASS_Image *image) {
+								if(image) {
+									uint8_t *buffer = (uint8_t *)shm.allocate();
+									iob.post_some("LAYER buffer:%d index:%d id:%d", subtitle_buffer_key, shm.index, layer_id);
+									for(int offset=0; image; image = image->next) {
+										size_t size = pixel_copy(buffer+offset, image);
+										iob.post_some(" %d=>%d,%d,%d,%d,%d",
+												offset, image->dst_x, image->dst_y,
+												image->w, image->h, image->stride*4);
+										offset += size;
+									}
+									iob.post("");
+								} else
+									iob.post("NOLAYER id:%d", layer_id);
+								});
 						return 0;
 						});
 				});
