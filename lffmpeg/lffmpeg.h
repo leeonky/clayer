@@ -87,5 +87,8 @@ extern bool passthrough_process(AVCodecContext &);
 
 extern int avformat_alloc_passthrough_context(AVCodecContext &, const std::function<int(AVFormatContext &)> &, const std::function<void(void *, int, int)> &);
 
+extern int avformat_write_header(AVFormatContext &);
+extern int av_write_frame(AVFormatContext &, AVPacket *);
+
 #endif
 

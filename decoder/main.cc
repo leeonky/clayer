@@ -82,17 +82,16 @@ namespace {
 			iob.post(buffer.serialize_to_string(buffer_key));
 			return avformat_alloc_passthrough_context(codec_context, [&](AVFormatContext &out_format) {
 					bool running = true;
-					//avformat_write_header(&out_format, NULL);
-					//out_format.oformat->write_header(&out_format);
+					int r = avformat_write_header(&out_format, NULL);
 					while(running && !av_read_frame(format_context, codec_context, [&](AVPacket *packet){
-								//av_write_frame(&out_format, packet);
-								//out_format.oformat->write_packet(&out_format, packet);
+								packet->stream_index = 0;
+								r = av_write_frame(&out_format, packet);
 								})) {
 					}
 					return 0;
-					}, [&](void *buf, int size, int samples){
-						//memcpy(buffer.allocate(), buf, size);
-						//iob.post(av_samples_info(buffer.index, 0, samples, buffer_key));
+					}, [&](void *buf, int samples, int size){
+						memcpy(buffer.allocate(), buf, size);
+						iob.post(av_samples_info(buffer.index, 0, samples, buffer_key));
 					});
 		};
 	}

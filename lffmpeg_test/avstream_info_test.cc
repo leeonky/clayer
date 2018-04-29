@@ -148,6 +148,8 @@ SUITE_CASE("output dtshd ma audio codec with passthrough") {
 	CUE_EXPECT_CALLED_WITH_INT(av_get_sample_fmt_name, 1, AV_SAMPLE_FMT_S16);
 	CUE_EXPECT_CALLED_WITH_INT(av_get_channel_layout_string, 3, 8);
 	CUE_EXPECT_CALLED_WITH_INT(av_get_channel_layout_string, 4, AV_CH_LAYOUT_7POINT1);
+
+	CUE_ASSERT_EQ(arg_decoding_context.passthrough_dts_rate, 768000);
 }
 
 SUITE_CASE("output dtshd hra audio codec with passthrough") {
@@ -169,6 +171,8 @@ SUITE_CASE("output dtshd hra audio codec with passthrough") {
 	CUE_EXPECT_CALLED_WITH_INT(av_get_sample_fmt_name, 1, AV_SAMPLE_FMT_S16);
 	CUE_EXPECT_CALLED_WITH_INT(av_get_channel_layout_string, 3, 8);
 	CUE_EXPECT_CALLED_WITH_INT(av_get_channel_layout_string, 4, AV_CH_LAYOUT_7POINT1);
+
+	CUE_ASSERT_EQ(arg_decoding_context.passthrough_dts_rate, 768000);
 }
 
 SUITE_CASE("output dts audio codec with passthrough") {

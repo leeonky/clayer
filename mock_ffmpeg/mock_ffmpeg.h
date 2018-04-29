@@ -85,6 +85,12 @@ extern_mock_function_4(int, av_opt_set, void *, const char *, const char *, int)
 extern_mock_void_function_1(avformat_free_context, AVFormatContext *);
 extern_mock_function_4(int, av_opt_set_int, void *, const char *, int64_t, int);
 
+extern_mock_function_2(AVStream *, avformat_new_stream, AVFormatContext *, const AVCodec *);
+extern_mock_function_2(int, avcodec_parameters_copy, AVCodecParameters *, const AVCodecParameters *);
+
+extern_mock_function_2(int, avformat_write_header, AVFormatContext *, AVDictionary **);
+extern_mock_function_2(int, av_write_frame, AVFormatContext *, AVPacket *);
+
 #ifdef __cplusplus
 }
 #endif

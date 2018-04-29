@@ -28,14 +28,14 @@ static void *stub_av_malloc(size_t) {
 	return ret_buffer;
 }
 
-mock_void_function_2(pull_data_handler, void *, int);
+mock_void_function_3(pull_data_handler, void *, int, int);
 
 static int arg_buffer_size;
 static void *ret_data_buffer;
 static int ret_data_size;
-static int ret_len_per_sample;
+static int ret_len_per_sample, arg_passthrough_channels;
 static enum AVSampleFormat arg_passthrough_format;
-static AVStream *arg_av_stream;
+static AVStream arg_av_stream, ret_av_stream;
 
 BEFORE_EACH() {
 	init_subject("");
@@ -43,23 +43,24 @@ BEFORE_EACH() {
 	app_stdout = actxt.output_stream;
 	app_stderr = actxt.error_stream;
 
-	arg_av_stream = (AVStream *)&arg_av_stream;
 	arg_av_codec_context.opaque = &arg_decoding_context;
 	arg_av_codec_context.codec_type = AVMEDIA_TYPE_AUDIO;
 	arg_decoding_context.passthrough_dts_rate = 0;
 	arg_decoding_context.passthrough_format = arg_passthrough_format = AV_SAMPLE_FMT_S32;
-	arg_decoding_context.av_stream = arg_av_stream;
+	arg_decoding_context.passthrough_channels = arg_passthrough_channels = 5;
+	arg_decoding_context.av_stream = &arg_av_stream;
 
 	ret_buffer = &ret_buffer;
 	ret_data_buffer = &ret_data_buffer;
 	ret_data_size = 10000;
 	ret_len_per_sample = 30;
 
-
 	init_mock_function_with_function(avformat_alloc_output_context2, stub_avformat_alloc_output_context2);
 	init_mock_function_with_return(avio_alloc_context, &ret_avio_context);
 	init_mock_function_with_function(av_malloc, stub_av_malloc);
 	init_mock_function(av_opt_set_int);
+	init_mock_function_with_return(avformat_new_stream, &ret_av_stream);
+	init_mock_function_with_return(avcodec_parameters_copy, 1);
 	init_mock_function(av_free);
 	init_mock_function(avio_context_free);
 	init_mock_function(avformat_free_context);
@@ -106,8 +107,8 @@ static AVIOContext *assert_for_trigger_io_event(unsigned char *, int, int, void 
 	CUE_EXPECT_CALLED_ONCE(pull_data_handler);
 
 	CUE_EXPECT_CALLED_WITH_PTR(pull_data_handler, 1, ret_data_buffer);
-	CUE_EXPECT_CALLED_WITH_INT(pull_data_handler, 2, ret_data_size/ret_len_per_sample);
-	CUE_ASSERT_EQ(res, ret_data_size/ret_len_per_sample*ret_len_per_sample);
+	CUE_EXPECT_CALLED_WITH_INT(pull_data_handler, 2, ret_data_size/(ret_len_per_sample*arg_passthrough_channels));
+	CUE_ASSERT_EQ(res, ret_data_size/(ret_len_per_sample*arg_passthrough_channels)*(ret_len_per_sample*arg_passthrough_channels));
 
 	CUE_EXPECT_CALLED_ONCE(av_get_bytes_per_sample);
 	CUE_EXPECT_CALLED_WITH_INT(av_get_bytes_per_sample, 1, arg_passthrough_format);
@@ -125,7 +126,7 @@ SUITE_CASE("create avio context with right buffer and io event") {
 	CUE_EXPECT_CALLED_ONCE(avio_alloc_context);
 	CUE_EXPECT_CALLED_WITH_PTR(avio_alloc_context, 1, ret_buffer);
 	CUE_EXPECT_CALLED_WITH_INT(avio_alloc_context, 2, arg_buffer_size);
-	CUE_EXPECT_CALLED_WITH_INT(avio_alloc_context, 3, 0);
+	CUE_EXPECT_CALLED_WITH_INT(avio_alloc_context, 3, 1);
 	CUE_EXPECT_CALLED_WITH_PTR(avio_alloc_context, 5, nullptr);
 	CUE_EXPECT_CALLED_WITH_PTR(avio_alloc_context, 7, nullptr);
 
@@ -137,10 +138,16 @@ SUITE_CASE("create avio context with right buffer and io event") {
 	CUE_EXPECT_CALLED_ONCE(avio_context_free);
 }
 
-SUITE_CASE("should assign stream to avformat context") {
+SUITE_CASE("should create stream to avformat context") {
 	CUE_ASSERT_SUBJECT_SUCCEEDED();
 
-	CUE_ASSERT_PTR_EQ(ret_format_context.streams[0], arg_av_stream);
+	CUE_EXPECT_CALLED_ONCE(avformat_new_stream);
+	CUE_EXPECT_CALLED_WITH_PTR(avformat_new_stream, 1, &ret_format_context);
+	CUE_EXPECT_CALLED_WITH_PTR(avformat_new_stream, 2, arg_av_codec_context.codec);
+
+	CUE_EXPECT_CALLED_ONCE(avcodec_parameters_copy);
+	CUE_EXPECT_CALLED_WITH_PTR(avcodec_parameters_copy, 1, ret_av_stream.codecpar);
+	CUE_EXPECT_CALLED_WITH_PTR(avcodec_parameters_copy, 2, arg_av_stream.codecpar);
 }
 
 SUITE_CASE("should set dtsrate for dts hd") {
@@ -169,27 +176,60 @@ SUITE_CASE("allocate format context failed") {
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
 	CUE_EXPECT_NEVER_CALLED(av_malloc);
+	CUE_EXPECT_NEVER_CALLED(avformat_new_stream);
+	CUE_EXPECT_NEVER_CALLED(avcodec_parameters_copy);
 	CUE_EXPECT_NEVER_CALLED(avio_alloc_context);
 	CUE_EXPECT_NEVER_CALLED(avformat_alloc_action);
-	CUE_EXPECT_NEVER_CALLED(av_free);
 	CUE_EXPECT_NEVER_CALLED(avio_context_free);
+	CUE_EXPECT_NEVER_CALLED(av_free);
 	CUE_EXPECT_NEVER_CALLED(avformat_free_context);
 
 	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: -100\n");
 }
 
-SUITE_CASE("allocate format context failed") {
+SUITE_CASE("allocate buffer failed") {
 	init_mock_function_with_return(av_malloc, NULL);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(avformat_new_stream);
+	CUE_EXPECT_NEVER_CALLED(avcodec_parameters_copy);
+	CUE_EXPECT_NEVER_CALLED(avio_alloc_context);
+	CUE_EXPECT_NEVER_CALLED(avformat_alloc_action);
+	CUE_EXPECT_NEVER_CALLED(avio_context_free);
+	CUE_EXPECT_NEVER_CALLED(av_free);
+	CUE_EXPECT_CALLED_ONCE(avformat_free_context);
+
+	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: alloc buffer failed\n");
+}
+
+SUITE_CASE("allocate stream failed") {
+	init_mock_function_with_return(avformat_new_stream, NULL);
+
+	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
+
+	CUE_EXPECT_NEVER_CALLED(avcodec_parameters_copy);
+	CUE_EXPECT_NEVER_CALLED(avio_alloc_context);
+	CUE_EXPECT_NEVER_CALLED(avformat_alloc_action);
+	CUE_EXPECT_NEVER_CALLED(avio_context_free);
+	CUE_EXPECT_CALLED_ONCE(av_free);
+	CUE_EXPECT_CALLED_ONCE(avformat_free_context);
+
+	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: create AVStream for output error\n");
+}
+
+SUITE_CASE("clone stream params failed") {
+	init_mock_function_with_return(avcodec_parameters_copy, -100);
 
 	CUE_ASSERT_SUBJECT_FAILED_WITH(-1);
 
 	CUE_EXPECT_NEVER_CALLED(avio_alloc_context);
 	CUE_EXPECT_NEVER_CALLED(avformat_alloc_action);
-	CUE_EXPECT_NEVER_CALLED(av_free);
 	CUE_EXPECT_NEVER_CALLED(avio_context_free);
+	CUE_EXPECT_CALLED_ONCE(av_free);
 	CUE_EXPECT_CALLED_ONCE(avformat_free_context);
 
-	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: alloc buffer failed\n");
+	CUE_ASSERT_STDERR_EQ("Error[liblffmpeg]: -100\n");
 }
 
 SUITE_CASE("avio_alloc_context failed") {

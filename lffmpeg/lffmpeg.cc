@@ -511,6 +511,7 @@ bool passthrough_process(AVCodecContext &codec_context) {
 				context->passthrough_rate = 192000;
 				context->passthrough_channels = 8;
 				context->passthrough_layout = AV_CH_LAYOUT_7POINT1;
+				context->passthrough_dts_rate = 768000;
 			} else {
 				context->passthrough_rate = 48000;
 				context->passthrough_channels = 2;
@@ -532,10 +533,11 @@ namespace {
 
 	int write_packet(void *opaque, uint8_t *buf, int size) {
 		write_packet_arg *arg = (write_packet_arg *)opaque;
-		int sample_byes = av_get_bytes_per_sample(arg->context->passthrough_format);
+		int sample_byes = av_get_bytes_per_sample(arg->context->passthrough_format)*arg->context->passthrough_channels;
 		int frame_size = size/sample_byes;
-		(*(arg->call_back))(buf, size, frame_size);
-		return frame_size*sample_byes;
+		size = frame_size*sample_byes;
+		(*(arg->call_back))(buf, frame_size, size);
+		return size;
 	}
 }
 
@@ -546,19 +548,22 @@ int avformat_alloc_passthrough_context(AVCodecContext &codec_context, const std:
 	if((ret = avformat_alloc_output_context2(&format_context, NULL, "spdif", "")) >= 0) {
 		int len = av_get_buffer_size(codec_context);
 		if(void *buffer = av_malloc(len)) {
-			AVStream *out_streams[1];
-			out_streams[0] = {context->av_stream};
-			write_packet_arg args{context, &buffer_handler};
-			if((format_context->pb = avio_alloc_context((uint8_t *)buffer, len, 0, &args, NULL, write_packet, NULL))) {
-				format_context->streams = out_streams;
-				if(context->passthrough_dts_rate)
-					av_opt_set_int(format_context->priv_data, "dtshd_rate", context->passthrough_dts_rate, 0);
+			if(AVStream *stream = avformat_new_stream(format_context, codec_context.codec)) {
+				if((ret = avcodec_parameters_copy(stream->codecpar, context->av_stream->codecpar))>=0) {
+					write_packet_arg args{context, &buffer_handler};
+					if((format_context->pb = avio_alloc_context((uint8_t *)buffer, len, 1, &args, NULL, write_packet, NULL))) {
+						if(context->passthrough_dts_rate)
+							av_opt_set_int(format_context->priv_data, "dtshd_rate", context->passthrough_dts_rate, 0);
 
-				res = action(*format_context);
+						res = action(*format_context);
 
-				avio_context_free(&format_context->pb);
+						avio_context_free(&format_context->pb);
+					} else
+						res = log_error("avio_alloc_context failed");
+				} else
+					res = log_errno(ret);
 			} else
-				res = log_error("avio_alloc_context failed");
+				res = log_error("create AVStream for output error");
 			av_free(buffer);
 		} else
 			res = log_error("alloc buffer failed");
@@ -567,4 +572,19 @@ int avformat_alloc_passthrough_context(AVCodecContext &codec_context, const std:
 		res = log_errno(ret);
 	return res;
 }
+
+int avformat_write_header(AVFormatContext &out_format) {
+	int r = avformat_write_header(&out_format, NULL);
+	if (r < 0)
+		log_errno(r);
+	return r;
+}
+
+int av_write_frame(AVFormatContext &out_format, AVPacket *packet) {
+	int r = av_write_frame(&out_format, packet);
+	if (r < 0)
+		log_errno(r);
+	return r;
+}
+
 
