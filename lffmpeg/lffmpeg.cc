@@ -555,6 +555,7 @@ int avformat_alloc_passthrough_context(AVCodecContext &codec_context, const std:
 						if(context->passthrough_dts_rate)
 							av_opt_set_int(format_context->priv_data, "dtshd_rate", context->passthrough_dts_rate, 0);
 
+						format_context->oformat->flags |= AVFMT_TS_NONSTRICT;
 						res = action(*format_context);
 
 						avio_context_free(&format_context->pb);
@@ -581,6 +582,8 @@ int avformat_write_header(AVFormatContext &out_format) {
 }
 
 int av_write_frame(AVFormatContext &out_format, AVPacket *packet) {
+	// set cur_dts to zero avoid warning message when back seek stream
+	out_format.streams[0]->cur_dts = 0;
 	int r = av_write_frame(&out_format, packet);
 	if (r < 0)
 		log_errno(r);

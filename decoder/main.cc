@@ -92,7 +92,7 @@ namespace {
 								pts = packet->pts - stream.start_time;
 								pts = 1000000 * pts * stream.time_base.num/stream.time_base.den;
 								packet->stream_index = 0;
-								r = av_write_frame(&out_format, packet);
+								r = av_write_frame(out_format, packet);
 								}))
 						;
 					return 0;

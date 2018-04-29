@@ -82,9 +82,9 @@ if [ "$subtitle" != "" ]; then
 fi
 
 function play_audio() {
-	"$DECODER_BIN" "$media_file" -a $audio |
+	"$DECODER_BIN" "$media_file" -a $audio "${ALSA_PASSTHROUGH:-}" |
 	"$RESAMPLER_BIN" -f pack:maxbit32 |
-	"$SPEEKER_BIN" -a "${ALSA_DEV:html}" -p "${ALSA_PASSTHROUGH_DEV:-}" "${ALSA_PASSTHROUGH:-}"
+	"$SPEEKER_BIN" -a "${ALSA_DEV:html}" -p "${ALSA_PASSTHROUGH_DEV:-}"
 }
 
 function play_audio_with_controller() {
