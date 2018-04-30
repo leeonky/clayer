@@ -102,9 +102,9 @@ function play_audio_with_controller() {
 
 function wrapper_video_with_subtitle() {
 	if [ "$subtitle" == "" ]; then
-		"$DECODER_BIN" "$media_file" -v $video $thread_count | "$RESCALER_BIN" -m yuv420p10le -f yuv420p "$size"
+		"$DECODER_BIN" "$media_file" -v $video $thread_count | "$RESCALER_BIN" -m yuv420p10le -f yuv420p $size
 	else
-		"$DECODER_BIN" "$media_file" -v $video $thread_count | "$RESCALER_BIN" -m yuv420p10le -f yuv420p "$size" | "$SUBTITLE_BIN" -f "$project_path/wqy-zenhei.ttc" "$size" "$subtitle"
+		"$DECODER_BIN" "$media_file" -v $video $thread_count | "$RESCALER_BIN" -m yuv420p10le -f yuv420p $size | "$SUBTITLE_BIN" -f "$project_path/wqy-zenhei.ttc" $size "$subtitle"
 	fi
 }
 
