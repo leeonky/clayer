@@ -555,7 +555,6 @@ int avformat_alloc_passthrough_context(AVCodecContext &codec_context, const std:
 						if(context->passthrough_dts_rate)
 							av_opt_set_int(format_context->priv_data, "dtshd_rate", context->passthrough_dts_rate, 0);
 
-						format_context->oformat->flags |= AVFMT_TS_NONSTRICT;
 						res = action(*format_context);
 
 						avio_context_free(&format_context->pb);
