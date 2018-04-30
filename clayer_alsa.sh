@@ -54,6 +54,12 @@ if [ "$video_flag" != "" ]; then
 	video_flag="-f $video_flag"
 fi
 
+if echo $video_flag | grep -q 'full'; then
+	if [ "$size" == "" ]; then
+		size="-s $(xdpyinfo | grep dimensions | awk '{print $2}')"
+	fi
+fi
+
 #Try to find srt subtitle
 if [ "$subtitle" == "" ]; then
 	srt_name="${media_file%.*}.srt"
@@ -83,7 +89,7 @@ fi
 
 function play_audio() {
 	"$DECODER_BIN" "$media_file" -a $audio "${ALSA_PASSTHROUGH:-}" |
-	"$RESAMPLER_BIN" -f pack:maxbit32 |
+	"$RESAMPLER_BIN" -f pack:int:maxbit32 |
 	"$SPEEKER_BIN" -a "${ALSA_DEV:html}" -p "${ALSA_PASSTHROUGH_DEV:-}"
 }
 
@@ -96,7 +102,7 @@ function play_audio_with_controller() {
 
 function wrapper_video_with_subtitle() {
 	if [ "$subtitle" == "" ]; then
-		"$DECODER_BIN" "$media_file" -v $video $thread_count | "$RESCALER_BIN" -m yuv420p10le -f yuv420p
+		"$DECODER_BIN" "$media_file" -v $video $thread_count | "$RESCALER_BIN" -m yuv420p10le -f yuv420p "$size"
 	else
 		"$DECODER_BIN" "$media_file" -v $video $thread_count | "$RESCALER_BIN" -m yuv420p10le -f yuv420p "$size" | "$SUBTITLE_BIN" -f "$project_path/wqy-zenhei.ttc" "$size" "$subtitle"
 	fi
