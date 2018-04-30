@@ -84,13 +84,15 @@ namespace {
 	inline std::function<int(circular_shm &)> passthrough_loop(iobus &iob, AVStream &stream, AVFormatContext &format_context, AVCodecContext &codec_context) {
 		return [&](circular_shm &buffer){
 			iob.post(buffer.serialize_to_string(buffer_key));
-			int64_t pts = 0;
+			int64_t base_pts = 0;
 			return avformat_alloc_passthrough_context(codec_context, [&](AVFormatContext &out_format) {
 					int r = avformat_write_header(&out_format, NULL);
 					while(command_process(iob, format_context, codec_context)
 							&& !av_read_frame(format_context, codec_context, [&](AVPacket *packet){
-								pts = packet->pts - stream.start_time;
-								pts = 1000000 * pts * stream.time_base.num/stream.time_base.den;
+								if(!base_pts) {
+									base_pts = packet->pts - stream.start_time;
+									base_pts = 1000000 * base_pts * stream.time_base.num/stream.time_base.den;
+								}
 								packet->stream_index = 0;
 								r = av_write_frame(out_format, packet);
 								}))
@@ -98,7 +100,8 @@ namespace {
 					return 0;
 					}, [&](void *buf, int samples, int size){
 						memcpy(buffer.allocate(), buf, size);
-						iob.post(av_samples_info(buffer.index, pts, samples, buffer_key));
+						iob.post(av_samples_info(buffer.index, base_pts, samples, buffer_key));
+						base_pts = 0;
 					});
 		};
 	}

@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 			}).parse(argc, argv);
 	iobus iob(stdin, stdout, stderr);
 	return player_context::start(iob, [&](player_context &context) {
-			if(strlen(alsa_device))
+			if(strlen(alsa_device) || strlen(alsa_passthrough))
 				return play_with_alsa(iob, alsa_device, alsa_passthrough, context);
 			else
 				return play_with_portaudio(iob, device, context);
