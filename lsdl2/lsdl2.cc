@@ -9,7 +9,6 @@ int SDL_CreateWindow(const char *caption,
 	int res = 0;
 	if(!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
 		if(SDL_Window *window = SDL_CreateWindow(caption, x, y, width, height, flag)) {
-			SDL_ShowCursor(SDL_DISABLE);
 			res = action(window);
 			SDL_DestroyWindow(window);
 		} else

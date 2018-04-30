@@ -138,6 +138,7 @@ int main(int argc, char **argv) {
 									[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
 									SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 									SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+									SDL_SetRelativeMouseMode(SDL_TRUE);
 									return main_reducer(iob, shms, frame_event, play_frame(iob, context, renderer, texture));
 									});
 							});

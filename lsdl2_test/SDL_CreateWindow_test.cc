@@ -30,7 +30,6 @@ BEFORE_EACH() {
 	init_mock_function_with_return(SDL_CreateWindow, ret_window);
 	init_mock_function_with_function(SDL_DestroyWindow, NULL);
 	init_mock_function_with_function(SDL_QuitSubSystem, NULL);
-	init_mock_function_with_function(SDL_ShowCursor, NULL);
 	init_mock_function(sdl_window_action);
 	return 0;
 }
@@ -63,9 +62,6 @@ SUITE_CASE("create sdl window") {
 	CUE_EXPECT_CALLED_ONCE(SDL_QuitSubSystem);
 	CUE_EXPECT_CALLED_WITH_INT(SDL_QuitSubSystem, 1, SDL_INIT_VIDEO);
 
-	CUE_EXPECT_CALLED_ONCE(SDL_ShowCursor);
-	CUE_EXPECT_CALLED_WITH_INT(SDL_ShowCursor, 1, SDL_DISABLE);
-
 	CUE_EXPECT_CALLED_ONCE(sdl_window_action);
 	CUE_EXPECT_CALLED_WITH_INT(SDL_QuitSubSystem, 1, SDL_INIT_VIDEO);
 }
@@ -78,7 +74,6 @@ SUITE_CASE("failed to init video") {
 	CUE_ASSERT_STDERR_EQ("Error[liblsdl2]: sdl error\n");
 
 	CUE_EXPECT_NEVER_CALLED(SDL_CreateWindow);
-	CUE_EXPECT_NEVER_CALLED(SDL_ShowCursor);
 	CUE_EXPECT_NEVER_CALLED(sdl_window_action);
 	CUE_EXPECT_NEVER_CALLED(SDL_DestroyWindow);
 	CUE_EXPECT_NEVER_CALLED(SDL_QuitSubSystem);
@@ -91,7 +86,6 @@ SUITE_CASE("failed to create window") {
 
 	CUE_ASSERT_STDERR_EQ("Error[liblsdl2]: sdl error\n");
 
-	CUE_EXPECT_NEVER_CALLED(SDL_ShowCursor);
 	CUE_EXPECT_NEVER_CALLED(sdl_window_action);
 	CUE_EXPECT_NEVER_CALLED(SDL_DestroyWindow);
 }
