@@ -78,6 +78,9 @@ fi
 
 if [ "$subtitle" != "" ]; then
 	encoding=$(file -b --mime-encoding "$subtitle")
+	if [ $encoding == 'iso-8859-1' ]; then
+		encoding='gb18030'
+	fi
 	if [ $encoding != 'utf-8' ]; then
 		encoding=${encoding/%le/}
 		encoding=${encoding/%be/}
