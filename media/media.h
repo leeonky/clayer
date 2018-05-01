@@ -107,7 +107,7 @@ int main_reducer(iobus &iob, circular_shm **shms, const Processor &main_processo
 			return 0;
 			});
 		};
-	return forward_untill(iob, buffer_event, buffer_action);
+	return ignore_untill(iob, buffer_event, buffer_action);
 }
 
 template<typename Processor, typename Action>

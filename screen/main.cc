@@ -127,7 +127,7 @@ namespace {
 int main(int argc, char **argv) {
 	iobus iob(stdin, stdout, stderr);
 	return player_context::start(iob, [&](player_context &context) {
-			return forward_untill(iob, video_event, [&](int fw, int fh, enum AVPixelFormat av_format){
+			return ignore_untill(iob, video_event, [&](int fw, int fh, enum AVPixelFormat av_format){
 					win_w = frm_w = fw;
 					win_h = frm_h = fh;
 					format = av_format;
