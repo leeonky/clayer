@@ -333,7 +333,7 @@ int layer_event(iobus &iob, const std::function<int(const layer_list &)> &action
 			arguments = strlen(arguments)==0 ? " " : arguments;
 			return fmemopen((void *)arguments, strlen(arguments), "r", [&](FILE *file) {
 				layer_list list = {};
-				if(3==fscanf(file, "buffer:%d index:%d id:%d", &list.buffer_key, &list.index, &list.id)) {
+				if(5==fscanf(file, "buffer:%d index:%d id:%d width:%d height:%d", &list.buffer_key, &list.index, &list.id, &list.width, &list.height)) {
 					while(list.count<MAX_SUB_LAYER_COUNT
 						&& 6==fscanf(file, "%d=>%d,%d,%d,%d,%d",
 							&list.sub_layers[list.count].offset,

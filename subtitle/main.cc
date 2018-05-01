@@ -63,7 +63,7 @@ namespace {
 			if(!title.empty()) {
 				std::istringstream f(title);
 				uint8_t *buffer = (uint8_t *)shm.allocate();
-				iob.post_some("LAYER buffer:%d index:%d id:%d", subtitle_buffer_key, shm.index, layer_id);
+				iob.post_some("LAYER buffer:%d index:%d id:%d width:%d height:%d", subtitle_buffer_key, shm.index, layer_id, w, h);
 				int title_h = ((100+subtitle_bottom_pos)%100)*h/100;
 				render_lines(iob, f, buffer, font, color, title_h);
 				iob.post("");
@@ -107,7 +107,7 @@ namespace {
 						ass_render_frame(renderer, track, pts, [&](ASS_Image *image) {
 								if(image) {
 									uint8_t *buffer = (uint8_t *)shm.allocate();
-									iob.post_some("LAYER buffer:%d index:%d id:%d", subtitle_buffer_key, shm.index, layer_id);
+									iob.post_some("LAYER buffer:%d index:%d id:%d width:%d height:%d", subtitle_buffer_key, shm.index, layer_id, w, h);
 									for(int offset=0; image; image = image->next) {
 										size_t size = pixel_copy(buffer+offset, image);
 										iob.post_some(" %d=>%d,%d,%d,%d,%d",

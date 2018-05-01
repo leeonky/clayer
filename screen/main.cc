@@ -12,8 +12,9 @@ namespace {
 	class TextureDeleter {
 	public:
 		void operator() (SDL_Texture *t) {
-			if(t)
+			if(t) {
 				SDL_DestroyTexture(t);
+			}
 		}
 	};
 
@@ -51,21 +52,25 @@ namespace {
 		};
 	}
 
-	inline std::function<int(const layer_list &layer)> layer_action(SDL_Renderer *renderer, int fw, int fh, std::map<int, SDL_TexturePtr> &layer_textures) {
-		return [&, renderer, fw, fh](const layer_list &layer){
+	inline void update_layer(SDL_Texture *t, const layer_list &layer, uint8_t *layer_buffer) {
+		uint8_t *texture_buffer; int texture_line;
+		SDL_LockTexture(t, NULL, (void **)&texture_buffer, &texture_line);
+		for(int i=0; i<layer.count; ++i) {
+			auto &sub_layer = layer.sub_layers[i];
+			for(int h=0; h<layer.sub_layers[i].h; ++h)
+				memcpy(texture_buffer+texture_line*(h+sub_layer.y)+sub_layer.x*4, layer_buffer+sub_layer.offset+sub_layer.pitch*h, sub_layer.w*4);
+		}
+		SDL_UnlockTexture(t);
+	}
+
+	inline std::function<int(const layer_list &layer)> layer_action(SDL_Renderer *renderer, std::map<int, SDL_TexturePtr> &layer_textures) {
+		return [&, renderer](const layer_list &layer){
 			shms[layer.buffer_key]->free(layer.index, [&](void *layer_buffer){
 				if(SDL_Texture *t = SDL_CreateTexture(renderer,
-							SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, fw, fh)) {
+							SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, layer.width, layer.height)) {
 					layer_textures[layer.id] = SDL_TexturePtr(t);
 					SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
-					for(int i=0; i<layer.count; ++i) {
-						SDL_Rect rect = {
-							layer.sub_layers[i].x, layer.sub_layers[i].y,
-							layer.sub_layers[i].w, layer.sub_layers[i].h
-						};
-						SDL_UpdateTexture(t, &rect, ((char *)layer_buffer)+layer.sub_layers[i].offset,
-								layer.sub_layers[i].pitch);
-					}
+					update_layer(t, layer, (uint8_t *)layer_buffer);
 				}
 			});
 			return 0;
@@ -97,7 +102,7 @@ namespace {
 
 							while(!iob.except("FRAME"))
 								if(clock_event(iob, clock_action(context.clock()))
-									&& layer_event(iob, layer_action(renderer, frm_w, frm_h, layer_textures))
+									&& layer_event(iob, layer_action(renderer, layer_textures))
 									&& nolayer_event(iob, no_layer_action(layer_textures))
 									&& reset_event(iob, reset_action(context))
 									&& iob.ignore_last())
@@ -136,8 +141,8 @@ int main(int argc, char **argv) {
 							SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "4");
 							return SDL_CreateTexture(window, frm_w, frm_h, AVPixelFormat_to_SDL(av_format),
 									[&](int, int, SDL_Renderer *renderer, SDL_Texture *texture){
-									SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 									SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+									SDL_RenderClear(renderer);
 									SDL_SetRelativeMouseMode(SDL_TRUE);
 									return main_reducer(iob, shms, frame_event, play_frame(iob, context, renderer, texture));
 									});
