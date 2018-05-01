@@ -224,9 +224,11 @@ int av_read_frame(AVFormatContext &format_context, AVCodecContext &codec_context
 	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
 	while((!(res = av_read_frame(&format_context, context->av_packet)))
 			&& context->av_stream->index != context->av_packet->stream_index)
-		;
-	if(res >= 0)
+		av_packet_unref(context->av_packet);
+	if(res >= 0) {
 		action(context->av_packet);
+		av_packet_unref(context->av_packet);
+	}
 	return !(res >= 0);
 }
 
@@ -235,10 +237,11 @@ int av_read_and_send_to_avcodec(AVFormatContext &format_context, AVCodecContext 
 	decoding_context *context = static_cast<decoding_context *>(codec_context.opaque);
 	while((!(res = av_read_frame(&format_context, context->av_packet)))
 			&& context->av_stream->index != context->av_packet->stream_index)
-		;
-	if(res >= 0)
+		av_packet_unref(context->av_packet);
+	if(res >= 0) {
 		res = avcodec_send_packet(&codec_context, context->av_packet);
-	else{
+		av_packet_unref(context->av_packet);
+	} else {
 		avcodec_send_packet(&codec_context, nullptr);
 		context->stream_ended = true;
 	}
