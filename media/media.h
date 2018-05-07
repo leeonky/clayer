@@ -100,9 +100,13 @@ int main_reducer(iobus &iob, circular_shm **shms, const Processor &main_processo
 			[&](circular_shm &shm){
 			shms[buffer_key] = &shm;
 
-			if(buffer_event(iob, buffer_action)) {
-				while(!ignore_untill(iob, main_processor, action))
-					;
+			while(buffer_event(iob, buffer_action)) {
+				if(!main_processor(iob, action)) {
+					while(!ignore_untill(iob, main_processor, action))
+						;
+					break;
+				} else
+					iob.ignore_last();
 			}
 			return 0;
 			});
@@ -118,9 +122,13 @@ int main_transform(iobus &iob, circular_shm **shms, const Processor &main_proces
 			shms[buffer_key] = &shm;
 			iob.recaption_and_post();
 
-			if(buffer_event(iob, buffer_action)) {
-				while(!forward_untill(iob, main_processor, action))
-					;
+			while(buffer_event(iob, buffer_action)) {
+				if(!main_processor(iob, action)) {
+					while(!forward_untill(iob, main_processor, action))
+						;
+					break;
+				} else
+					iob.forward_last();
 			}
 			return 0;
 			});
