@@ -15,14 +15,14 @@ SPEEKER_BIN="$project_path/speaker/cl_speaker"
 CONTROLLER_BIN="$project_path/controller/cl_controller"
 TERMINAL_BIN="$project_path/cl_terminal"
 
-new_sub_file=$(mktemp -u /tmp/cl_sub.srt.XXXXXX)
+new_sub_file=$(mktemp -u /tmp/cl_sub.XXXXXX)
 audio_control_queue=$(mktemp -u /tmp/cl_ab.XXXXXX)
 video_control_queue=$(mktemp -u /tmp/cl_vb.XXXXXX)
 clock_control_queue=$(mktemp -u /tmp/cl_cb.XXXXXX)
 
 mkfifo "$clock_control_queue"
 
-trap "{ rm -f $new_sub_file $clock_control_queue; }" EXIT
+trap "{ bash -c 'rm -f $new_sub_file* $clock_control_queue'; }" EXIT
 
 shift 1
 for args in "$@"
@@ -82,6 +82,7 @@ if [ "$subtitle" != "" ]; then
 		encoding='gb18030'
 	fi
 	if [ $encoding != 'utf-8' ]; then
+		new_sub_file="$new_sub_file"."${subtitle##*.}"
 		encoding=${encoding/%le/}
 		encoding=${encoding/%be/}
 		iconv -f $encoding -t utf-8 "$subtitle" > "$new_sub_file"
