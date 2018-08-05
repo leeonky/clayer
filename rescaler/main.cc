@@ -21,9 +21,11 @@ namespace {
 				from_format = arg;
 				}).require_full_argument("to_format", 'f', [&](const char *arg){
 					to_format = arg;
-					}).require_full_argument("size", 's', [&](const char *arg){
-						analyze_size_format(arg_w, arg_h, arg);
-						}).parse(argc, argv);
+				}).require_full_argument("size", 's', [&](const char *arg){
+					analyze_size_format(arg_w, arg_h, arg);
+				}).require_full_argument("count", 'c', [&](const char *arg){
+					sscanf(arg, "%d", &new_count);
+				}).parse(argc, argv);
 	}
 }
 
