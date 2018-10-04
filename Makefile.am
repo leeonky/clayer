@@ -19,6 +19,7 @@ SUBDIRS += resampler
 SUBDIRS += rescaler
 SUBDIRS += subtitle
 SUBDIRS += controller
+SUBDIRS += fdebug
 endif
 
 if !ENV_PRD

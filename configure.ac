@@ -61,6 +61,7 @@ AM_COND_IF([ENV_TEST], [],
 	   rescaler/Makefile
 	   subtitle/Makefile
 	   controller/Makefile
+	   fdebug/Makefile
 	   ])])
 
 # Testing Makefile

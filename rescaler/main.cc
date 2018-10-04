@@ -8,7 +8,7 @@
 namespace {
 	circular_shm *shms[MAX_LAYER_COUNT];
 	int new_key = 1;
-	int new_count = 4;
+	int new_count = 16;
 
 	int arg_w, arg_h;
 	const char *from_format = "";

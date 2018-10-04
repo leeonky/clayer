@@ -46,5 +46,6 @@ resampler/cl_resampler
 subtitle/cl_subtitle
 controller/cl_controller
 rescaler/cl_rescaler
+fdebug/cl_fdebug
 
 .dev
