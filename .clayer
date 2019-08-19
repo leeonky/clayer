@@ -1,4 +1,7 @@
 export PORT_AUDIO_DEV=3
-export ALSA_DEV='plughw:CARD=HDMI,DEV=3'
+# In VM
+# export ALSA_DEV='plughw:CARD=HDMI,DEV=3'
+# In PC has hdmi
+export ALSA_DEV='hdmi:CARD=HDMI,DEV=0'
 export ALSA_PASSTHROUGH_DEV='hdmi:CARD=HDMI,DEV=0,AES0=0x6'
 export ALSA_PASSTHROUGH=--pass
